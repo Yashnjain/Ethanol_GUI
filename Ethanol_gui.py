@@ -888,6 +888,7 @@ def purchased_ar(input_date, output_date):
         job_name = 'purchased_ar_automation'
         month = input_date.split(".")[0]
         day = input_date.split(".")[1]
+        year = input_date.split(".")[2]
         input_sheet= r'J:\India\BBR\IT_BBR\Reports\Purchased AR\Input'+f'\\Renewable AR {month}{day}.xlsx'
         output_location = r'J:\India\BBR\IT_BBR\Reports\Purchased AR\Output' 
         if not os.path.exists(input_sheet):
@@ -959,7 +960,7 @@ def purchased_ar(input_date, output_date):
         
         input_tab.api.AutoFilterMode=False
         input_tab.api.Range(f"A1:M{lsr_rw}").AutoFilter(Field:=13, Criteria1:=["<>0"])
-        input_tab.api.Range(f"A1:M{lsr_rw}").AutoFilter(Field:=4, Criteria1:=[f'>={datetime.now().date().replace(day=int(day),month=int(month))}'])
+        input_tab.api.Range(f"A1:M{lsr_rw}").AutoFilter(Field:=4, Criteria1:=[f'>={datetime.now().date().replace(day=int(day),month=int(month),year=int(year))}'])
 
         sp_lst_row = input_tab.range(f'F'+ str(input_tab.cells.last_cell.row)).end('up').row
         sp_address= input_tab.api.Range(f"F2:L{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address
@@ -984,8 +985,11 @@ def purchased_ar(input_date, output_date):
         sp_address= input_tab.api.Range(f"F2:L{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address
         sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0] 
         input_tab.api.Range(f"L{sp_initial_rw}").Value = f'=+F{sp_initial_rw}'
-        input_tab.api.Range(f"L{sp_initial_rw}:L{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
-        wb.app.api.Selection.FillDown()
+        if int(sp_initial_rw)==int(sp_lst_row):
+            pass
+        else:
+            input_tab.api.Range(f"L{sp_initial_rw}:L{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+            wb.app.api.Selection.FillDown()
 
         input_tab.api.AutoFilterMode=False
         lst_row = input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
