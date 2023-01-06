@@ -183,12 +183,12 @@ def ar_ageing_bulk(input_date, output_date):
         month = input_date.split(".")[0]
         day = input_date.split(".")[1]
         year = input_date.split(".")[-1]
-        input_sheet= r'J:\India\BBR\IT_BBR\Reports\Ar Ageing\Input'+f'\\AR Aging Bulk {month}{day}.xlsx'
-        output_location = r'J:\India\BBR\IT_BBR\Reports\Ar Ageing\Output'
-        input_sheet2= r'J:\India\BBR\IT_BBR\Reports\Ar Ageing\Input'+f'\\BS Bulk {month}{day}.xlsx'
-        input_sheet3= r'J:\India\BBR\IT_BBR\Reports\Ar Ageing\Template_File'+f'\\Biourja_mapping.xlsx'
-        input_sheet4 = r'J:\India\BBR\IT_BBR\Reports\Ar Ageing\Template_File'+f'\\AR Aging Bulk Template.xlsx'
-        grp_sheet = r'J:\India\BBR\IT_BBR\Reports\Ar Ageing\Template_File'+f'\\Group_mapping.xlsx'
+        input_sheet= r'J:\India\BBR\IT_BBR\Reports\Ar Ageing_bulk\Input'+f'\\AR Aging Bulk {month}{day}.xlsx'
+        output_location = r'J:\India\BBR\IT_BBR\Reports\Ar Ageing_bulk\Output'
+        input_sheet2= r'J:\India\BBR\IT_BBR\Reports\Ar Ageing_bulk\Input'+f'\\BS Bulk {month}{day}.xlsx'
+        input_sheet3= r'J:\India\BBR\IT_BBR\Reports\Ar Ageing_bulk\Template_File'+f'\\Biourja_mapping.xlsx'
+        input_sheet4 = r'J:\India\BBR\IT_BBR\Reports\Ar Ageing_bulk\Template_File'+f'\\AR Aging Bulk Template.xlsx'
+        grp_sheet = r'J:\India\BBR\IT_BBR\Reports\Ar Ageing_bulk\Template_File'+f'\\Group_mapping.xlsx'
         if not os.path.exists(input_sheet):
             return(f"{input_sheet} Excel file not present for date {input_date}")  
         if not os.path.exists(input_sheet2):
