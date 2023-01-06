@@ -305,18 +305,18 @@ def ar_ageing_bulk(input_date, output_date):
                         input_tab.api.AutoFilterMode=False
                     else:
                         print("continue")
-                        input_tab.range(f"D{sp_initial_rw_ex}").copy(input_tab.range(f"E{sp_initial_rw_ex}"))
-                        diff = (datetime.strptime(input_date,'%m.%d.%Y') - datetime.strptime(input_tab.range(f"D{sp_initial_rw_ex}").value,"%m-%d-%Y")).days
+                        input_tab.range(f"D{index}").copy(input_tab.range(f"E{index}"))
+                        diff = (datetime.strptime(input_date,'%m.%d.%Y') - datetime.strptime(input_tab.range(f"D{index}").value,"%m-%d-%Y")).days
                         if diff <11:
-                            input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"L{sp_initial_rw_ex}"))
+                            input_tab.range(f"K{index}").copy(input_tab.range(f"L{index}"))
                         elif diff >=11 and diff <31:
-                            input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"M{sp_initial_rw_ex}"))
+                            input_tab.range(f"K{index}").copy(input_tab.range(f"M{index}"))
                         elif diff >=31 and diff <61:
-                            input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"N{sp_initial_rw_ex}"))
+                            input_tab.range(f"K{index}").copy(input_tab.range(f"N{index}"))
                         elif diff >=61 and diff <91:
-                            input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"O{sp_initial_rw_ex}"))
+                            input_tab.range(f"K{index}").copy(input_tab.range(f"O{index}"))
                         else:
-                            input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"P{sp_initial_rw_ex}"))
+                            input_tab.range(f"K{index}").copy(input_tab.range(f"P{index}"))
                         input_tab.api.AutoFilterMode=False    
                 except:
                     pass   
@@ -588,8 +588,15 @@ def ar_ageing_bulk(input_date, output_date):
         bulk_tab_it.api.Range(f"J8:J{ini-1}").Copy()
         bulk_tab_it.api.Range(f"J8:J{ini-1}")._PasteSpecial(Paste=-4163)
         wb.app.api.CutCopyMode=False
-        bulk_tab_it.api.Range(f"P:P").EntireColumn.Delete()
+        bulk_tab_it.range(f"L8").expand('down').delete()
+        bulk_tab_it.api.Range(f"L:L").EntireColumn.Insert()
 
+        bulk_tab_it.range(f"P8").expand("down").api.Copy(bulk_tab_it.range(f"L8").api)
+        bulk_tab_it.range(f"M8").expand('down').clear_contents()
+        bulk_tab_it.range(f"J8").expand("down").api.Copy(bulk_tab_it.range(f"M8").api)
+
+        bulk_tab_it.api.Range(f"P:P").EntireColumn.Delete()
+        bulk_tab_it.autofit()
         bulk_tab2= temp_wb.sheets["Bulk(2)"]
         bulk_tab2.api.Copy(After=wb.api.Sheets(3))
         bulk_tab_it2 = wb.sheets[3]
@@ -711,11 +718,13 @@ def ar_ageing_bulk(input_date, output_date):
         font_colour,Interior_colour = conditional_formatting2(range=f"C8:C{ini2-2}",working_sheet=bulk_tab_it2,working_workbook=wb)
         bulk_tab_it2.api.Range(f"C7").AutoFilter(Field:=2, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
 
-        sp_lst_row = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
+        sp_lst_row = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').row
         sp_address= bulk_tab_it2.api.Range(f"B8:B{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address
         sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]
-        
-        bulk_tab_it2.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
+        if int(sp_lst_row) ==int(sp_initial_rw):
+            bulk_tab_it2.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
+        else:    
+            bulk_tab_it2.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
 
 
         # value_row = bulk_tab_it2.range(f'C'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').end('up').row
@@ -726,8 +735,17 @@ def ar_ageing_bulk(input_date, output_date):
         wb.app.api.CutCopyMode=False
 
         rw_faltu=bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').row
-        bulk_tab_it2.range(f"B{rw_faltu}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        bulk_tab_it2.range(f"B{sp_initial_rw}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        if val_row+3 ==rw_faltu:
+            rw_faltu=bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
+            bulk_tab_it2.range(f"B{rw_faltu}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        else:    
+            bulk_tab_it2.range(f"B{rw_faltu}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+
+
+        if int(sp_lst_row) ==int(sp_initial_rw):
+            bulk_tab_it2.range(f"B{sp_initial_rw}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        else:    
+            bulk_tab_it2.range(f"B{sp_initial_rw}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
         bulk_tab_it2.api.AutoFilterMode=False
 
         retry=0
