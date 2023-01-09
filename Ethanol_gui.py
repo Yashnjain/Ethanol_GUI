@@ -179,7 +179,7 @@ def conditional_formatting(range:str,working_sheet,working_workbook):
 def ar_ageing_bulk(input_date, output_date):
     try:
         today_date=date.today()     
-        job_name = 'ar_ageing_automation'
+        job_name = 'ar_ageing_Bulk'
         month = input_date.split(".")[0]
         day = input_date.split(".")[1]
         year = input_date.split(".")[-1]
