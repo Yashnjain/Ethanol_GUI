@@ -162,6 +162,8 @@ def insert_all_borders(cellrange:str,working_sheet,working_workbook):
 
 def conditional_formatting(range:str,working_sheet,working_workbook):
     try:
+        working_workbook.activate()
+        working_sheet.activate()
         font_colour = -16383844
         Interior_colour = 13551615
         working_sheet.api.Range(range).Select()
@@ -201,45 +203,48 @@ def knockOffAmtDiff(curr,final, wb, input_sht, input_sht2, credit_col_letter, de
                     row_dict["Knock_Off"] = [[f"{curr}:{final}"]]
                     # knockoff_list.append(f"{curr}:{final}")
                 # elif int(knockoff_list[-1].split(":")[-1]) == curr-1:   #prev final == currnt -1
-                elif len(row_dict["Knock_Off"][-1]) <=25:
+                elif len(row_dict["Knock_Off"][-1]) <=24:
                     if int(row_dict["Knock_Off"][-1][-1].split(":")[-1]) == curr-1:   #prev final == currnt -1
                         # knockoff_list[-1] = f'{knockoff_list[-1].split(":")[0]}:{final}'
                         row_dict["Knock_Off"][-1][-1] = f'{row_dict["Knock_Off"][-1][-1].split(":")[0]}:{final}'
                     else:
                         # knockoff_list.append(f"{curr}:{final}")
                         row_dict["Knock_Off"][-1].append(f"{curr}:{final}")
-                elif len(row_dict["Knock_Off"][-1]) >25:
+                elif len(row_dict["Knock_Off"][-1]) >24:
                     row_dict["Knock_Off"].append([f"{curr}:{final}"])
                 
             else:
-                # input_sht.range(f"{curr}:{curr}").copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
+                input_sht.range(f"{curr}:{curr}").copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
                 input_sht2.range(f"B{final}:{eth_trueup_col_letter}{final}").copy(knock_off_sht.range(f"A{knock_off_last_row+2}"))
 
                 #shifting credit amount to right cell copied from ethanol accrual
-                # knock_off_sht.range(f"K{knock_off_last_row+2}").copy(knock_off_sht.range(f"L{knock_off_last_row+2}"))
+                knock_off_sht.range(f"K{knock_off_last_row+2}").copy(knock_off_sht.range(f"L{knock_off_last_row+2}"))
                 knock_off_sht.range(f"K{knock_off_last_row+2}").clear()
                 knock_off_sht.range(f"M{knock_off_last_row+2}").clear()#Clearing Final Amount
 
+                input_sht.range(f"{curr}:{curr}").delete()
+                input_sht2.range(f"{final}:{final}").delete()
+                curr-=1
                 
 
                 # input_sht.range(f"{curr}:{curr}").delete()
                 # input_sht.range(f"{curr}:{curr}").color ="#00FF00"
                 # input_sht2.range(f"{final}:{final}").delete()
                 # input_sht.range(f"{final}:{final}").color ="#00FF00"
-                if not len(row_dict["Knock_Off"]):
-                    row_dict["Knock_Off"] = [[f"{curr}:{final}"]]                   
-                elif len(row_dict["Knock_Off"][-1]) <=25:
-                    if int(row_dict["Knock_Off"][-1][-1].split(":")[-1]) == curr-1:   #prev final == currnt -1                       
-                        row_dict["Knock_Off"][-1][-1] = f'{row_dict["Knock_Off"][-1][-1].split(":")[0]}:{final}'
-                    else:
-                        row_dict["Knock_Off"][-1].append(f"{curr}:{final}")
-                elif len(row_dict["Knock_Off"][-1]) >25:
-                    row_dict["Knock_Off"].append([f"{curr}:{final}"])
+                # if not len(row_dict["Knock_Off"]):
+                #     row_dict["Knock_Off"] = [[f"{curr}:{final}"]]                   
+                # elif len(row_dict["Knock_Off"][-1]) <=24:
+                #     if int(row_dict["Knock_Off"][-1][-1].split(":")[-1]) == curr-1:   #prev final == currnt -1                       
+                #         row_dict["Knock_Off"][-1][-1] = f'{row_dict["Knock_Off"][-1][-1].split(":")[0]}:{final}'
+                #     else:
+                #         row_dict["Knock_Off"][-1].append(f"{curr}:{final}")
+                # elif len(row_dict["Knock_Off"][-1]) >24:
+                    # row_dict["Knock_Off"].append([f"{curr}:{final}"])
             # curr-=1
         elif (abs(input_sht.range(f"{credit_col_letter}{curr}").value) - abs(input_sht2.range(f"{debit_col_letter}{final}").value))<10:
             #amt diff
             print(f"Moving {curr} to amount diff")
-            # amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
+            amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
 
             if input_sht==input_sht2:
                 pass
@@ -255,48 +260,48 @@ def knockOffAmtDiff(curr,final, wb, input_sht, input_sht2, credit_col_letter, de
                 # input_sht.range(f"{curr}:{final}").color ="#FFFF00"
                 if not len(row_dict["Amt_Dff"]):
                     row_dict["Amt_Dff"] = [[f"{curr}:{final}"]]                   
-                elif len(row_dict["Amt_Dff"][-1]) <=25:
+                elif len(row_dict["Amt_Dff"][-1]) <=24:
                     if int(row_dict["Amt_Dff"][-1][-1].split(":")[-1]) == curr-1:   #prev final == currnt -1                       
                         row_dict["Amt_Dff"][-1][-1] = f'{row_dict["Amt_Dff"][-1][-1].split(":")[0]}:{final}'
                     else:
                         row_dict["Amt_Dff"][-1].append(f"{curr}:{final}")
-                elif len(row_dict["Amt_Dff"][-1]) >25:
+                elif len(row_dict["Amt_Dff"][-1]) >24:
                     row_dict["Amt_Dff"].append([f"{curr}:{final}"])
             else:
-                pass
-                # input_sht.range(f"{curr}:{curr}").api.Copy()
-                # wb.activate()
-                # amt_diff_sht.activate()
-                # amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
-                # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+                input_sht.range(f"{curr}:{curr}").api.Copy()
+                wb.activate()
+                amt_diff_sht.activate()
+                amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
+                wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
                 
-                # input_sht2.range(f"B{final}:{eth_trueup_col_letter}{final}").api.Copy()
-                # wb.activate()
-                # amt_diff_sht.activate()
-                # amt_diff_sht.range(f"A{amt_diff_last_row+2}").api.Select()
-                # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+                input_sht2.range(f"B{final}:{eth_trueup_col_letter}{final}").api.Copy()
+                wb.activate()
+                amt_diff_sht.activate()
+                amt_diff_sht.range(f"A{amt_diff_last_row+2}").api.Select()
+                wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
 
-                # amt_diff_sht.range(f"K{knock_off_last_row+2}").copy(amt_diff_sht.range(f"L{knock_off_last_row+2}"))
-                # amt_diff_sht.range(f"K{knock_off_last_row+2}").clear()
-                # amt_diff_sht.range(f"M{knock_off_last_row+2}").clear()#Clearing Final Amount
+                amt_diff_sht.range(f"K{knock_off_last_row+2}").copy(amt_diff_sht.range(f"L{knock_off_last_row+2}"))
+                amt_diff_sht.range(f"K{knock_off_last_row+2}").clear()
+                amt_diff_sht.range(f"M{knock_off_last_row+2}").clear()#Clearing Final Amount
                 
 
-                # amt_diff_sht.autofit()
+                amt_diff_sht.autofit()
                 # input_sht.range(f"{i}:{i+1}").copy(amt_diff_sht.range(f"A{amt_diff_last_row+1}"))
 
-                # input_sht.range(f"{curr}:{curr}").delete()
+                input_sht.range(f"{curr}:{curr}").delete()
                 # input_sht.range(f"{curr}:{curr}").color ="#FFFF00"
-                # # input_sht2.range(f"{final}:{final}").delete()
+                input_sht2.range(f"{final}:{final}").delete()
                 # input_sht.range(f"{final}:{final}").color ="#FFFF00"
+                curr-=1
 
                 if not len(row_dict["Amt_Dff"]):
                     row_dict["Amt_Dff"] = [[f"{curr}:{final}"]]                   
-                elif len(row_dict["Amt_Dff"][-1]) <=25:
+                elif len(row_dict["Amt_Dff"][-1]) <=24:
                     if int(row_dict["Amt_Dff"][-1][-1].split(":")[-1]) == curr-1:   #prev final == currnt -1                       
                         row_dict["Amt_Dff"][-1][-1] = f'{row_dict["Amt_Dff"][-1][-1].split(":")[0]}:{final}'
                     else:
                         row_dict["Amt_Dff"][-1].append(f"{curr}:{final}")
-                elif len(row_dict["Amt_Dff"][-1]) >25:
+                elif len(row_dict["Amt_Dff"][-1]) >24:
                     row_dict["Amt_Dff"].append([f"{curr}:{final}"])
 
             # curr-=1
@@ -342,6 +347,7 @@ def row_range_calc(filter_col:str, input_sht,wb):
 
 def openGr(input_date, output_date):
     try:
+        start_time = datetime.now()
         input_datetime = datetime.strptime(input_date, "%m.%d.%Y")
         month = input_datetime.month
         day = input_datetime.day
@@ -492,7 +498,7 @@ def openGr(input_date, output_date):
         row_dict["Knock_Off"] = []
         row_dict["Amt_Dff"] = []
         # amtdiff_dict = {}
-        start_time = datetime.now()
+        
         while i <=last_row:
             if not ignore_check:
                 #Checking Mrn with next pjv row
@@ -538,18 +544,19 @@ def openGr(input_date, output_date):
             else:
                 print(f"pjv row num is {i}")
             i+=1
-        end_time = datetime.now()
-        total_time = end_time - start_time
-        print(f"Total time taken {total_time}")
+        
         ###########################Copy pasting based on lista###################################################################
+        colorList = []
         for key in row_dict.keys():
     
             for rowList in row_dict[key]:
                 rows = ",".join(rowList)
-                if key == "Konck_Off":
+                if key == "Knock_Off":
                     knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
                     input_sht.range(rows).copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
                     input_sht.range(rows).color = "#00FF0"
+                    if input_sht.range(rows).api.Interior.Color not in colorList:
+                        colorList.append(input_sht.range(rows).api.Interior.Color)
                 else:
                     amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
                     input_sht.range(rows).api.Copy()
@@ -559,11 +566,21 @@ def openGr(input_date, output_date):
                     wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
                     amt_diff_sht.autofit()
                     input_sht.range(rows).color = "#FFFF00"
+                    if input_sht.range(rows).api.Interior.Color not in colorList:
+                        colorList.append(input_sht.range(rows).api.Interior.Color)
 
         ###########################Deletion Logic#################################################################################
-            
+        for colors in colorList:
+            input_sht.activate()
+            input_sht.api.AutoFilterMode=False
+            input_sht.api.Range(f"{railcar_col_letter}1").AutoFilter(Field:=f"{railcar_col+1}", Criteria1:=colors, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+            fil_last_row = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
+            if fil_last_row !=1:
+                input_sht.range(f"2:{fil_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Delete(win32c.DeleteShiftDirection.xlShiftUp)
         ##########################################################################################################################
-        
+
+
+        input_sht.api.AutoFilterMode=False
         #Filtering out remaining
         input_sht.autofit()
         input_sht.activate()
@@ -739,7 +756,7 @@ def openGr(input_date, output_date):
         #using railcar instead of bol number for getting data from ethanol accrual sheet
         pjv_sht.range(f"{pjv_railcar_col_letter}2:{pjv_railcar_col_letter}{pjv_last_row}").copy(eth_acr_sht.range(f"{eth_rail_col_letter}{sp_lst_row+6}"))
 
-        font_colour,Interior_colour = conditional_formatting(eth_rail_col_letter,eth_acr_sht,wb)
+        font_colour,Interior_colour = conditional_formatting(f"{eth_rail_col_letter}:{eth_rail_col_letter}",eth_acr_sht,wb)
         # eth_acr_sht.api.AutoFilterMode=False
         eth_acr_sht.api.Range(f"{eth_rail_col_letter}1").AutoFilter(Field:=f"{eth_rail_col+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
         
@@ -812,6 +829,9 @@ def openGr(input_date, output_date):
         pjv_sht.range(f"A1:{pjv_trueup_col_letter}{pjv_last_row}").api.Sort(Key1=pjv_sht.range(f"{pjv_railcar_col_letter}1:{pjv_railcar_col_letter}{pjv_last_row}").api,
         Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
 
+        row_dict = {}
+        row_dict["Knock_Off"] = []
+        row_dict["Amt_Dff"] = []
         i=2
         while i <=pjv_last_row:
             if not ignore_check:
@@ -822,9 +842,9 @@ def openGr(input_date, output_date):
                     if pjv_sht.range(f"{date_col_letter}{i}").value.month == curr_month_num:
                         #knock Off
                         if pjv_sht.range(f"{pjv_credit_col_letter}{i}").value is not None and pjv_sht.range(f"{debit_col_letter}{i+1}").value is not None:
-                            i = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter)
+                            i, row_dict = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter, row_dict)
                         else:#interchange debit and credit col
-                            i = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_debit_col_letter, pjv_credit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter)
+                            i, row_dict = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_debit_col_letter, pjv_credit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter, row_dict)
 
 
 
@@ -860,7 +880,42 @@ def openGr(input_date, output_date):
             i+=1
             pjv_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
 
+        ###########################Copy pasting based on lista###################################################################
+        colorList = []
+        for key in row_dict.keys():
+    
+            for rowList in row_dict[key]:
+                rows = ",".join(rowList)
+                if key == "Knock_Off":
+                    knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
+                    pjv_sht.range(rows).copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
+                    pjv_sht.range(rows).color = "#00FF0"
+                    if pjv_sht.range(rows).api.Interior.Color not in colorList:
+                        colorList.append(pjv_sht.range(rows).api.Interior.Color)
+                else:
+                    amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
+                    pjv_sht.range(rows).api.Copy()
+                    wb.activate()
+                    amt_diff_sht.activate()
+                    amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
+                    wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+                    amt_diff_sht.autofit()
+                    pjv_sht.range(rows).color = "#FFFF00"
+                    if pjv_sht.range(rows).api.Interior.Color not in colorList:
+                        colorList.append(pjv_sht.range(rows).api.Interior.Color)
+
+        ###########################Deletion Logic#################################################################################
+        for colors in colorList:
+            pjv_sht.activate()
+            pjv_sht.api.AutoFilterMode=False
+            pjv_sht.api.Range(f"{railcar_col_letter}1").AutoFilter(Field:=f"{railcar_col+1}", Criteria1:=colors, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+            fil_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
+            if fil_last_row !=1:
+                pjv_sht.range(f"2:{fil_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        ##########################################################################################################################
+
         
+        input_sht.api.AutoFilterMode=False
         pjv_sht.range(f"A1").expand("right").copy(spcl_sht.range("A1"))
         try:
             spcl_sht = wb.sheets["Special_Sheet"]
@@ -875,7 +930,7 @@ def openGr(input_date, output_date):
 
 
         #Now deleting pjv Sheet
-        pjv_sht.api.Delete()
+        pjv_sht.delete()
 
         #Now checking input sheet for remaing rows
         input_sht.activate()
@@ -921,7 +976,7 @@ def openGr(input_date, output_date):
         for i in range(0,row_count):
             eth_acr_sht.api.Range(f"B{eth_last_row+1}").EntireRow.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
         input_sht.range(f"A2:{credit_col_letter}{curr_last_row}").copy(eth_acr_sht.range(f"B{eth_last_row+1}"))
-        input_sht.range(f"A2:{credit_col_letter}{curr_last_row}").api.EntireRow.api.Delete()
+        input_sht.range(f"A2:{credit_col_letter}{curr_last_row}").api.EntireRow.Delete()
         eth_acr_sht.range(f"M{eth_last_row+1}").expand("down").copy(eth_acr_sht.range(f"L{eth_last_row+1}"))
         # eth_acr_sht.range(f"M{eth_last_row+1}").expand("down").clear()
         eth_acr_sht.range(f"M{eth_last_row+1}").expand("down").api.NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
@@ -936,9 +991,12 @@ def openGr(input_date, output_date):
             wb.api.ActiveSheet.PivotTables(j).PivotCache().Refresh()
 
         wb.save(output_location+f"\\Open GR {month}{day}.xlsx")
-
+        end_time = datetime.now()
+        total_time = end_time - start_time
+        print(f"Total time taken {total_time}")
 
         print("Done")
+        return(f"Open GR report for {input_date} has been generated successfully")
     except Exception as e:
         raise e
     finally:
