@@ -482,12 +482,12 @@ def openGr(input_date, output_date):
         if day == 15:#replace else append
 
             knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
-            knock_off_sht.range(f"A2:A{knock_off_last_row}").api.EntireRow.api.Delete()
+            knock_off_sht.range(f"A2:A{knock_off_last_row}").api.EntireRow.Delete()
             amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-            amt_diff_sht.range(f"A2:A{amt_diff_last_row}").api.EntireRow.api.Delete()
+            amt_diff_sht.range(f"A2:A{amt_diff_last_row}").api.EntireRow.Delete()
             diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
             if diff_month_last_row!=1:
-                diff_month_sht.range(f"A2:A{diff_month_last_row}").api.EntireRow.api.Delete()
+                diff_month_sht.range(f"A2:A{diff_month_last_row}").api.EntireRow.Delete()
 
         knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
         amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
@@ -558,16 +558,26 @@ def openGr(input_date, output_date):
                     if input_sht.range(rows).api.Interior.Color not in colorList:
                         colorList.append(input_sht.range(rows).api.Interior.Color)
                 else:
+                    wb.activate()
+                    input_sht.activate()
+                    input_last_row1 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row +3
+                    input_sht.range(rows).copy(input_sht.range(f"A{input_last_row1}"))
+                    input_last_row2 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
                     amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-                    input_sht.range(rows).api.Copy()
+                    input_sht.range(f"{input_last_row1}:{input_last_row2}").api.Copy()
+
                     wb.activate()
                     amt_diff_sht.activate()
+                    amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
                     amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
                     wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
                     amt_diff_sht.autofit()
+                    input_sht.activate()
                     input_sht.range(rows).color = "#FFFF00"
                     if input_sht.range(rows).api.Interior.Color not in colorList:
                         colorList.append(input_sht.range(rows).api.Interior.Color)
+
+                    input_sht.range(f"{input_last_row1}:{input_last_row2}").delete()
 
         ###########################Deletion Logic#################################################################################
         for colors in colorList:
@@ -893,16 +903,26 @@ def openGr(input_date, output_date):
                     if pjv_sht.range(rows).api.Interior.Color not in colorList:
                         colorList.append(pjv_sht.range(rows).api.Interior.Color)
                 else:
+                    wb.activate()
+                    input_sht.activate()
+                    input_last_row1 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row +3
+                    input_sht.range(rows).copy(input_sht.range(f"A{input_last_row1}"))
+                    input_last_row2 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
                     amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-                    pjv_sht.range(rows).api.Copy()
+                    input_sht.range(f"{input_last_row1}:{input_last_row2}").api.Copy()
+
                     wb.activate()
                     amt_diff_sht.activate()
+                    amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
                     amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
                     wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
                     amt_diff_sht.autofit()
-                    pjv_sht.range(rows).color = "#FFFF00"
-                    if pjv_sht.range(rows).api.Interior.Color not in colorList:
-                        colorList.append(pjv_sht.range(rows).api.Interior.Color)
+                    input_sht.activate()
+                    input_sht.range(rows).color = "#FFFF00"
+                    if input_sht.range(rows).api.Interior.Color not in colorList:
+                        colorList.append(input_sht.range(rows).api.Interior.Color)
+
+                    input_sht.range(f"{input_last_row1}:{input_last_row2}").delete()
 
         ###########################Deletion Logic#################################################################################
         for colors in colorList:
