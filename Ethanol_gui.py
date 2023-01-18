@@ -1780,12 +1780,12 @@ def purchased_ar(input_date, output_date):
 
         check_column= input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
         if check_column ==1:
-                input_tab.api.Range(f"A:A").EntireColumn.api.Delete()   
+                input_tab.api.Range(f"A:A").EntireColumn.Delete()   
 
-        input_tab.api.Range(f"1:5").EntireRow.api.Delete()
-        input_tab.api.Range(f"F:M").EntireColumn.api.Delete() 
+        input_tab.api.Range(f"1:5").EntireRow.Delete()
+        input_tab.api.Range(f"F:M").EntireColumn.Delete() 
         input_tab.autofit()
-        input_tab.api.Range(f"2:2").EntireRow.api.Delete()
+        input_tab.api.Range(f"2:2").EntireRow.Delete()
         input_tab.activate()
 
 
