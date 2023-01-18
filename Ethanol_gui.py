@@ -1801,13 +1801,14 @@ def purchased_ar(input_date, output_date):
                 sp_lst_row = input_tab.range(f'{value[2]}'+ str(input_tab.cells.last_cell.row)).end('up').row
                 sp_address= input_tab.api.Range(f"{value[2]}2:L{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address
                 sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]
-                input_tab.api.Range(f"{sp_initial_rw}:{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
-                time.sleep(1)
-                wb.app.api.Selection.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-                time.sleep(1)
-                wb.app.api.ActiveSheet.ShowAllData()
+                if int(sp_lst_row)!=1:
+                    input_tab.api.Range(f"{sp_initial_rw}:{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+                    time.sleep(1)
+                    wb.app.api.Selection.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+                    time.sleep(1)
+                input_tab.api.AutoFilterMode=False 
             except:
-                wb.app.api.ActiveSheet.ShowAllData()
+                input_tab.api.AutoFilterMode=False 
                 pass  
 
         input_tab.api.Range(f"C:C").EntireColumn.api.Delete()
