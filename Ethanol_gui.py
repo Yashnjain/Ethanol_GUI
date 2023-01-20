@@ -1096,12 +1096,12 @@ def ar_ageing_bulk(input_date, output_date):
 
         # check_column= input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
         # if check_column ==1:
-        input_tab.api.Range(f"A:A").EntireColumn.api.Delete()   
+        input_tab.api.Range(f"A:A").EntireColumn.Delete()   
 
-        input_tab.api.Range(f"1:5").EntireRow.api.Delete()
-        input_tab.api.Range(f"I:L").EntireColumn.api.Delete() 
+        input_tab.api.Range(f"1:5").EntireRow.Delete()
+        input_tab.api.Range(f"I:L").EntireColumn.Delete() 
         input_tab.autofit()
-        input_tab.api.Range(f"2:2").EntireRow.api.Delete()
+        input_tab.api.Range(f"2:2").EntireRow.Delete()
         input_tab.activate()
 
 
@@ -1125,7 +1125,7 @@ def ar_ageing_bulk(input_date, output_date):
         input_tab.range(f"Q{sp_initial_rw}").number_format = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
         input_tab.range(f"Q{sp_initial_rw}").value=f'=+K{sp_initial_rw}-SUM(L{sp_initial_rw}:P{sp_initial_rw})'
         lsr_rw = input_tab.range(f'B'+ str(input_tab.cells.last_cell.row)).end('up').row
-        input_tab.api.Range(f"{lsr_rw+1}:{lsr_rw+10}").EntireRow.api.Delete()
+        input_tab.api.Range(f"{lsr_rw+1}:{lsr_rw+10}").EntireRow.Delete()
         input_tab.api.Range(f"Q{sp_initial_rw}:Q{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
         wb.app.api.Selection.FillDown()
         input_tab.autofit()
@@ -1461,7 +1461,7 @@ def ar_ageing_bulk(input_date, output_date):
         bulk_tab_it.range(f"M8").expand('down').clear_contents()
         bulk_tab_it.range(f"J8").expand("down").api.Copy(bulk_tab_it.range(f"M8").api)
 
-        bulk_tab_it.api.Range(f"P:P").EntireColumn.api.Delete()
+        bulk_tab_it.api.Range(f"P:P").EntireColumn.Delete()
         bulk_tab_it.autofit()
         bulk_tab2= temp_wb.sheets["Bulk(2)"]
         bulk_tab2.api.Copy(After=wb.api.Sheets(3))
@@ -1578,16 +1578,18 @@ def ar_ageing_bulk(input_date, output_date):
                 else:
                     print("second case")
 
-            bulk_tab_it2.api.Cells.FormatConditions.api.Delete()
+            bulk_tab_it2.api.Cells.FormatConditions.Delete()
             bulk_tab_it2.api.AutoFilterMode=False
-        bulk_tab_it2.api.Range(f"L:L").EntireColumn.api.Delete()
+        bulk_tab_it2.api.Range(f"L:L").EntireColumn.Delete()
         font_colour,Interior_colour = conditional_formatting2(range=f"C8:C{ini2-2}",working_sheet=bulk_tab_it2,working_workbook=wb)
         bulk_tab_it2.api.Range(f"C7").AutoFilter(Field:=2, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
 
         sp_lst_row = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').row
         sp_address= bulk_tab_it2.api.Range(f"B8:B{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address
         sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]
-        if int(sp_lst_row) ==int(sp_initial_rw):
+        if int(sp_initial_rw)==6:
+            pass
+        elif int(sp_lst_row) ==int(sp_initial_rw):
             bulk_tab_it2.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
         else:    
             bulk_tab_it2.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
@@ -1601,14 +1603,17 @@ def ar_ageing_bulk(input_date, output_date):
         wb.app.api.CutCopyMode=False
 
         rw_faltu=bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').row
-        if val_row+3 ==rw_faltu:
+        if rw_faltu==6:
+            pass
+        elif val_row+3 ==rw_faltu:
             rw_faltu=bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
             bulk_tab_it2.range(f"B{rw_faltu}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
         else:    
             bulk_tab_it2.range(f"B{rw_faltu}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
 
-
-        if int(sp_lst_row) ==int(sp_initial_rw):
+        if int(sp_initial_rw)==6:
+            pass
+        elif int(sp_lst_row) ==int(sp_initial_rw):
             bulk_tab_it2.range(f"B{sp_initial_rw}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
         else:    
             bulk_tab_it2.range(f"B{sp_initial_rw}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
@@ -1629,7 +1634,7 @@ def ar_ageing_bulk(input_date, output_date):
         company_names = company_sheet.range(f"A2").expand('down').value
         company_names = [names.strip() for names in company_names]
         company_sheet.range(f"A2").expand('down').api.Copy(bulk_tab_it2.range(f"B100").api)
-        bulk_tab_it2.api.Cells.FormatConditions.api.Delete()
+        bulk_tab_it2.api.Cells.FormatConditions.Delete()
         bulk_tab_it2.activate()
         font_colour,Interior_colour = conditional_formatting(range=f"B:B",working_sheet=bulk_tab_it2,working_workbook=wb)
         bulk_tab_it2.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
@@ -1644,11 +1649,13 @@ def ar_ageing_bulk(input_date, output_date):
 
         bulk_tab_it2.range(f"B150").expand('table').api.EntireRow.Copy()
         # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+        if bulk_tab_it2.range(f"B{value_row2}").value=='Total':
+            value_row2 = bulk_tab_it2.range(f'C'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').end('up').row+2
         bulk_tab_it2.range(f"A{value_row2+1}").api.EntireRow.Select()
         wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
         bulk_tab_it2.range(f"B{sp_initial_rw}").expand('table').api.SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
         bulk_tab_it2.api.AutoFilterMode=False
-        bulk_tab_it2.api.Cells.FormatConditions.api.Delete()
+        bulk_tab_it2.api.Cells.FormatConditions.Delete()
 
         faltu_row = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').row
         bulk_tab_it2.range(f"b{faltu_row}").expand('table').api.Delete()
@@ -1696,11 +1703,11 @@ def ar_ageing_bulk(input_date, output_date):
                 wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
                 bulk_tab_it2.range(f"{sp_initial_rw}:{sp_initial_rw}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
                 bulk_tab_it2.api.AutoFilterMode=False
-                bulk_tab_it2.api.Cells.FormatConditions.api.Delete()
+                bulk_tab_it2.api.Cells.FormatConditions.Delete()
             else:
                 print("second case")
                 bulk_tab_it2.api.AutoFilterMode=False
-                bulk_tab_it2.api.Cells.FormatConditions.api.Delete()
+                bulk_tab_it2.api.Cells.FormatConditions.Delete()
 
         #ineligible accounts check
         bulk_tab_it2.api.Cells.Find(What:="INELIGIBLE ACCOUNTS RECEIVABLE", After:=bulk_tab_it2.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
@@ -2319,7 +2326,7 @@ def ar_ageing_rack(input_date, output_date):
 
 
         for i in range(2,int(f'{lsr_rw}')):
-            if input_tab.range(f"E{i}").value=="Opb:OPB-911":
+            if input_tab.range(f"E{i}").value=="Opb:OPB-911" or input_tab.range(f"F{i}").value=="Opb:OPB-911":
                 # print(f"deleted customer={input_tab.range(f'A{i}').value} and deleted row={i}")
                 # input_tab.range(f"{i}:{i}").delete()
                 input_tab.range(f"B{i}").value = input_tab.range(f"A{i}").value
