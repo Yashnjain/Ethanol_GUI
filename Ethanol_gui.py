@@ -1133,7 +1133,7 @@ def ar_ageing_bulk(input_date, output_date):
 
 
         for i in range(2,int(f'{lsr_rw}')):
-            if input_tab.range(f"B{i}").value=="Opb:OPB-1624" and int(input_tab.range(f"K{i}").value)==58343:
+            if (input_tab.range(f"B{i}").value=="Opb:OPB-1624" or input_tab.range(f"J{i}").value=="Opb:OPB-1624") and int(input_tab.range(f"K{i}").value)==58343:
                 print(f"deleted customer={input_tab.range(f'A{i}').value} and deleted row={i}")
                 input_tab.range(f"{i}:{i}").api.Delete()
                 break
@@ -1463,6 +1463,13 @@ def ar_ageing_bulk(input_date, output_date):
 
         bulk_tab_it.api.Range(f"P:P").EntireColumn.Delete()
         bulk_tab_it.autofit()
+        for i in range(8,int(ini)):
+            if input_tab.range(f"C{i}").value==0:
+                print(f"deleted customer={input_tab.range(f'B{i}').value} and deleted row={i}")
+                input_tab.range(f"{i}:{i}").api.Delete()
+                break
+            else:
+                pass  
         bulk_tab2= temp_wb.sheets["Bulk(2)"]
         bulk_tab2.api.Copy(After=wb.api.Sheets(3))
         bulk_tab_it2 = wb.sheets[3]
