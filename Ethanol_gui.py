@@ -40,6 +40,9 @@ from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.firefox.options import Options
 import re
 import array
+from CASH.cash import cash
+from NLV_FUTURES.NLV_FUTURES import NLV_FUTURES
+
 
 
 # path = r'C:\Users\imam.khan\OneDrive - BioUrja Trading LLC\Documents\Revelio'
@@ -357,9 +360,19 @@ def thick_bottom_border(cellrange:str,working_sheet,working_workbook):
             a.Weight = win32c.BorderWeight.xlMedium
 
 
+def bbr_nlv_futures(start_date):
+    try:
+        msg = NLV_FUTURES(start_date)
+        return msg
+    except Exception as e:
+        raise e
 
-
-
+def bbr_cash(start_date,end_date):
+    try:
+        msg = cash(start_date,end_date)
+        return msg
+    except Exception as e:
+        raise e
 
 def openGr(input_date, output_date):
     try:
@@ -3093,7 +3106,7 @@ def main():
     # input_date=None
     # output_date = None
     frame_options.grid(row=1,column=0, pady=30, padx=35, columnspan=2, rowspan=3)
-    wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Open Gr':openGr ,'Ar Ageing Report(Rack)':ar_ageing_rack,'Unbilled AR Report':unbilled_ar}
+    wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Open Gr':openGr ,'Ar Ageing Report(Rack)':ar_ageing_rack,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures}
     # wp_job_ids = {'ABS':1,'BBR':bbr,'CPR Report':cpr, 'Freight analysis':freight_analysis, 'CTM combined':ctm,'MTM Report':mtm_report,
     #                 'MOC Interest Allocation':moc_interest_alloc,'Open AR':open_ar,'Open AP':open_ap, 'Unsettled Payable Report':unsetteled_payables,'Unsettled Receivable Report':unsetteled_receivables,
     #                 'Storage Month End Report':strg_month_end_report, "Month End BBR":bbr_monthEnd, "Bank Recons Report":bank_recons_rep}
