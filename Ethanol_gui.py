@@ -42,9 +42,13 @@ import re
 import array
 from CASH.cash import cash
 from NLV_FUTURES.NLV_FUTURES import NLV_FUTURES
+from AR_ageing_bulk.ar_ageing_bulk import ar_ageing_bulk
+from ar_ageing_rack.ar_ageing_rack import ar_ageing_rack
+from purchased_ar.purchased_ar import purchased_ar
+from unbilled_ar.unbilled_ar import unbilled_ar
 
 from Open_GR.open_gr import openGr
-from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
+# from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
 
 
 
@@ -369,14 +373,14 @@ def open_gr(input_date,output_date):
     except Exception as e:
         raise e
 
-def unbilled_ar(input_date, output_date):
+def unbilled_ar_(input_date, output_date):
     try:
         msg = unbilled_ar(input_date, output_date)
         return msg
     except Exception as e:
         raise e
 
-def purchased_ar(input_date, output_date):
+def purchased_ar_(input_date, output_date):
     try:
         msg = purchased_ar(input_date, output_date)
         return msg
@@ -384,14 +388,14 @@ def purchased_ar(input_date, output_date):
         raise e
 
 
-def ar_ageing_bulk(input_date, output_date):
+def ar_ageing_bulk_(input_date, output_date):
     try:
         msg = ar_ageing_bulk(input_date, output_date)
         return msg
     except Exception as e:
         raise e
 
-def ar_ageing_rack(input_date, output_date):
+def ar_ageing_rack_(input_date, output_date):
     try:
         msg = ar_ageing_rack(input_date, output_date)
         return msg

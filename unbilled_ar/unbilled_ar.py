@@ -7,7 +7,7 @@ from tkinter.font import Font
 from tkinter.ttk import Label
 from tkinter import Button
 from tkinter.ttk import Frame, Style
-from tkinter.ttk import OptionMenuss
+from tkinter.ttk import OptionMenu
 from tkinter import Label as label
 from tkcalendar import DateEntry
 from tkinter import messagebox
