@@ -480,6 +480,3 @@ def cash(start_date,end_date):
      except Exception as e:
           raise e
 
-
-cash('01.15.2023','01.15.2023')
-

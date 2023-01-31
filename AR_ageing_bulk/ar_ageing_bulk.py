@@ -783,3 +783,4 @@ def ar_ageing_bulk(input_date, output_date):
             wb.app.quit()
         except:
             pass
+
