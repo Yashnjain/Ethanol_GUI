@@ -94,12 +94,23 @@ def macquarie(file2,wb,ws):
      raise e
 
 
-def NLV_FUTURES(start_date):
+def NLV_FUTURES(start_date,end_date):
     try:
-        start_date2 = datetime.strftime(datetime.strptime(start_date,"%m.%d.%Y"), "%Y%m%d")
-        file = open(f"J:\India\BBR\2023\BBR_{start_date2}\Future - BNP.pdf","rb")
-        file2 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Future - Macquarie.pdf","rb")
-        wb = xw.Book(f"J:\India\BBR\2023\BBR_{start_date2}\BioUrja - Consolidated Borrowing Base Syndication {start_date}_Working.xlsx")
+        start_date2 = datetime.strftime(datetime.strptime(start_date,"%d.%m.%Y"), "%Y%m%d")
+        start_date3 = datetime.strftime(datetime.strptime(start_date,"%d.%m.%Y"), "%m.%d.%Y")
+        # end_date2 = datetime.strftime(datetime.strptime(end_date,"%d.%m.%Y"), "%Y%m%d")
+        future_bnp = f"J:\\India\BBR\\2023\\BBR_{start_date2}\\Future- BNP.pdf"
+        future_macquarie = f"J:\\India\BBR\\2023\\BBR_{start_date2}\\Future - Macquarie.pdf" 
+        wb_file = f"J:\\India\BBR\\2023\\BBR_{start_date2}\\BioUrja - Consolidated Borrowing Base Syndication {start_date3}_Working.xlsx"
+        file = open(future_bnp,"rb")
+        if not os.path.exists(future_bnp):
+            return(f"{file} Input Excel file not present")
+        file2 = open(future_macquarie,"rb")
+        if not os.path.exists(future_macquarie):
+            return(f"{file2} Input Excel file not present")
+        wb = xw.Book( wb_file)
+        if not os.path.exists( wb_file):
+            return(f"{ wb_file} Input Excel file not present")
         ws = wb.sheets("NLV Futures")
         macquarie(file2,wb,ws)
         BNP(file,wb,ws)
@@ -107,5 +118,5 @@ def NLV_FUTURES(start_date):
     except Exception as e:
         raise e
 
-# NLV_FUTURES('11.30.2022')
+NLV_FUTURES('15.01.2023','15.01.2023')
 

@@ -412,7 +412,7 @@ def Chase_Rack(wb,ws,file11):
 
 def cash(start_date,end_date):
      try:
-        start_date2 = datetime.strftime(datetime.strptime(start_date,"%m.%d.%Y"), "%Y%m%d")
+        start_date2 = datetime.strftime(datetime.strptime(start_date2,"%m.%d.%Y"), "%Y%m%d")
      #    start_date1 = datetime.strftime(datetime.strptime(start_date,"%m.%d.%Y"), "%Y.%m.%d")
      #    end_date2 = datetime.strftime(datetime.strptime(end_date,"%m.%d.%Y"), "%Y-%m-%d")
      #    adte = date.today()
@@ -459,5 +459,5 @@ def cash(start_date,end_date):
           raise e
 
 
-# cash('11.30.2022','01.15.2023')
+cash('01.15.2023','01.15.2023')
 
