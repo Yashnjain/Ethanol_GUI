@@ -399,9 +399,9 @@ def ar_ageing_rack(input_date, output_date):
         raise e
 
 
-def bbr_nlv_futures(start_date):
+def bbr_nlv_futures(start_date,end_date):
     try:
-        msg = NLV_FUTURES(start_date)
+        msg = NLV_FUTURES(start_date,end_date)
         return msg
     except Exception as e:
         raise e
