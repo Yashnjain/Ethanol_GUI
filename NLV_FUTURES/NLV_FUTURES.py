@@ -118,5 +118,5 @@ def NLV_FUTURES(start_date,end_date):
     except Exception as e:
         raise e
 
-NLV_FUTURES('15.01.2023','15.01.2023')
+# NLV_FUTURES('15.01.2023','15.01.2023')
 

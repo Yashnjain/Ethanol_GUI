@@ -412,22 +412,44 @@ def Chase_Rack(wb,ws,file11):
 
 def cash(start_date,end_date):
      try:
-        start_date2 = datetime.strftime(datetime.strptime(start_date2,"%m.%d.%Y"), "%Y%m%d")
+        start_date2 = datetime.strftime(datetime.strptime(start_date,"%m.%d.%Y"), "%Y%m%d")
      #    start_date1 = datetime.strftime(datetime.strptime(start_date,"%m.%d.%Y"), "%Y.%m.%d")
      #    end_date2 = datetime.strftime(datetime.strptime(end_date,"%m.%d.%Y"), "%Y-%m-%d")
      #    adte = date.today()
-        file1 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-BOFA Bulk.pdf","rb")
-        file2 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-BOFA Rack.pdf","rb")
-        file3 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-RCP South BOFA.pdf","rb")
-        file4 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-RCP Midwest.pdf","rb")
-        file5 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-BOFA-BU Export.pdf","rb")
-        file6 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-BOFA-BioUrja Nehme Commodities.pdf","rb")
-        file7 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-BOFA-BioUrja Energy Commodities.pdf","rb")
-        file8 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-RCP Holdings.pdf","rb")
-        file9 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-RCP South Chase.pdf","rb")
-        file10 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-CHASE Bulk.pdf","rb")
-        file11 = open(f"J:\India\BBR\2023\BBR_{start_date2}\Bank\{start_date2}-CHASE Rack.pdf","rb")
-        wb = xw.Book(f"J:\India\BBR\2023\BBR_{start_date2}\BioUrja - Consolidated Borrowing Base Syndication {start_date}_Working.xlsx")
+        file1 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-BOFA Bulk.pdf"
+        if not os.path.exists(file1):
+            return(f"{file1} Input PDF file not present")
+        file2 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-BOFA Rack.pdf"
+        if not os.path.exists(file2):
+            return(f"{file2} Input PDF file not present")
+        file3 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-RCP South BOFA.pdf"
+        if not os.path.exists(file3):
+            return(f"{file3} Input PDF file not present")
+        file4 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-RCP Midwest.pdf"
+        if not os.path.exists(file4):
+            return(f"{file4} Input PDF file not present")
+        file5 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-BOFA-BU Export.pdf"
+        if not os.path.exists(file5):
+            return(f"{file5} Input PDF file not present")
+        file6 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-BOFA-BioUrja Nehme Commodities.pdf"
+        if not os.path.exists(file6):
+            return(f"{file6} Input PDF file not present")
+        file7 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-BOFA-BioUrja Energy Commodities.pdf"
+        if not os.path.exists(file7):
+            return(f"{file7} Input PDF file not present")
+        file8 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-RCP Holdings.pdf"
+        if not os.path.exists(file8):
+            return(f"{file8} Input PDF file not present")
+        file9 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-RCP South Chase.pdf"
+        if not os.path.exists(file9):
+            return(f"{file9} Input PDF file not present")
+        file10 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-CHASE Bulk.pdf"
+        if not os.path.exists(file10):
+            return(f"{file10} Input PDF file not present")
+        file11 = f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\Bank\\{start_date2}-CHASE Rack.pdf"
+        if not os.path.exists(file11):
+            return(f"{file11} Input PDF file not present")
+        wb = xw.Book(f"J:\\India\\BBR\\2023\\BBR_{start_date2}\\BioUrja - Consolidated Borrowing Base Syndication {start_date}_Working.xlsx")
         retry = 0
         while retry < 10:
             try:
