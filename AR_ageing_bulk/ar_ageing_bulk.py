@@ -137,7 +137,7 @@ def ar_ageing_bulk(input_date, output_date):
 
 
         for i in range(2,int(f'{lsr_rw}')):
-            if (input_tab.range(f"B{i}").value=="Opb:OPB-1624" or input_tab.range(f"J{i}").value=="Opb:OPB-1624") and int(input_tab.range(f"K{i}").value)==58343:
+            if (input_tab.range(f"A{i}").value=="CITGO PETROLEUM CORPORATION." and input_tab.range(f"D{i}").value=="10-31-2019") and int(input_tab.range(f"K{i}").value)==58343:
                 print(f"deleted customer={input_tab.range(f'A{i}').value} and deleted row={i}")
                 input_tab.range(f"{i}:{i}").api.Delete()
                 break
@@ -263,8 +263,33 @@ def ar_ageing_bulk(input_date, output_date):
                 pass  
 
 
+
+
+
         input_tab.api.Range(f"{Voucher_No_column_letter}1").AutoFilter(Field:=f'{Voucher_No_column_no}')
-        input_tab.api.AutoFilterMode=False  
+        input_tab.api.AutoFilterMode=False 
+        #logic for reamining due dates
+        time.sleep(1)
+        input_tab.api.Range(f"{Voucher_No_column_letter}1").AutoFilter(Field:=f'{Voucher_No_column_no}', Criteria1:=['<>Total'] ,Operator:=1, Criteria2:=['<>'])
+        input_tab.api.Range(f"{DD_No_column_letter}1").AutoFilter(Field:=f'{DD_No_column_no}', Criteria1:=['='] ,Operator:=7)
+        
+        data = row_range_calc(DD_No_column_letter, input_tab, wb)
+        if len(data[0])>0:
+            for row in data[0]:
+                input_tab.range(f"D{row}").copy(input_tab.range(f"E{row}"))
+                diff = (datetime.strptime(input_date,'%m.%d.%Y') - datetime.strptime(input_tab.range(f"D{row}").value,"%m-%d-%Y")).days
+                if diff <11:
+                    input_tab.range(f"K{row}").copy(input_tab.range(f"L{row}"))
+                elif diff >=11 and diff <31:
+                    input_tab.range(f"K{row}").copy(input_tab.range(f"M{row}"))
+                elif diff >=31 and diff <61:
+                    input_tab.range(f"K{row}").copy(input_tab.range(f"N{row}"))
+                elif diff >=61 and diff <91:
+                    input_tab.range(f"K{row}").copy(input_tab.range(f"O{row}"))
+                else:
+                    input_tab.range(f"K{row}").copy(input_tab.range(f"P{row}"))
+        
+        input_tab.api.AutoFilterMode=False 
 
         input_tab.api.Range(f"{Voucher_No_column_letter}1").AutoFilter(Field:=f'{Voucher_No_column_no}', Criteria1:=['Total'])
 
@@ -467,13 +492,15 @@ def ar_ageing_bulk(input_date, output_date):
 
         bulk_tab_it.api.Range(f"P:P").EntireColumn.Delete()
         bulk_tab_it.autofit()
-        for i in range(8,int(ini)):
-            if input_tab.range(f"C{i}").value==0:
-                print(f"deleted customer={input_tab.range(f'B{i}').value} and deleted row={i}")
-                input_tab.range(f"{i}:{i}").api.Delete()
-                break
+        i=8
+        while i<ini:
+            if int(bulk_tab_it.range(f"C{i}").value)>=0 and int(bulk_tab_it.range(f"C{i}").value)<1:
+                print(f"deleted customer={bulk_tab_it.range(f'B{i}').value} and deleted row={i}")
+                bulk_tab_it.range(f"{i}:{i}").api.Delete()
+                print("No AR to report for customer")
+                ini = ini - 1
             else:
-                pass  
+                i+=1       
         bulk_tab2= temp_wb.sheets["Bulk(2)"]
         bulk_tab2.api.Copy(After=wb.api.Sheets(3))
         bulk_tab_it2 = wb.sheets[3]
@@ -563,12 +590,15 @@ def ar_ageing_bulk(input_date, output_date):
         sp_lst_row = bulk_tab_it2.range(f'L'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
         sp_address= bulk_tab_it2.api.Range(f"L8:L{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address
         sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]
-
-        bulk_tab_it2.range(f"L{sp_initial_rw}:L{sp_lst_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
-        grp_cm_list = bulk_tab_it2.range(f"B100").expand('down').value
-        bulk_tab_it2.range(f"B100").expand('down').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        grp_cm_list2 = list(set(grp_cm_list))
-        bulk_tab_it2.api.Range(f"L7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+        if sp_lst_row ==int(sp_initial_rw):
+            print("no data to filter")
+            grp_cm_list2=[]
+        else:
+            bulk_tab_it2.range(f"L{sp_initial_rw}:L{sp_lst_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
+            grp_cm_list = bulk_tab_it2.range(f"B100").expand('down').value
+            bulk_tab_it2.range(f"B100").expand('down').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+            grp_cm_list2 = list(set(grp_cm_list))
+            bulk_tab_it2.api.Range(f"L7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
         val_row = bulk_tab_it2.range(f'C'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
         if len(grp_cm_list2)>0:
             for i in range(len(grp_cm_list2)):
