@@ -51,8 +51,8 @@ def openGr(input_date, output_date):
     try:
         start_time = datetime.now()
         input_datetime = datetime.strptime(input_date, "%m.%d.%Y")
-        month = input_datetime.month
-        day = input_datetime.day
+        month = datetime.strftime(input_datetime, "%m")
+        day = datetime.strftime(input_datetime, "%d")
         j_loc = r"J:\India\BBR\IT_BBR\Reports"
         # curr_loc = os.getcwd()
         # input_sheet= curr_loc+r'\Raw Files'+f'\\Open GR {month}{day}.xlsx'
@@ -606,12 +606,12 @@ def openGr(input_date, output_date):
                         colorList.append(pjv_sht.range(rows).api.Interior.Color)
                 else:
                     wb.activate()
-                    input_sht.activate()
-                    input_last_row1 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row +3
-                    input_sht.range(rows).copy(input_sht.range(f"A{input_last_row1}"))
-                    input_last_row2 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
+                    pjv_sht.activate()
+                    input_last_row1 = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row +3
+                    pjv_sht.range(rows).copy(pjv_sht.range(f"A{input_last_row1}"))
+                    input_last_row2 = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
                     amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-                    input_sht.range(f"{input_last_row1}:{input_last_row2}").api.Copy()
+                    pjv_sht.range(f"{input_last_row1}:{input_last_row2}").api.Copy()
 
                     wb.activate()
                     amt_diff_sht.activate()
@@ -619,25 +619,25 @@ def openGr(input_date, output_date):
                     amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
                     wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
                     amt_diff_sht.autofit()
-                    input_sht.activate()
-                    input_sht.range(rows).color = "#FFFF00"
-                    if input_sht.range(rows).api.Interior.Color not in colorList:
-                        colorList.append(input_sht.range(rows).api.Interior.Color)
+                    pjv_sht.activate()
+                    pjv_sht.range(rows).color = "#FFFF00"
+                    if pjv_sht.range(rows).api.Interior.Color not in colorList:
+                        colorList.append(pjv_sht.range(rows).api.Interior.Color)
 
-                    input_sht.range(f"{input_last_row1}:{input_last_row2}").delete()
+                    pjv_sht.range(f"{input_last_row1}:{input_last_row2}").delete()
 
         ###########################Deletion Logic#################################################################################
         for colors in colorList:
             pjv_sht.activate()
             pjv_sht.api.AutoFilterMode=False
-            pjv_sht.api.Range(f"{railcar_col_letter}1").AutoFilter(Field:=f"{railcar_col+1}", Criteria1:=colors, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+            pjv_sht.api.Range(f"A1").AutoFilter(Field:=1, Criteria1:=colors, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
             fil_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
             if fil_last_row !=1:
                 pjv_sht.range(f"2:{fil_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Delete(win32c.DeleteShiftDirection.xlShiftUp)
         ##########################################################################################################################
 
         
-        input_sht.api.AutoFilterMode=False
+        pjv_sht.api.AutoFilterMode=False
         pjv_sht.range(f"A1").expand("right").copy(spcl_sht.range("A1"))
         try:
             spcl_sht = wb.sheets["Special_Sheet"]
@@ -645,7 +645,7 @@ def openGr(input_date, output_date):
             spcl_sht = wb.sheets.add(name="Special_Sheet", after=reco_sht)
         spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
 
-
+        pjv_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
         pjv_sht.range(f"2:{pjv_last_row}").copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
 
         pjv_sht.range(f"2:{pjv_last_row}").api.Delete()
@@ -663,38 +663,51 @@ def openGr(input_date, output_date):
         #searching all bol numbers in ethanol accrual sheet for each mrr found in inpurt sheet
         row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
         curr=0
-        for i in range(len(row_range)):
 
-            bol_num = input_sht.range(f"{bol_col_letter}{row_range[i]}").value
-            eth_acr_sht.activate()
-            eth_acr_sht.api.AutoFilterMode=False
-            try:
-                eth_acr_sht.api.Cells.Find(What:=bol_num , After:=eth_acr_sht.api.Application.ActiveCell, LookIn:=win32c.FindLookIn.xlFormulas,
-                LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
+        ########################Changing mrr search Logic############################
+        # for i in range(len(row_range)):
 
-                cell_value = eth_acr_sht.api.Application.ActiveCell.Address.replace("$","")
-                row_num = int(re.findall(r'\d+', cell_value)[0])
+        #     bol_num = input_sht.range(f"{bol_col_letter}{row_range[i]}").value
+        #     eth_acr_sht.activate()
+        #     eth_acr_sht.api.AutoFilterMode=False
+        #     try:
+        #         eth_acr_sht.api.Cells.Find(What:=bol_num , After:=eth_acr_sht.api.Application.ActiveCell, LookIn:=win32c.FindLookIn.xlFormulas,
+        #         LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
 
-                #Copy delete logic
-                curr=knockOffAmtDiff(row_range[i],row_num, wb, input_sht, eth_acr_sht, debit_col_letter, eth_credit_col_letter, knock_off_sht, amt_diff_sht,
-                mrn_col_letter, eth_trueup_col_letter)
-                curr = row_range[i]-curr
+        #         cell_value = eth_acr_sht.api.Application.ActiveCell.Address.replace("$","")
+        #         row_num = int(re.findall(r'\d+', cell_value)[0])
+
+        #         #Copy delete logic
+        #         curr=knockOffAmtDiff(row_range[i],row_num, wb, input_sht, eth_acr_sht, debit_col_letter, eth_credit_col_letter, knock_off_sht, amt_diff_sht,
+        #         mrn_col_letter, eth_trueup_col_letter)
+        #         curr = row_range[i]-curr
                 
 
-            except:
-                spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
-                input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
+        #     except:
+        #         spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
+        #         input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
             
-                input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").api.Delete()
+        #         input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").api.Delete()
 
-
+        #################################################################################################
+        ##########################Moving All MRR Entries to Special Sheet#################################
+        wb.activate()
+        input_sht.activate()
+        input_sht.api.Range(f"A2:{curr_last_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+        spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
+        wb.app.selection.copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
+        input_sht.api.Range(f"A2:{curr_last_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+        wb.app.selection.delete(shift='up')
+        ##################################################################################################
         #Logic for moving remaining mrn in input sheet to ethanol accrual sheet
         input_sht.api.AutoFilterMode=False
         curr_last_row = input_sht.range(f'A'+ str(input_sht.cells.last_cell.row)).end('up').row
+        eth_acr_sht.api.AutoFilterMode=False
         eth_last_row = eth_acr_sht.range(f'A'+ str(eth_acr_sht.cells.last_cell.row)).end('up').row
 
         input_sht.activate()
         row_count = input_sht.range(f"A2").expand("down").count
+        
         for i in range(0,row_count):
             eth_acr_sht.api.Range(f"B{eth_last_row+1}").EntireRow.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
         input_sht.range(f"A2:{credit_col_letter}{curr_last_row}").copy(eth_acr_sht.range(f"B{eth_last_row+1}"))
