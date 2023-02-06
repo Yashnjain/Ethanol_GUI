@@ -162,7 +162,7 @@ def purchased_ar(input_date, output_date):
         input_tab.api.Range(f"L2:L{lst_row}").Copy()
         input_tab.api.Range(f"L2")._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
         wb.app.api.CutCopyMode=False
-        input_tab.api.Range(f"M:M").EntireColumn.api.Delete()
+        input_tab.api.Range(f"M:M").EntireColumn.Delete()
 
         input_tab.api.Range(f"N1").Value = f'-1'
         lst_row = input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
@@ -170,12 +170,12 @@ def purchased_ar(input_date, output_date):
         input_tab.api.Range(f"F2:L{lst_row}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAllUsingSourceTheme,Operation=win32c.Constants.xlMultiply)
         input_tab.range(f"F2:L{lst_row}").number_format = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
 
-        input_tab.api.Range(f"N1").api.Delete() 
+        input_tab.api.Range(f"N1").Delete() 
 
         input_tab.api.Range(f"E:E").EntireColumn.Copy()
         input_tab.api.Range(f"N1")._PasteSpecial(Paste=win32c.PasteType.xlPasteAllUsingSourceTheme,Operation=win32c.Constants.xlNone)
 
-        input_tab.api.Range(f"E:E").EntireColumn.api.Delete()
+        input_tab.api.Range(f"E:E").EntireColumn.Delete()
 
         input_tab.api.Range(f"B:B").EntireColumn.Insert()
         lst_row = input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
