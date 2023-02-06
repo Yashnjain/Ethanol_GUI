@@ -108,7 +108,7 @@ def purchased_ar(input_date, output_date):
                 input_tab.api.AutoFilterMode=False 
                 pass  
 
-        input_tab.api.Range(f"C:C").EntireColumn.api.Delete()
+        input_tab.Range(f"C:C").EntireColumn.api.Delete()
 
         input_tab.api.Range(f"C:C").TextToColumns(Destination:=input_tab.api.Range("C1"),DataType:=win32c.TextParsingType.xlDelimited,TextQualifier:=win32c.Constants.xlDoubleQuote,Tab:=True,FieldInfo:=[1,3],TrailingMinusNumbers:=True)
         input_tab.api.Range(f"D:D").TextToColumns(Destination:=input_tab.api.Range("D1"),DataType:=win32c.TextParsingType.xlDelimited,TextQualifier:=win32c.Constants.xlDoubleQuote,Tab:=True,FieldInfo:=[1,3],TrailingMinusNumbers:=True)
@@ -120,7 +120,7 @@ def purchased_ar(input_date, output_date):
         input_tab.range(f"M2").number_format = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
         input_tab.range(f"M2").value='=+F2-SUM(G2:L2)'
         lsr_rw = input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
-        input_tab.api.Range(f"{lsr_rw+1}:{lsr_rw+10}").EntireRow.api.Delete()
+        input_tab.api.Range(f"{lsr_rw+1}:{lsr_rw+10}").EntireRow.Delete()
         input_tab.api.Range(f"M2:M{lsr_rw}").Select()
         wb.app.api.Selection.FillDown()
         
