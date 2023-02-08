@@ -9,6 +9,7 @@ import re
 import tabula
 import xlsxwriter
 from openpyxl import load_workbook
+from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
 
 
 # file = open("C:\DEEPFOLDER\Tasks\BBR_PROCESS\BBR_20221130\Future - BNP.pdf","rb")
@@ -94,14 +95,14 @@ def macquarie(file2,wb,ws):
      raise e
 
 
-def NLV_FUTURES(start_date,end_date):
+def NLV_FUTURESSS(start_date,end_date):
     try:
-        start_date2 = datetime.strftime(datetime.strptime(start_date,"%d.%m.%Y"), "%Y%m%d")
-        start_date3 = datetime.strftime(datetime.strptime(start_date,"%d.%m.%Y"), "%m.%d.%Y")
+        start_date2 = datetime.strftime(datetime.strptime(start_date,"%m.%d.%Y"), "%Y%m%d")
+        
         # end_date2 = datetime.strftime(datetime.strptime(end_date,"%d.%m.%Y"), "%Y%m%d")
-        future_bnp = f"J:\\India\BBR\\2023\\BBR_{start_date2}\\Future- BNP.pdf"
-        future_macquarie = f"J:\\India\BBR\\2023\\BBR_{start_date2}\\Future - Macquarie.pdf" 
-        wb_file = f"J:\\India\BBR\\2023\\BBR_{start_date2}\\BioUrja - Consolidated Borrowing Base Syndication {start_date3}_Working.xlsx"
+        future_bnp = r"J:\\India\\BBR\\IT_BBR\\Reports\\NLV\\INPUT\\Future - BNP.pdf"
+        future_macquarie = r"J:\\India\\BBR\\IT_BBR\\Reports\\NLV\\INPUT\\Future - Macquarie.pdf" 
+        wb_file = f"J:\\India\\BBR\\IT_BBR\\Reports\\NLV\\INPUT\\BioUrja - Consolidated Borrowing Base Syndication {start_date}.xlsx"
         file = open(future_bnp,"rb")
         if not os.path.exists(future_bnp):
             return(f"{file} Input Excel file not present")
@@ -114,9 +115,14 @@ def NLV_FUTURES(start_date,end_date):
         ws = wb.sheets("NLV Futures")
         macquarie(file2,wb,ws)
         BNP(file,wb,ws)
+        return(f"NLV Futures report for {start_date} has been generated successfully")
 
     except Exception as e:
         raise e
-
+    finally:
+        try:
+            wb.app.quit()
+        except:
+            pass
 # NLV_FUTURES('15.01.2023','15.01.2023')
 

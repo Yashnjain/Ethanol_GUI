@@ -41,7 +41,7 @@ from selenium.webdriver.firefox.options import Options
 import re
 import array
 from CASH.cash import cash
-from NLV_FUTURES.NLV_FUTURES import NLV_FUTURES
+from NLV_FUTURES.NLV_FUTURES import NLV_FUTURESSS
 from AR_ageing_bulk.ar_ageing_bulk import ar_ageing_bulk
 from ar_ageing_rack.ar_ageing_rack import ar_ageing_rack
 from purchased_ar.purchased_ar import purchased_ar
@@ -125,7 +125,7 @@ def ar_ageing_rack_(input_date, output_date):
 
 def bbr_nlv_futures(start_date,end_date):
     try:
-        msg = NLV_FUTURES(start_date,end_date)
+        msg = NLV_FUTURESSS(start_date,end_date)
         return msg
     except Exception as e:
         raise e
