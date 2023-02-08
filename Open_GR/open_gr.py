@@ -476,8 +476,8 @@ def openGr(input_date, output_date):
         eth_acr_sht.api.Range(f"B1:{eth_trueup_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
         wb.app.selection.copy(pjv_sht.range(f"A{pjv_last_row+1}"))
 
-        #deleting bol numbers copied from pjv sheet in eth accr sheet
-        eth_acr_sht.range(f"{eth_bol_col_letter}{sp_lst_row+6}").expand("down").clear()
+        #deleting railcar numbers copied from pjv sheet in eth accr sheet
+        eth_acr_sht.range(f"{eth_rail_col_letter}{sp_lst_row+6}").expand("down").clear()
 
 
         #Deleting copied data from ethanol Accrual Sheet
@@ -724,6 +724,28 @@ def openGr(input_date, output_date):
          # 'INPUT DATA'!$A$3:$I$86
         for j in range(1, pivotCount+1):     
             wb.api.ActiveSheet.PivotTables(j).PivotCache().Refresh()
+        #Updating and Refreshing pivot in amount diff
+        wb.activate()
+        amt_diff_sht.activate()
+
+        amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
+        amt_diff_sht.api.Range(f"M2:M{amt_diff_last_row}").Select()
+        wb.app.api.Selection.FillDown()
+        wb.api.ActiveSheet.PivotTables(1).SourceData = f"'Amount Diff'!R1C1:R{amt_diff_last_row}C13"
+        wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
+
+        
+
+        #Updating and Refreshing pivot in prev month mrn booked in current month
+        wb.activate()
+        diff_month_sht.activate()
+
+        diff_month_sht.api.Range(f"M1").Value = "Diff"
+        diff_month_sht.api.Range(f"M2:M{amt_diff_last_row}").Select()
+        wb.app.api.Selection.FillDown()
+        diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
+        wb.api.ActiveSheet.PivotTables(1).SourceData = f"'{diff_month_sht.name}'!R1C1:R{diff_month_last_row}C15"
+        wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
 
         wb.save(output_location+f"\\Open GR {month}{day}.xlsx")
         end_time = datetime.now()

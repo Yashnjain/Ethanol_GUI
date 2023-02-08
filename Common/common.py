@@ -220,7 +220,7 @@ def knockOffAmtDiff(curr,final, wb, input_sht, input_sht2, credit_col_letter, de
                 # elif len(row_dict["Knock_Off"][-1]) >24:
                     # row_dict["Knock_Off"].append([f"{curr}:{final}"])
             # curr-=1
-        elif (abs(input_sht.range(f"{credit_col_letter}{curr}").value) - abs(input_sht2.range(f"{debit_col_letter}{final}").value))<10:
+        elif (abs(input_sht.range(f"{credit_col_letter}{curr}").value) - abs(input_sht2.range(f"{debit_col_letter}{final}").value))!=0:
             #amt diff
             print(f"Moving {curr} to amount diff")
             amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
