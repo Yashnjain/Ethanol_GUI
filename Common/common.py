@@ -45,6 +45,10 @@ import array
 
 
 
+def last_day_of_month(date):
+    if date.month == 12:
+        return date.replace(day=31)
+    return date.replace(month=date.month+1, day=1) - timedelta(days=1)
 
 
 
@@ -82,6 +86,8 @@ def interior_coloring(colour_value,cellrange:str,working_sheet,working_workbook)
 
 def conditional_formatting2(range:str,working_sheet,working_workbook):
     try:
+        working_workbook.activate()
+        working_sheet.activate()
         font_colour = -16383844
         Interior_colour = 13551615
         working_sheet.api.Range(range).Select()
@@ -94,7 +100,24 @@ def conditional_formatting2(range:str,working_sheet,working_workbook):
         return font_colour,Interior_colour
     except Exception as e:
         raise e
+def conditional_formatting_uniq(range:str,working_sheet,working_workbook):
+    try:
+        working_workbook.activate()
+        working_sheet.activate()
+        font_colour = -16383844
+        Interior_colour = 13551615
+        working_sheet.api.Range(range).Select()
+        working_workbook.app.selection.api.FormatConditions.AddUniqueValues()
+        working_workbook.app.selection.api.FormatConditions(working_workbook.app.selection.api.FormatConditions.Count).SetFirstPriority()
 
+        working_workbook.app.selection.api.FormatConditions(1).DupeUnique = win32c.DupeUnique.xlDuplicate
+
+        working_workbook.app.selection.api.FormatConditions(1).Font.Color = font_colour
+        working_workbook.app.selection.api.FormatConditions(1).Interior.Color = Interior_colour
+        working_workbook.app.selection.api.FormatConditions(1).Interior.PatternColorIndex = win32c.Constants.xlAutomatic
+        return font_colour,Interior_colour
+    except Exception as e:
+        raise e
 
 def interior_coloring_by_theme(pattern_tns,tintandshade,colour_value,cellrange:str,working_sheet,working_workbook):
     try:
@@ -339,6 +362,63 @@ def thick_bottom_border(cellrange:str,working_sheet,working_workbook):
             a.Weight = win32c.BorderWeight.xlMedium
 
 
+def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
+    try:
+        if not rack:
+            df = read_pdf(pdf_file , pages = 'all', guess = False, stream = True ,
+                pandas_options={'header':None}, area = ["110,40,530,665"], columns = ["70,125,200,250,280,365,415,460,560,610,660"])
+            df = pd.concat(df, ignore_index=True)
+        else:
+            df = read_pdf(pdf_file , pages = 'all', guess = False, stream = True ,
+                pandas_options={'header':None}, area=['110,30,560,680'], columns = ["50,125,200,250,280,365,415,460,560,610,630"])
+            df = pd.concat(df, ignore_index=True)
+        print(df)
+        
+        for row in range(len(df)):
+            if df[1][row] == "AL: LOCATION" and not rack:
+                try:
+                    pdf_date = datetime.strptime(df[6][row-1], "%m/%d/%Y")#Picking tikcet open dates
+                    # mrn_dict[df[1][row-1]].append([df[9][row], df[0][row-1], df[6][row-1]])
+                    mrn_dict[int(df[0][row-1])].append([pdf_date, df[9][row]])
+                    if pdf_date not in date_list:
+                        if pdf_date.day<16:
+                            date_list.append(pdf_date)
+                except:
+                    pdf_date = datetime.strptime(df[6][row-1], "%m/%d/%Y")
+                    # mrn_dict[df[1][row-1]] = [[df[9][row], df[0][row-1], df[6][row-1]]]
+                    mrn_dict[int(df[0][row-1])] = [[pdf_date, df[9][row]]]
+                    if pdf_date not in date_list:
+                        if pdf_date.day<16:
+                            date_list.append(pdf_date)
+            elif df[1][row] == "AL: LOCATION"   and rack:
+                try:
+                    mrn_dict[df[1][row-1]] = int(df[11][row].replace(',',''))
+                except:
+                    try:
+                        mrn_dict[df[1][row-1]] = df[11][row]
+                    except Exception as e:
+                        raise e
+        return date_list, mrn_dict
+    except Exception as e:
+        raise e
+
+
+def rack_pdf_data_extractor(pdf_loc):
+    try:
+        # date_area=["8.798,105.876,47.048,508.266"]
+        df=read_pdf(pdf_loc,stream=True, multiple_tables=True,pages='all',silent=True,guess=False)
+        df = read_pdf(pdf_loc , pages = 'all', guess = False, stream = True ,
+                pandas_options={'header':None}, area = ["100,50,565,770"], columns = ["115,140,170,228,290,355,420,482,546,595,616,670,690,750"])
+        dates = read_pdf(pdf_loc , pages = 'all', guess = False, stream = True ,
+                    pandas_options={'header':None}, area = ["40,400,46,430"])
+        file_date = (datetime.strptime(dates[1][0][0], "%m/%d/%y")).strftime("%Y%m%d")
+        df = pd.concat(df, ignore_index=True)
+        #removing row from where Total starts
+        last_row = df.loc[df[0]=='TOTAL'].index[0]
+        df = df[:last_row]
+        return df, file_date
+    except Exception as e:
+        raise e
 
 # def common():
 #     try:

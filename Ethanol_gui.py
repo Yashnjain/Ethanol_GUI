@@ -46,6 +46,7 @@ from AR_ageing_bulk.ar_ageing_bulk import ar_ageing_bulk
 from ar_ageing_rack.ar_ageing_rack import ar_ageing_rack
 from purchased_ar.purchased_ar import purchased_ar
 from unbilled_ar.unbilled_ar import unbilled_ar
+from RackBackTrack.rackbacktrack import rackbacktrack
 
 from Open_GR.open_gr import openGr
 # from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
@@ -136,7 +137,12 @@ def bbr_cash(start_date,end_date):
         return msg
     except Exception as e:
         raise e
-
+def call_rackbacktrack(start_date,end_date):
+    try:
+        msg = rackbacktrack(start_date,end_date)
+        return msg
+    except Exception as e:
+        raise e
         
 def main():
     def on_closing():
@@ -211,7 +217,8 @@ def main():
     # input_date=None
     # output_date = None
     frame_options.grid(row=1,column=0, pady=30, padx=35, columnspan=2, rowspan=3)
-    wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Open Gr':open_gr ,'Ar Ageing Report(Rack)':ar_ageing_rack,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures}
+    wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Open Gr':open_gr ,
+    'Ar Ageing Report(Rack)':ar_ageing_rack,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures, 'Rack Back Track':call_rackbacktrack}
     # wp_job_ids = {'ABS':1,'BBR':bbr,'CPR Report':cpr, 'Freight analysis':freight_analysis, 'CTM combined':ctm,'MTM Report':mtm_report,
     #                 'MOC Interest Allocation':moc_interest_alloc,'Open AR':open_ar,'Open AP':open_ap, 'Unsettled Payable Report':unsetteled_payables,'Unsettled Receivable Report':unsetteled_receivables,
     #                 'Storage Month End Report':strg_month_end_report, "Month End BBR":bbr_monthEnd, "Bank Recons Report":bank_recons_rep}
