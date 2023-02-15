@@ -241,6 +241,7 @@ def rackbacktrack(input_date, output_date):
                 try:
                     pivot_sht.range(f"B{location+p_loc_r1}").value = mrn_dict[p_loc_list[location].split(",")[0]]
                 except:
+                    pivot_sht.range(f"B{location+p_loc_r1}").value = 0
                     print(f"NO data found for {p_loc_list[location]}")
 
             #Making dataframe
@@ -300,7 +301,7 @@ def rackbacktrack(input_date, output_date):
         
         wb.activate()
         pivot_sht.activate()
-        wb.api.ActiveSheet.PivotTables(1).PivotCache().SourceData = f"Sheet1!R{gr_head_row}C2:R{ mrn_last_row-1}C{gr_last_col}"#as list starts from B for for selecting  -1
+        wb.api.ActiveSheet.PivotTables(1).PivotCache().SourceData = f"Sheet1!R{gr_head_row}C2:R{ mrn_last_row}C{gr_last_col}"#as list starts from B for for selecting  -1
         
          
         wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
@@ -399,6 +400,8 @@ def rackbacktrack(input_date, output_date):
                             delete_i-=1
                             if pivot2_sht.range(f"E{delete_i}").value==None:
                                 break
+                            if delete_i == prev_row:
+                                break
                         #Now checking for 0 entry
                         # while pivot2_sht.range(f"I{delete_i}").value != 0:
                         #     delete_i-=1
@@ -437,12 +440,20 @@ def rackbacktrack(input_date, output_date):
                         #Ignoring row with zero value
                         while pivot2_sht.range(f"I{start_row}").value == 0:
                             start_row+=1
-                        while pivot2_sht.range(f"I{start_row}").value <=  pivot2_sht.range(f"H{i}").value:
-                            pivot2_sht.range(f"I{start_row}").value = pivot2_sht.range(f"I{start_row}").value - pivot2_sht.range(f"I{start_row}").value
+                        while pivot2_sht.range(f"I{start_row}").value <=  pivot2_sht.range(f"H{i}").value and start_row != i:
+                            pivot2_sht.range(f"I{start_row}").formula = f'={pivot2_sht.range(f"I{start_row}").value} - {pivot2_sht.range(f"I{start_row}").value}'
                             start_row += 1
                         if  pivot2_sht.range(f"I{start_row}").value >  pivot2_sht.range(f"H{i}").value:
-                            pivot2_sht.range(f"I{start_row}").value = pivot2_sht.range(f"I{start_row}").value - pivot2_sht.range(f"H{i}").value
+                            pivot2_sht.range(f"I{start_row}").formula = f'={pivot2_sht.range(f"I{start_row}").value} - {pivot2_sht.range(f"H{i}").value}'
                             start_row = i+1
+                        while pivot2_sht.range(f"H{i}").value !=0:
+                            start_row-=1
+                            start_value = float(pivot2_sht.range(f"I{start_row}").formula.split(' - ')[0].replace("=",""))
+                            if start_value > pivot2_sht.range(f"H{i}").value:
+                                pivot2_sht.range(f"I{start_row}").value = -pivot2_sht.range(f"H{i}").value
+                            elif start_value < pivot2_sht.range(f"H{i}").value:
+                                pivot2_sht.range(f"I{start_row}").value = -start_value
+
                     else: 
                         prev_row = i+1
                         
@@ -971,7 +982,8 @@ def rackbacktrack(input_date, output_date):
         Criteria1:=f">={input_datetime.replace(day=1)}", Operator:=7)
         # pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_fbill_col_num, 
         # Criteria1:=f"<>", Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:="<>No Freight")
-        flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_fbill_col, pivot2_sht,wb)
+        flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_amt_col, pivot2_sht,wb)
+        # sp_lst_row = pivot2_sht.range(f"{pivot2_amt_col}{pivot2_sht.cells.last_cell.row}").end("up").row
         # print("for loop for billed reading")
         # for i in flat_list:
         #     f_bill = pivot2_sht.range(f"{pivot2_fbill_col}{i}").value
@@ -1024,8 +1036,8 @@ def rackbacktrack(input_date, output_date):
         #Rate  =VLOOKUP(F96, 'Frt GL'!A:Z,26,FALSE)
         f_row = flat_list[0]
         pivot2_sht.range(f"{pivot2_fbill_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_billno_col},{frt_billno_col_num},FALSE), "No Freight")'
-        pivot2_sht.range(f"{pivot2_frate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_date_col},{frt_new_col_num},FALSE),0)'
-        pivot2_sht.range(f"{pivot2_fbdate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_new_col},{frt_date_col_num},FALSE),"")'
+        pivot2_sht.range(f"{pivot2_frate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_new_col},{frt_new_col_num},FALSE),0)'
+        pivot2_sht.range(f"{pivot2_fbdate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_date_col},{frt_date_col_num},FALSE),"")'
 
         #Copy pasting formula
         wb.activate()
@@ -1049,7 +1061,13 @@ def rackbacktrack(input_date, output_date):
 
 
         
-
+        #Removing filters from all sheets
+        open_gr_sht.api.AutoFilterMode=False
+        pivot2_sht.api.AutoFilterMode=False
+        sht_5.api.AutoFilterMode=False
+        accrual_sht.api.AutoFilterMode=False
+        sht_4.api.AutoFilterMode=False
+        sht6.api.AutoFilterMode=False
                 
 
         wb.save(output_location+f"\\RackBackTrack_{input_date}.xlsx")

@@ -391,6 +391,8 @@ def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
                         if pdf_date.day<16:
                             date_list.append(pdf_date)
             elif df[1][row] == "AL: LOCATION"   and rack:
+                if df[1][row-1] == "MASON CITY":
+                    df[1][row-1] = "CLEAR LAKE"
                 try:
                     mrn_dict[df[1][row-1]] = int(df[11][row].replace(',',''))
                 except:
