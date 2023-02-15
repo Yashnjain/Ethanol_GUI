@@ -116,7 +116,7 @@ def rackbacktrack(input_date, output_date):
             data_list = row_range_calc("D", sht6, wb)
             row_list = data_list[0]
             for row in row_list:
-                if messagebox.askyesno("Negative Active Tank Found",f'Do you want this entry{row} to be neutralized from Tank Bottom'):
+                if messagebox.askyesno("Negative Active Tank Found",f'Do you want this entry {row} to be neutralized from Tank Bottom'):
                     d_value = sht6.range(f'D{row}').value * -1
                     sht6.range(f"D{row}").formula = f"={sht6.range(f'D{row}').value} + {d_value}"#=-23+23
                     sht6.range(f"E{row}").formula = f"={sht6.range(f'E{row}').value} - {d_value}"#=-23+23
