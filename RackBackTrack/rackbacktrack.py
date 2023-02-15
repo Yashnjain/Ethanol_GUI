@@ -1052,7 +1052,7 @@ def rackbacktrack(input_date, output_date):
 
                 
 
-        wb.save(output_location+f"\\RacbTrack_{input_date}.xlsx")
+        wb.save(output_location+f"\\RackBackTrack_{input_date}.xlsx")
         print("Done")
         return f"RackBack Track file for date: {input_date} has been generated"
     except Exception as e:
