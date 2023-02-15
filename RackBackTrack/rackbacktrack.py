@@ -30,7 +30,7 @@ def rackbacktrack(input_date, output_date):
         # rack_pdf = j_loc+r'\RackBackTrack\Raw Files'+f'\\Rack.pdf'
         # rack_pdf = curr_loc+r'\RackBackTrack\Raw Files'+f'\\Rack.pdf'
         rack_pdf = f"{j_loc_bbr}\\Rack.pdf"
-        input_cta = j_loc_bbr+"\\BioUrjaNet.xls"
+        input_cta = j_loc_bbr+"\\Rack MTM.xls"
         # input_cta = j_loc+r'\RackBackTrack\Raw Files'+f"\\BioUrjaNet.xls"
         # input_cta = curr_loc+r'\RackBackTrack\Raw Files'+f"\\Rack MTM.xls"
 
@@ -44,7 +44,8 @@ def rackbacktrack(input_date, output_date):
         # input_open_gr= curr_loc+r'\RackBackTrack\Raw Files'+f'\\Open GR Rack.xlsx'
         input_open_gr= j_loc_bbr+f'\\Open GR Rack.xlsx'
 
-        input_lrti_xl = f'\\\\BIO-INDIA-FS\\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank Inv Reco.xlsx'
+        # input_lrti_xl = f'\\\\BIO-INDIA-FS\\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank Inv Reco.xlsx'
+        input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank Inv Reco.xlsx'
         # input_lrti_xl = curr_loc+r'\RackBackTrack\Raw Files'+f'\\Little Rock Tank Inv Reco.xlsx'
 
 
@@ -300,6 +301,8 @@ def rackbacktrack(input_date, output_date):
         
          
         wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
+        #Removing Gasoline from filter
+        wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems("Gasoline").Visible = False
         #creating Sheet2 from Pivot Table
         try:
             wb.sheets("Sheet2").delete()
@@ -594,12 +597,13 @@ def rackbacktrack(input_date, output_date):
         wb.activate()
         accrual_sht.activate()
         accrual_last_row = accrual_sht.range(f"A{accrual_sht.cells.last_cell.row}").end("up").row
+        accrual_last_row_2 = accrual_sht.range(f"X{accrual_sht.cells.last_cell.row}").end("up").row
 
         #updaint diffreence in accrual b column
         accrual_sht.range(f"B{accrual_last_row}").value = diff_amount
 
         #Deleting data in accrual sheet
-        accrual_sht.range(f"A2:X2").expand("down").delete()
+        accrual_sht.range(f"A2:X{accrual_last_row_2}").delete()
 
         #Filtering out no fill values in open gr sheet and inserting them in accrual sheet
         wb.activate()
@@ -814,7 +818,7 @@ def rackbacktrack(input_date, output_date):
         
 
         ##################updating balance sheet amount############################
-        bs_rack_inp = j_loc_bbr+r'\RackBackTrack\Raw Files'+f'\\BS Rack.xlsx'
+        bs_rack_inp = j_loc_bbr+f'\\BS Rack.xlsx'
         if not os.path.exists(bs_rack_inp):
             return(f"{bs_rack_inp} Excel file not present in raw files")
 
@@ -1047,6 +1051,7 @@ def rackbacktrack(input_date, output_date):
 
         wb.save(output_location+f"\\RacbTrack_{input_date}.xlsx")
         print("Done")
+        return f"RackBack Track file for date: {input_date} has been generated"
     except Exception as e:
         print(e)
         raise e

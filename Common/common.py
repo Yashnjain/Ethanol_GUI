@@ -329,11 +329,11 @@ def row_range_calc(filter_col:str, input_sht,wb):
 
         sp_lst_row = input_sht.range(f'{filter_col}'+ str(input_sht.cells.last_cell.row)).end('up').row
 
-        sp_address.extend(input_sht.api.Range(f"{filter_col}{row_range[-1]}:{filter_col}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address)
+        sp_address = sp_address+','+(input_sht.api.Range(f"{filter_col}{row_range[-1]+1}:{filter_col}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address)
 
         # sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]        
 
-        # row_range.extend(sorted([int(i) for i in list(set(re.findall("\d+",sp_address.replace("$",""))))]))
+        row_range.extend(sorted([int(i) for i in list(set(re.findall("\d+",sp_address.replace("$",""))))]))
         
     
     sp_address = sp_address.replace("$","").split(",")
