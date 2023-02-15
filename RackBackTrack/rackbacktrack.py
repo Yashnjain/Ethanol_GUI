@@ -6,6 +6,7 @@ from tabula import read_pdf
 import pandas as pd
 import glob
 import re
+from tkinter import messagebox
 from Common.common import last_day_of_month,row_range_calc, conditional_formatting_uniq, \
     num_to_col_letters, mrn_pdf_extractor, rack_pdf_data_extractor
 
@@ -111,12 +112,14 @@ def rackbacktrack(input_date, output_date):
         sht6.range(f"A1:K{sht6_last_row}").api.AutoFilter(Field:=4, Criteria1:="<0")
         if sht6.range(f'A'+ str(sht6.cells.last_cell.row)).end('up').row != 1:
             #Pop yes no logic to be added
+            
             data_list = row_range_calc("D", sht6, wb)
             row_list = data_list[0]
             for row in row_list:
-                d_value = sht6.range(f'D{row}').value * -1
-                sht6.range(f"D{row}").formula = f"={sht6.range(f'D{row}').value} + {d_value}"#=-23+23
-                sht6.range(f"E{row}").formula = f"={sht6.range(f'E{row}').value} - {d_value}"#=-23+23
+                if messagebox.askyesno("Negative Active Tank Found",f'Do you want this entry{row} to be neutralized from Tank Bottom'):
+                    d_value = sht6.range(f'D{row}').value * -1
+                    sht6.range(f"D{row}").formula = f"={sht6.range(f'D{row}').value} + {d_value}"#=-23+23
+                    sht6.range(f"E{row}").formula = f"={sht6.range(f'E{row}').value} - {d_value}"#=-23+23
 
         
 
