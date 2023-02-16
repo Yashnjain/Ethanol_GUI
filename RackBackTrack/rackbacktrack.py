@@ -442,6 +442,7 @@ def rackbacktrack(input_date, output_date):
                             start_row+=1
                         while pivot2_sht.range(f"I{start_row}").value <=  pivot2_sht.range(f"H{i}").value and start_row != i:
                             pivot2_sht.range(f"I{start_row}").formula = f'={pivot2_sht.range(f"I{start_row}").value} - {pivot2_sht.range(f"I{start_row}").value}'
+                            pivot2_sht.range(f"I{start_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
                             start_row += 1
                         if  pivot2_sht.range(f"I{start_row}").value >  pivot2_sht.range(f"H{i}").value:
                             pivot2_sht.range(f"I{start_row}").formula = f'={pivot2_sht.range(f"I{start_row}").value} - {pivot2_sht.range(f"H{i}").value}'
@@ -904,13 +905,13 @@ def rackbacktrack(input_date, output_date):
         pivot2_sht.api.AutoFilterMode=False
         
         pivot2_sht.range(f"A1:T{pivot2_last_row}").api.AutoFilter(Field:=pivot2_pdt_col_num, Criteria1:="Ethanol", Operator:=7)
-        pivot2_sht.range(f"A1:T{pivot2_last_row}").api.AutoFilter(Field:=pivot2_bqty_col_num, Criteria1:="0", Operator:=7)
+        pivot2_sht.range(f"A1:T{pivot2_last_row}").api.AutoFilter(Field:=pivot2_bqty_col_num, Criteria1:='0', Operator:=7)
 
         #Clearing Contents from final amount to last column
 
         pivot2_last_row = pivot2_sht.range(f"G{pivot2_sht.cells.last_cell.row}").end("up").row
-
-        pivot2_sht.range(f"{pivot2_famt_col}2:{pivot2_last_col}{pivot2_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).ClearContents()
+        if pivot2_last_row !=1:
+            pivot2_sht.range(f"{pivot2_famt_col}2:{pivot2_last_col}{pivot2_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).ClearContents()
 
         #Now Filtering non zero billed qty
         pivot2_sht.range(f"A1:T{pivot2_last_row}").api.AutoFilter(Field:=pivot2_bqty_col_num, Criteria1:="<>0", Operator:=7)
@@ -1055,6 +1056,7 @@ def rackbacktrack(input_date, output_date):
             bill_d_address = pivot2_fbill_col + (f":{pivot2_fbdate_col}").join(add_range.split(":"))
             pivot2_sht.range(f"{rate_address}").api.Copy()
             pivot2_sht.range(f"{rate_address}").api._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
+            pivot2_sht.range(f"{rate_address}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
 
             pivot2_sht.range(f"{bill_d_address}").api.Copy()
             pivot2_sht.range(f"{bill_d_address}").api._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
