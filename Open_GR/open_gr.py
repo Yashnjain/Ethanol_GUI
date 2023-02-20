@@ -374,6 +374,10 @@ def openGr(input_date, output_date):
             i+=1
 
         #################################Add logic again copy back data from special sheet to input sheet#########################        
+        try:
+            spcl_sht = wb.sheets["Special_Sheet"]
+        except:
+            spcl_sht = wb.sheets.add(name="Special_Sheet", after=reco_sht)
         input_sht.api.AutoFilterMode=False
         spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
         last_row = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
