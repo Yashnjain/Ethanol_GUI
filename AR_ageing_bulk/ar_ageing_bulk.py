@@ -594,7 +594,8 @@ def ar_ageing_bulk(input_date, output_date):
             print("no data to filter")
             grp_cm_list2=[]
         else:
-            bulk_tab_it2.range(f"L{sp_initial_rw}:L{sp_lst_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(bulk_tab_it2.range(f"B100").api)
+            bulk_tab_it2.range(f"L{sp_initial_rw}:L{sp_lst_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy()
+            bulk_tab_it2.api.Range(f"B100")._PasteSpecial(Paste=-4163)
             grp_cm_list = bulk_tab_it2.range(f"B100").expand('down').value
             bulk_tab_it2.range(f"B100").expand('down').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
             grp_cm_list2 = list(set(grp_cm_list))
