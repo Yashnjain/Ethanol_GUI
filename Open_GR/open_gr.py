@@ -748,8 +748,40 @@ def openGr(input_date, output_date):
         diff_month_sht.api.Range(f"M2:M{amt_diff_last_row}").Select()
         wb.app.api.Selection.FillDown()
         diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
-        wb.api.ActiveSheet.PivotTables(1).SourceData = f"'{diff_month_sht.name}'!R1C1:R{diff_month_last_row}C15"
-        wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
+        try: #If Pivot Alreay exists
+            wb.api.ActiveSheet.PivotTables(1).SourceData = f"'{diff_month_sht.name}'!R1C1:R{diff_month_last_row}C15"
+            wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
+        except:
+            try:#Create a new Pivot  
+                #Adding 2 remaining columns
+                diff_month_sht.range("N1").formula = "=+SUM(K:L)"
+                diff_month_sht.range("O1").value = "TrueUp"
+                diff_month_sht.range(f"M1").api.Copy()
+                diff_month_sht.range(f"O1").api._PasteSpecial(Paste=win32c.PasteType.xlPasteFormats,Operation=win32c.Constants.xlNone)
+                diff_month_sht.autofit()
+                PivotCache=wb.api.PivotCaches().Create(SourceType=win32c.PivotTableSourceType.xlDatabase, SourceData=f"'{diff_month_sht.name}'!R1C1:R{diff_month_last_row}C15", Version=win32c.PivotTableVersionList.xlPivotTableVersion14)
+                PivotTable = PivotCache.CreatePivotTable(TableDestination=f"'{diff_month_sht.name}'!R{diff_month_last_row+5}C6", TableName="prevmonth", DefaultVersion=win32c.PivotTableVersionList.xlPivotTableVersion14)
+                #logger.info("Adding particular Row Data in Pivot Table")
+                PivotTable.PivotFields('Vendor Ref').Orientation = win32c.PivotFieldOrientation.xlRowField
+                # PivotTable.PivotFields('Vendor Ref.').Position = 1
+
+                #logger.info("Adding particular Data Field in Pivot Table")
+                PivotTable.PivotFields('Diff').Orientation = win32c.PivotFieldOrientation.xlDataField
+                try:
+                    PivotTable.PivotFields("Count of Diff").Caption = "Sum of Diff"
+                    PivotTable.PivotFields("Count of Diff").Function = win32c.ConsolidationFunction.xlSum
+                except:
+                    pass
+        
+                PivotTable.PivotFields('TrueUp').Orientation = win32c.PivotFieldOrientation.xlDataField
+                PivotTable.CalculatedFields().Add(Name="Net Diff", Formula = "=Diff + TrueUp")
+                PivotTable.PivotFields('Net Diff').Orientation = win32c.PivotFieldOrientation.xlDataField
+                PivotTable.PivotFields('Sum of Diff').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+                PivotTable.PivotFields('Sum of TrueUp').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+                PivotTable.PivotFields('Sum of Net Diff').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+            except Exception as e:
+                raise e
+
 
         wb.save(output_location+f"\\Open GR {month}{day}.xlsx")
         end_time = datetime.now()
