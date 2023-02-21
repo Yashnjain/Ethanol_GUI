@@ -706,50 +706,49 @@ def ar_ageing_bulk(input_date, output_date):
 
         input_tab.api.AutoFilterMode=False
 
-        raw_df.fillna(0,inplace= True)
-        raw_df = raw_df[raw_df.Customer.isin(company_names) == False]
-        grp_df = raw_df.groupby(['Customer'], sort=False)['Balance','< 10','11 - 30','31 - 60','61 - 90','> 90'].sum().reset_index()
-        grp_df.insert(2,"> 10",grp_df[['11 - 30','31 - 60','61 - 90','> 90']].sum(axis=1))
-        grp_df['As Per BS'] = grp_df['Balance'] - grp_df['< 10'] - grp_df['> 10']
-        grp_df['Customer'] = grp_df['Customer'] + f" "
+        if raw_df.size>0:
+            raw_df.fillna(0,inplace= True)
+            raw_df = raw_df[raw_df.Customer.isin(company_names) == False]
+            grp_df = raw_df.groupby(['Customer'], sort=False)['Balance','< 10','11 - 30','31 - 60','61 - 90','> 90'].sum().reset_index()
+            grp_df.insert(2,"> 10",grp_df[['11 - 30','31 - 60','61 - 90','> 90']].sum(axis=1))
+            grp_df['As Per BS'] = grp_df['Balance'] - grp_df['< 10'] - grp_df['> 10']
+            grp_df['Customer'] = grp_df['Customer'] + f" "
 
         bulk_tab_it2.api.Cells.Find(What:="INELIGIBLE ACCOUNTS RECEIVABLE", After:=bulk_tab_it2.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
         bcell_value = bulk_tab_it2.api.Application.ActiveCell.Address.replace("$","")
         brow_value = re.findall("\d+",bcell_value)[0]
 
-        bulk_tab_it2.api.Range(f"B{int(brow_value)+1}:B{int(brow_value)+len(grp_df)}").EntireRow.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-        bulk_tab_it2.range(f'B{int(brow_value)+1}').options(index = False,header=False).value = grp_df 
+        if raw_df.size>0:
+            bulk_tab_it2.api.Range(f"B{int(brow_value)+1}:B{int(brow_value)+len(grp_df)}").EntireRow.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+            bulk_tab_it2.range(f'B{int(brow_value)+1}').options(index = False,header=False).value = grp_df 
+            bulk_tab_it2.range(f'B{int(brow_value)+1}').expand('down').font.bold= False
+            bulk_tab_it2.range(f"B8:J{int(brow_value)-1}").api.Sort(Key1=bulk_tab_it2.range(f"B8:B{int(brow_value)-1}").api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
+            bulk_tab_it2.range(f'B{int(brow_value)+1}').expand('table').api.Sort(Key1=bulk_tab_it2.range(f'B{int(brow_value)+1}').expand('down').api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
 
-        bulk_tab_it2.range(f'B{int(brow_value)+1}').expand('down').font.bold= False
-
-
-        bulk_tab_it2.range(f"B8:J{int(brow_value)-1}").api.Sort(Key1=bulk_tab_it2.range(f"B8:B{int(brow_value)-1}").api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
-      
-        bulk_tab_it2.range(f'B{int(brow_value)+1}').expand('table').api.Sort(Key1=bulk_tab_it2.range(f'B{int(brow_value)+1}').expand('down').api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
-            
-        for i in range(len(grp_df['Customer'])):
-            conditional_formatting(range=bulk_tab_it2.range(f'B8').expand('table').get_address(),working_sheet=bulk_tab_it2,working_workbook=wb)
-            bulk_tab_it2.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
-            bulk_tab_it2.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=[grp_df['Customer'][i]])
-            sp_lst_row = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
-            sp_address= bulk_tab_it2.api.Range(f"B8:B{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address
-            sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]  
-            int_check = bulk_tab_it2.range(f"B{sp_initial_rw}").expand("table").get_address().split(":")[-1]
-            lst_row = re.findall("\d+",int_check .replace("$","").split(":")[0])[0]
-            if bulk_tab_it2.range(f"C{sp_initial_rw}").value + bulk_tab_it2.range(f"C{lst_row}").value<=1:
-                bulk_tab_it2.range(f"{lst_row}:{lst_row}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-                in_rw = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
-                bulk_tab_it2.range(f"{sp_initial_rw}:{sp_initial_rw}").api.EntireRow.Copy()
-                # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                bulk_tab_it2.range(f"{in_rw+1}:{in_rw+1}").api.EntireRow.Select()
-                wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                bulk_tab_it2.range(f"{sp_initial_rw}:{sp_initial_rw}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-                bulk_tab_it2.api.AutoFilterMode=False
-                bulk_tab_it2.api.Cells.FormatConditions.Delete()
-            else:
-                print("second case")
-                bulk_tab_it2.api.AutoFilterMode=False
-                bulk_tab_it2.api.Cells.FormatConditions.Delete()
+        if raw_df.size>0:    
+            for i in range(len(grp_df['Customer'])):
+                conditional_formatting(range=bulk_tab_it2.range(f'B8').expand('table').get_address(),working_sheet=bulk_tab_it2,working_workbook=wb)
+                bulk_tab_it2.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+                bulk_tab_it2.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=[grp_df['Customer'][i]])
+                sp_lst_row = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
+                sp_address= bulk_tab_it2.api.Range(f"B8:B{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address
+                sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]  
+                int_check = bulk_tab_it2.range(f"B{sp_initial_rw}").expand("table").get_address().split(":")[-1]
+                lst_row = re.findall("\d+",int_check .replace("$","").split(":")[0])[0]
+                if bulk_tab_it2.range(f"C{sp_initial_rw}").value + bulk_tab_it2.range(f"C{lst_row}").value<=1:
+                    bulk_tab_it2.range(f"{lst_row}:{lst_row}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+                    in_rw = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
+                    bulk_tab_it2.range(f"{sp_initial_rw}:{sp_initial_rw}").api.EntireRow.Copy()
+                    # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+                    bulk_tab_it2.range(f"{in_rw+1}:{in_rw+1}").api.EntireRow.Select()
+                    wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+                    bulk_tab_it2.range(f"{sp_initial_rw}:{sp_initial_rw}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+                    bulk_tab_it2.api.AutoFilterMode=False
+                    bulk_tab_it2.api.Cells.FormatConditions.Delete()
+                else:
+                    print("second case")
+                    bulk_tab_it2.api.AutoFilterMode=False
+                    bulk_tab_it2.api.Cells.FormatConditions.Delete()
 
         #ineligible accounts check
         bulk_tab_it2.api.Cells.Find(What:="INELIGIBLE ACCOUNTS RECEIVABLE", After:=bulk_tab_it2.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
