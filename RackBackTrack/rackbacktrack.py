@@ -40,13 +40,14 @@ def rackbacktrack(input_date, output_date):
 
         input_day_month = datetime.strftime(input_datetime-timedelta(days=0), "%b%d")
         input_month_year = datetime.strftime(input_datetime-timedelta(days=0), "%b %Y")
-        # other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
+        other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
 
         # input_open_gr= curr_loc+r'\RackBackTrack\Raw Files'+f'\\Open GR Rack.xlsx'
         input_open_gr= j_loc_bbr+f'\\Open GR Rack.xlsx'
 
         # input_lrti_xl = f'\\\\BIO-INDIA-FS\\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank Inv Reco.xlsx'
-        input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank Inv Reco.xlsx'
+        input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank.xlsx'
+        # input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank Inv Reco.xlsx'
         # input_lrti_xl = curr_loc+r'\RackBackTrack\Raw Files'+f'\\Little Rock Tank Inv Reco.xlsx'
 
 
@@ -167,7 +168,7 @@ def rackbacktrack(input_date, output_date):
             date_list = []
             for pdf_file in glob.glob(mrn_pdf_loc+"\\*.pdf"):
                 filename = pdf_file.split("\\")[-1]
-                pdf_file_date = filename.replace("MRN.", "").replace(" done.pdf","")
+                pdf_file_date = filename.replace("MRN.", "").replace(" done.pdf","").replace(".pdf", "")
                 pdf_file_date = datetime.strptime(pdf_file_date, "%m.%d.%Y").day
                 if pdf_file_date <=17:
                     #extract data from pdf
