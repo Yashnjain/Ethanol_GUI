@@ -666,6 +666,7 @@ def ar_ageing_rack(input_date, output_date):
             rack_tab_it.api.Range(f"C7").AutoFilter(Field:=2)
         elif int(sp_lst_row) ==int(sp_initial_rw):
             rack_tab_it.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
+            count_n = rack_tab_it.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Count
         else:    
             rack_tab_it.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
 
@@ -673,25 +674,31 @@ def ar_ageing_rack(input_date, output_date):
         # value_row = bulk_tab_it2.range(f'C'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').end('up').row
         if rack_tab_it.range(f"B100").value!=None:
             rack_tab_it.range(f"B100").expand('down').api.EntireRow.Copy()
-            rack_tab_it.range(f"A{val_row+2}").api.EntireRow.Select()
+            try:
+                rack_tab_it.range(f"A{val_row+2}").api.EntireRow.Select()
+            except:
+                val_row = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row
+                rack_tab_it.range(f"A{val_row+2}").api.EntireRow.Select()
             wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
             wb.app.api.CutCopyMode=False
 
-            rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row
-            if val_row+3 ==rw_faltu:
-                rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
-                rack_tab_it.range(f"B{rw_faltu}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-            else:    
+
+            if count_n!=1:
+                rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row  
                 rack_tab_it.range(f"B{rw_faltu}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+            else:
+                rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row      
+                rack_tab_it.range(f"B{rw_faltu}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
 
 
-        # if int(sp_initial_rw)==6:
-        #     pass
-        # elif int(sp_lst_row) ==int(sp_initial_rw):
-        #     rack_tab_it.range(f"B{sp_initial_rw}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        # else:    
-        #     rack_tab_it.range(f"B{sp_initial_rw}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        # rack_tab_it.api.AutoFilterMode=False
+
+        if int(sp_initial_rw)==6:
+            pass
+        elif int(sp_lst_row) ==int(sp_initial_rw):
+            rack_tab_it.range(f"B{sp_initial_rw}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        else:    
+            rack_tab_it.range(f"B{sp_initial_rw}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        rack_tab_it.api.AutoFilterMode=False
 
         retry=0
         while retry < 10:
@@ -768,7 +775,7 @@ def ar_ageing_rack(input_date, output_date):
       
         rack_tab_it.range(f'B{int(ini)}').expand('table').api.Sort(Key1=rack_tab_it.range(f'B{int(ini)+1}').expand('down').api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         tell_row = rack_tab_it.range(f'B{int(brow_value)}').end('down').row 
-        count = 0 
+        count = 0 + count_n
         for i in range(len(grp_df['COMPANY'])):
             conditional_formatting(range=f'B8:B{tell_row}',working_sheet=rack_tab_it,working_workbook=wb)
             rack_tab_it.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
@@ -814,7 +821,11 @@ def ar_ageing_rack(input_date, output_date):
 
         #updating formula
 
-        formula_row = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').end('up').row
+        rack_tab_it.api.Cells.Find(What:="Total", After:=rack_tab_it.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
+        bcell_value = rack_tab_it.api.Application.ActiveCell.Address.replace("$","")
+        brow_value = re.findall("\d+",bcell_value)[0]
+
+        formula_row = int(brow_value)+4
 
         pre_row = rack_tab_it.range(f"C{formula_row}").end('up').row
 

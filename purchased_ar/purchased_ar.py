@@ -108,7 +108,7 @@ def purchased_ar(input_date, output_date):
                 input_tab.api.AutoFilterMode=False 
                 pass  
 
-        input_tab.Range(f"C:C").EntireColumn.api.Delete()
+        input_tab.api.Range(f"C:C").EntireColumn.Delete()
 
         input_tab.api.Range(f"C:C").TextToColumns(Destination:=input_tab.api.Range("C1"),DataType:=win32c.TextParsingType.xlDelimited,TextQualifier:=win32c.Constants.xlDoubleQuote,Tab:=True,FieldInfo:=[1,3],TrailingMinusNumbers:=True)
         input_tab.api.Range(f"D:D").TextToColumns(Destination:=input_tab.api.Range("D1"),DataType:=win32c.TextParsingType.xlDelimited,TextQualifier:=win32c.Constants.xlDoubleQuote,Tab:=True,FieldInfo:=[1,3],TrailingMinusNumbers:=True)
@@ -183,7 +183,7 @@ def purchased_ar(input_date, output_date):
         try:
             b = [int(str(no).strip().split("#")[1].strip().split(" ")[0]) for no in a]
         except:
-            b = [str(no).strip().split("#")[1].strip().split(" ")[0] if no!=None else input_tab.api.Range(f"C{index+2}").Value for index,no in enumerate(a) ]
+            b = [str(no).strip().split("#")[1].strip().split(" ")[0] if no!=None else input_tab.api.Range(f"C{index+2}").Value for index,no in enumerate(a)]
             messagebox.showerror("Invoice Number Error", f"Please re-enter correct value for invoice numbers",parent=root)
             print("Please check invoice numbers")    
         input_tab.range(f"C2").options(transpose=True).value = b
