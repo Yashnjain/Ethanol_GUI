@@ -83,10 +83,13 @@ def rackbacktrack(input_date, output_date):
         if not os.path.exists(input_cta):
             return(f"{input_cta} Excel file not present")
 
+        
         if not os.path.exists(input_lrti_xl):
-            return(f"{input_lrti_xl} Excel file not present")
+            input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank.xlsx'
+            if not os.path.exists(input_lrti_xl):
+                return(f"{input_lrti_xl} Excel file not present")
 
-        mtm_df = pd.read_excel(input_cta,sheet_name="BioUrjaNet", header=2) 
+        mtm_df = pd.read_excel(input_cta,sheet_name="BioUrjaNet", header=2)
         df, pdf_date = rack_pdf_data_extractor(rack_pdf)
         if pdf_date != file_date:
             return f"Pdf file date({pdf_date}) and and excel date({file_date} does not match please check pdf file and run job again)"  
@@ -214,7 +217,7 @@ def rackbacktrack(input_date, output_date):
             sht3.range(f"{sht3_total_col}2").formula = f"=SUM(C2:{sht3_last_col}2)"
             wb.activate()
             sht3.activate()
-            sht3.range(f"{sht3_total_col}2:{sht3_last_col}{sht3_a_last_row}").select()
+            sht3.range(f"{sht3_total_col}2:{sht3_total_col}{sht3_a_last_row}").select()
             wb.app.selection.api.FillDown()
 
             #Making dataframe
@@ -236,22 +239,30 @@ def rackbacktrack(input_date, output_date):
             pivot_sht.activate()
             pivot_last_row = pivot_sht.range(f"A{pivot_sht.cells.last_cell.row}").end("up").row
             p_loc_r1 = pivot_sht.range(f"A{pivot_last_row}").end('up').row
-            p_loc_list = pivot_sht.range(f"A{p_loc_r1}").expand('down').value
+            # p_loc_list = pivot_sht.range(f"A{p_loc_r1}").expand('down').value
+            p_loc_list = pivot_sht.range(f"B{p_loc_r1}").expand('down').value
 
-            for location in range(len(p_loc_list)):
+            init_row = p_loc_r1
+            # for location in range(len(p_loc_list)):
+            for location in p_loc_list:
+                location = int(location)
                 try:
-                    pivot_sht.range(f"B{location+p_loc_r1}").value = mrn_dict[p_loc_list[location].split(",")[0]]
+                    # pivot_sht.range(f"C{location+p_loc_r1}").value = mrn_dict[p_loc_list[location].split(",")[0]]
+                    pivot_sht.range(f"C{init_row}").value = mrn_dict[str(location)]
                 except:
-                    pivot_sht.range(f"B{location+p_loc_r1}").value = 0
-                    print(f"NO data found for {p_loc_list[location]}")
+                    pivot_sht.range(f"C{init_row}").value = 0
+                    # print(f"NO data found for {p_loc_list[location]}")
+                init_row += 1
 
             #Making dataframe
-            pivot_df = pivot_sht.range(f"A{p_loc_r1}:B{pivot_last_row}").options(pd.DataFrame, 
+            pivot_df = pivot_sht.range(f"A{p_loc_r1}:C{pivot_last_row}").options(pd.DataFrame, 
                                     header=False,
                                     index=False 
                                     ).value
 
-            pivot_dict = pivot_df.set_index(0).to_dict()[1]
+            # pivot_dict = pivot_df.set_index(0).to_dict()[1]
+            pivot_dict = pivot_df.set_index(0).to_dict()[2]
+
             
        
         #For monthly caseMultiplying by 42 to convert into gallons from barrels
@@ -485,22 +496,82 @@ def rackbacktrack(input_date, output_date):
 
 
         rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
-        lr_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
+        lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
 
         lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
         lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
         lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
 
-        lr_filter_dict = {"BioUrja/South Magel":lr_atlas_1, "Biourja/North Magel":lr_atlas_2}
+
+        li_col_list = lr_costing_sht.range(f"A2").expand("right").value
+        li_atlas_date_col = li_col_list.index("Atlas Date")+1
+        li_atlas_date_col_letter = num_to_col_letters(li_atlas_date_col)
+
+        li_bol_col = li_col_list.index("BOL")+1
+        li_bol_col_letter = num_to_col_letters(li_bol_col)
+
+        li_qtgal_col = li_col_list.index("Qty.Gal")+1
+        li_qtgal_col_letter = num_to_col_letters(li_qtgal_col)
+
+        li_atqty_col = li_col_list.index("Atlas qty ")+1
+        li_atqty_col_letter = num_to_col_letters(li_atqty_col)
+
+        li_location_col = li_col_list.index("location")+1
+        li_location_col_letter = num_to_col_letters(li_location_col)
+
+        li_mrn_col = li_col_list.index("MRN#")+1
+        li_mrn_col_letter = num_to_col_letters(li_mrn_col)
+
+        li_deal_col = li_col_list.index("Deal#")+1
+        li_deal_col_letter = num_to_col_letters(li_deal_col)
+
+        li_date_col = li_col_list.index("Date")+1
+        li_date_col_letter = num_to_col_letters(li_date_col)
+
+        li_invdate_col = li_col_list.index("Inv Trf Date")+1
+        li_invdate_col_letter = num_to_col_letters(li_invdate_col)
+
+        li_vendor_col = li_col_list.index("Vendor")+1
+        li_vendor_col_letter = num_to_col_letters(li_vendor_col)
+
+        li_rate_col = li_col_list.index("Rate")+1
+        li_rate_col_letter = num_to_col_letters(li_rate_col)
+
+        li_fprice_col = li_col_list.index("Final Price")+1
+        li_fprice_col_letter = num_to_col_letters(li_fprice_col)
+
+        li_famount_col = li_col_list.index("Final Amount")+1
+        li_famount_col_letter = num_to_col_letters(li_famount_col)
+
+        # li_last_col_col = len(li_col_list)
+        # li_last_col_letter = num_to_col_letters(li_last_col_col)
+        li_last_col_letter = "AB" #Hard coded due to many gaps in column
+
+        
+
+
+        lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
 
         for key in lr_filter_dict.keys():
+            rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
+            lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
+
+            lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
+            lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
+            lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
+            lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
             lrti_wb.activate()
             rack_costing_sht.activate()
             rack_costing_sht.api.AutoFilterMode=False
+            rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
             rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
             rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key)
             
-            
+            if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row == 1:
+                rack_costing_sht.api.AutoFilterMode=False
+                rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
+                rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key.replace(" ", ""))
+            rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
             if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row != 1:
                 rack_costing_sht.range(f"2:{rack_costing_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
             
@@ -514,34 +585,92 @@ def rackbacktrack(input_date, output_date):
                 lr_costing_sht.activate()
                 lr_costing_sht.range(f"A{data_row+1}").api.EntireRow.Select()
                 wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
+                lr_costing_sht.range(f"A{lr_costing_last_row+20+row_count}").expand('down').api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
                 wb.app.api.CutCopyMode=False
-                lr_costing_sht.range(f"O{data_row}:AB{data_row}").copy(lr_costing_sht.range(f"O{data_row+1}:AB{new_i-1}"))
+                lr_costing_sht.range(f"O{data_row}:AB{data_row}").copy(lr_costing_sht.range(f"O{data_row+1}:AB{new_i}"))
                 
+                
+                lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
                 lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
                 lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
                 lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
-                lr_filter_dict = {"BioUrja/South Magel":lr_atlas_1, "Biourja/North Magel":lr_atlas_2}
+                lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
 
+                #Sheet 4 logic for gettinglittlerocknorth terminal data
+                wb.activate()
+                sht_4.activate()
+                sht_4.api.AutoFilterMode = False
                 #Zeroing out Atals Quantity based on B1
                 qty_match = "B1"
-                if key == "Biourja/North Magel":
-                    qty_match = f"B{data_st_row-4}"
+                # if key == "BioUrja/North Magel":
+                qty_match = f"B{data_st_row-4}"
+                if qty_match == "B0":
+                    qty_match = "B1"
+                    
+                    #Applying filter in terminal
+                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:="NLITTLEROCKNORTH, AR")
+                    sht4_last_row = sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row
+                else:
+                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:="NLITTLEROCKSOUTH, AR")
+                    sht4_last_row = sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row
+                    
+                if sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row != 1:
+                    sht_4.range(f"1:{sht4_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
+                    wb.activate()
+                    lr_costing_sht.activate()
+                    li_df = lr_costing_sht.range(f"A{lr_costing_last_row+20}:K{lr_costing_last_row+20}").expand("down").options(pd.DataFrame, 
+                            header=1,
+                            index=False 
+                            ).value
+                    lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand("table").api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
+                    row_count = len(li_df)
+                    for i in range(row_count):
+                        lr_costing_sht.range(f"A{new_i+1}").api.EntireRow.Select()
+                        wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+
+
+
+
+                    
+                    #After row insertion add data
+                    lr_costing_sht.range(f"{li_atlas_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
+                    lr_costing_sht.range(f"{li_bol_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["BOLNumber"])
+                    lr_costing_sht.range(f"{li_atqty_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Billed Qty"])
+                    lr_costing_sht.range(f"{li_location_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Terminal "])
+                    lr_costing_sht.range(f"{li_mrn_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Voucher"])
+                    lr_costing_sht.range(f"{li_deal_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Links"])
+                    lr_costing_sht.range(f"{li_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
+                    lr_costing_sht.range(f"{li_invdate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
+                    lr_costing_sht.range(f"{li_vendor_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Vend"])
+                    lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
+                    lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
+
+
+                    #Updating formula
+                    lr_costing_sht.range(f"{li_famount_col_letter}{new_i}:{li_last_col_letter}{new_i+row_count}").select()
+                    wb.app.api.Selection.FillDown()
+
+                    new_i += row_count
+
 
                 try:
                     (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0
                 except:
                     new_i += 1
                 if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
                     
                     #Ignoring row with zero value
                     while lr_costing_sht.range(f"E{data_st_row}").value == 0:
                         data_st_row+=1
-                    while lr_costing_sht.range(f"E{data_st_row}").value <=   (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
+                    # while lr_costing_sht.range(f"E{data_st_row}").value <=   (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
+                    while lr_costing_sht.range(f"E{data_st_row}").value <=   lr_costing_sht.range(f"E{new_i+3}").value:
                         lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{data_st_row}").value
+                        lr_costing_sht.range(f"E{data_st_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+                        lr_costing_sht.range(f"D{data_st_row}").api.NumberFormat = 'General'
                         data_st_row += 1
-                    if  lr_costing_sht.range(f"E{data_st_row}").value >  (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
-                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value)
+                    if  lr_costing_sht.range(f"E{data_st_row}").value >  lr_costing_sht.range(f"E{new_i+3}").value:
+                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{new_i+3}").value
                         data_st_row +=1
 
                     print("Done")
@@ -682,7 +811,8 @@ def rackbacktrack(input_date, output_date):
         open_mrn_del_to = num_to_col_letters(open_mrn_del_to_num+1)
         
         sht_5 = wb.sheets["Sheet5"]
-        sht_5.clear()
+        sht_5.clear_contents()
+        sht_5.clear_contents()
         open_mrn_sht.range(f"A1:{open_mrn_del_to}1").expand("down").copy(sht_5.range("A1"))
         open_mrn_wb.close()
         sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
@@ -901,6 +1031,9 @@ def rackbacktrack(input_date, output_date):
 
         pivot2_bol_col_num = pivot2_cols.index("BOLNumber")+1
         pivot2_bol_col = num_to_col_letters(pivot2_bol_col_num)
+
+
+        
 
         #Applyling Filters
         pivot2_sht.api.AutoFilterMode=False

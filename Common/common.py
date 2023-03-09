@@ -366,7 +366,7 @@ def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
     try:
         if not rack:
             df = read_pdf(pdf_file , pages = 'all', guess = False, stream = True ,
-                pandas_options={'header':None}, area = ["110,40,530,665"], columns = ["70,125,200,250,280,365,415,460,560,610,660"])
+                pandas_options={'header':None}, area = ["110,30,560,680"], columns = ["70,125,200,250,280,365,415,460,560,610,660"])
             df = pd.concat(df, ignore_index=True)
         else:
             df = read_pdf(pdf_file , pages = 'all', guess = False, stream = True ,
@@ -394,10 +394,12 @@ def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
                 if df[1][row-1] == "MASON CITY":
                     df[1][row-1] = "CLEAR LAKE"
                 try:
-                    mrn_dict[df[1][row-1]] = int(df[11][row].replace(',',''))
+                    # mrn_dict[df[1][row-1]] = int(df[11][row].replace(',',''))
+                    mrn_dict[df[0][row-1]] = int(df[11][row].replace(',',''))
                 except:
                     try:
-                        mrn_dict[df[1][row-1]] = df[11][row]
+                        # mrn_dict[df[1][row-1]] = df[11][row]
+                        mrn_dict[df[0][row-1]] = df[11][row]
                     except Exception as e:
                         raise e
         return date_list, mrn_dict
