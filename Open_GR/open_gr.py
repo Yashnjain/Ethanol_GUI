@@ -125,10 +125,14 @@ def openGr(input_date, output_date):
         curr_last_col_letter = num_to_col_letters(curr_last_col)
         railcar_col = curr_col_list.index("Rail Car/Truck #")
         railcar_col_letter = num_to_col_letters(railcar_col+1)
+        vendor_ref_col = curr_col_list.index("Vendor Ref")
+        vendor_ref_col_letter = num_to_col_letters(vendor_ref_col+1)
         
-
+        input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{vendor_ref_col_letter}1:{vendor_ref_col_letter}{curr_last_row}").api,
+            Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{railcar_col_letter}1:{railcar_col_letter}{curr_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
+        
 
         # #Removing Extra total
         to_be_deleted_final = input_sht.range(f'B'+ str(input_sht.cells.last_cell.row)).end('up').row
@@ -157,8 +161,7 @@ def openGr(input_date, output_date):
         bol_col = curr_col_list.index("BOL Number")
         bol_col_letter = num_to_col_letters(bol_col+1)
 
-        vendor_ref_col = curr_col_list.index("Vendor Ref")
-        vendor_ref_col_letter = num_to_col_letters(vendor_ref_col+1)
+        
 
 
         last_row = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
@@ -753,7 +756,7 @@ def openGr(input_date, output_date):
         diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
         diff_month_sht.api.Range(f"M1").Value = "Diff"
         diff_month_sht.api.Range(f"M2").Formula = "=+K2+L2"
-        diff_month_sht.api.Range(f"M2:M{amt_diff_last_row}").Select()
+        diff_month_sht.api.Range(f"M2:M{diff_month_last_row}").Select()
         wb.app.api.Selection.FillDown()
         diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
         if diff_month_last_row != 1:
