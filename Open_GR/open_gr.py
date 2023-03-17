@@ -157,6 +157,9 @@ def openGr(input_date, output_date):
         bol_col = curr_col_list.index("BOL Number")
         bol_col_letter = num_to_col_letters(bol_col+1)
 
+        vendor_ref_col = curr_col_list.index("Vendor Ref")
+        vendor_ref_col_letter = num_to_col_letters(vendor_ref_col+1)
+
 
         last_row = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
         curr_month_num =datetime.strptime(input_date,"%m.%d.%Y").month
@@ -299,8 +302,11 @@ def openGr(input_date, output_date):
         font_colour,Interior_colour = conditional_formatting(f"{railcar_col_letter}:{railcar_col_letter}",input_sht,wb)
         input_sht.api.AutoFilterMode=False
         input_sht.api.Range(f"{railcar_col_letter}1").AutoFilter(Field:=f"{railcar_col+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+        input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{vendor_ref_col_letter}1:{vendor_ref_col_letter}{curr_last_row}").api,
+            Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{railcar_col_letter}1:{railcar_col_letter}{curr_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
+        
 
         #Finding filtered range
 
@@ -570,7 +576,7 @@ def openGr(input_date, output_date):
                         # ignore_check=True
                         # print("Move both enteries to knock off tab")
                     #prev month MRN Booked in Current Month
-                    elif pjv_sht.range(f"{date_col_letter}{2}").value.month != curr_month_num:
+                    elif pjv_sht.range(f"{date_col_letter}{i}").value.month != curr_month_num:
                         print("Move both enteries to prev month MRN Booked in Current Month")
                         diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
 
@@ -744,8 +750,9 @@ def openGr(input_date, output_date):
         #Updating and Refreshing pivot in prev month mrn booked in current month
         wb.activate()
         diff_month_sht.activate()
-
+        diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
         diff_month_sht.api.Range(f"M1").Value = "Diff"
+        diff_month_sht.api.Range(f"M2").Formula = "=+K2+L2"
         diff_month_sht.api.Range(f"M2:M{amt_diff_last_row}").Select()
         wb.app.api.Selection.FillDown()
         diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
@@ -757,6 +764,7 @@ def openGr(input_date, output_date):
                 try:#Create a new Pivot  
                     #Adding 2 remaining columns
                     diff_month_sht.range("N1").formula = "=+SUM(K:L)"
+                    diff_month_sht.range("N1").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
                     diff_month_sht.range("O1").value = "TrueUp"
                     diff_month_sht.range(f"M1").api.Copy()
                     diff_month_sht.range(f"O1").api._PasteSpecial(Paste=win32c.PasteType.xlPasteFormats,Operation=win32c.Constants.xlNone)
