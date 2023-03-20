@@ -72,7 +72,7 @@ def ar_ageing_rack(input_date, output_date):
         # raw_df = raw_df[(raw_df[raw_df.columns[0]] == 'Demurrage')]
         # raw_df = raw_df.iloc[:,[0,1,-6,-5,-4,-3,-2,-1]]
         # raw_df.columns = ['dem_check',"Customer","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
-
+        count_n = None
         temp_df = raw_df.loc[:,[raw_df.columns[0],raw_df.columns[1],raw_df.columns[2],raw_df.columns[-6],raw_df.columns[-5],raw_df.columns[-4],raw_df.columns[-3],raw_df.columns[-2],raw_df.columns[-1]]]
         temp_df = temp_df.dropna(axis=0,subset=[temp_df.columns[1]])
         t_df = temp_df.reset_index(drop=True)
@@ -622,7 +622,8 @@ def ar_ageing_rack(input_date, output_date):
         sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]
 
         try:
-            rack_tab_it.range(f"L{sp_initial_rw}:L{sp_lst_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
+            if sp_initial_rw!=6:
+                rack_tab_it.range(f"L{sp_initial_rw}:L{sp_lst_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
         except:
             pass  
 
@@ -665,11 +666,16 @@ def ar_ageing_rack(input_date, output_date):
         if int(sp_initial_rw)==6:
             rack_tab_it.api.Range(f"C7").AutoFilter(Field:=2)
         elif int(sp_lst_row) ==int(sp_initial_rw):
+            val_row = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
             rack_tab_it.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
             count_n = rack_tab_it.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Count
         else:    
+            val_row = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
             rack_tab_it.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
-
+            a,b,c =row_range_calc('B',rack_tab_it,wb)
+            a = a[a.index(int(sp_initial_rw)):a.index(int(sp_lst_row))+1]
+            count_n = len(a)
+            # tcount_n = rack_tab_it.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Count
 
         # value_row = bulk_tab_it2.range(f'C'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').end('up').row
         if rack_tab_it.range(f"B100").value!=None:
@@ -682,13 +688,12 @@ def ar_ageing_rack(input_date, output_date):
             wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
             wb.app.api.CutCopyMode=False
 
-
-            if count_n!=1:
+            if count_n==1:
                 rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row  
-                rack_tab_it.range(f"B{rw_faltu}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-            else:
-                rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row      
                 rack_tab_it.range(f"B{rw_faltu}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+            else:
+                rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row      
+                rack_tab_it.range(f"B{rw_faltu}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
 
 
 
@@ -710,7 +715,7 @@ def ar_ageing_rack(input_date, output_date):
                 retry+=1
                 if retry ==10:
                     raise e 
-
+        rack_tab_it.api.Cells.FormatConditions.Delete()
         company_sheet = company_wb.sheets[0] 
         company_names = company_sheet.range(f"A2").expand('down').value
         company_names = [names.strip() for names in company_names]
@@ -765,6 +770,11 @@ def ar_ageing_rack(input_date, output_date):
         else:
             brow_value = rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row + 1 
 
+        rack_tab_it.api.Cells.Find(What:="Total", After:=rack_tab_it.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
+        helpcell_value = rack_tab_it.api.Application.ActiveCell.Address.replace("$","")
+        ini = rack_tab_it.range(helpcell_value).end('up').row
+        ini=ini+1
+
         rack_tab_it.api.Range(f"B{int(ini)}:B{int(ini)+len(grp_df)-1}").EntireRow.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
         rack_tab_it.range(f'B{int(ini)}').options(index = False,header=False).value = grp_df 
 
@@ -775,7 +785,10 @@ def ar_ageing_rack(input_date, output_date):
       
         rack_tab_it.range(f'B{int(ini)}').expand('table').api.Sort(Key1=rack_tab_it.range(f'B{int(ini)+1}').expand('down').api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         tell_row = rack_tab_it.range(f'B{int(brow_value)}').end('down').row 
-        count = 0 + count_n
+        if count_n:
+            count = 0 + count_n
+        else:
+            count = 0   
         for i in range(len(grp_df['COMPANY'])):
             conditional_formatting(range=f'B8:B{tell_row}',working_sheet=rack_tab_it,working_workbook=wb)
             rack_tab_it.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
