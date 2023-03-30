@@ -69,8 +69,22 @@ def ar_ageing_bulk(input_date, output_date):
             return(f"{input_sheet4} Excel file not present")                       
         raw_df = pd.read_excel(input_sheet)    
         raw_df = raw_df[(raw_df[raw_df.columns[0]] == 'Demurrage')]
-        raw_df = raw_df.iloc[:,[0,1,-6,-5,-4,-3,-2,-1]]
-        raw_df.columns = ['dem_check',"Customer","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
+        if raw_df.size>0:
+            raw_df = raw_df.iloc[:,[0,1,5,-6,-5,-4,-3,-2,-1]]
+            raw_df.columns = ['dem_check',"Customer","Due Date","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
+            raw_df = raw_df.reset_index()
+            for i,x in raw_df.iterrows():
+                diff = (datetime.strptime(input_date,'%m.%d.%Y') - raw_df['Due Date'][i]).days
+                if diff <=10:
+                    raw_df['< 10'][i] = raw_df['Balance'][i]
+                elif diff >=11 and diff <31:
+                    raw_df['11 - 30'][i] = raw_df['Balance'][i]
+                elif diff >=31 and diff <61:
+                    raw_df['31 - 60'][i] = raw_df['Balance'][i]
+                elif diff >=61 and diff <91:
+                    raw_df['61 - 90'][i] = raw_df['Balance'][i]
+                else:
+                    raw_df['> 90'][i] = raw_df['Balance'][i]
         retry=0
         while retry < 10:
             try:
@@ -274,7 +288,7 @@ def ar_ageing_bulk(input_date, output_date):
         input_tab.api.Range(f"{DD_No_column_letter}1").AutoFilter(Field:=f'{DD_No_column_no}', Criteria1:=['='] ,Operator:=7)
         
         data = row_range_calc(DD_No_column_letter, input_tab, wb)
-        if len(data[0])>0:
+        if len(data[0])>0 and data[1]!=1:
             for row in data[0]:
                 input_tab.range(f"D{row}").copy(input_tab.range(f"E{row}"))
                 diff = (datetime.strptime(input_date,'%m.%d.%Y') - datetime.strptime(input_tab.range(f"D{row}").value,"%m-%d-%Y")).days
