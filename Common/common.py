@@ -373,23 +373,57 @@ def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
                 pandas_options={'header':None}, area=['110,30,560,680'], columns = ["50,125,200,250,280,365,415,460,560,610,630"])
             df = pd.concat(df, ignore_index=True)
         print(df)
-        
+        df = df.dropna(subset=[0]).reset_index(drop=True)
+        if len(df)==0:
+            print(f"Unable to read Data in {pdf_file} continuing with Next Pdf")
+            messagebox.askyesno("Data not Found in Pdf",f"Unable to read Data in {pdf_file} continue with Next Pdf?")
         for row in range(len(df)):
             if df[1][row] == "AL: LOCATION" and not rack:
                 try:
                     pdf_date = datetime.strptime(df[6][row-1], "%m/%d/%Y")#Picking tikcet open dates
                     # mrn_dict[df[1][row-1]].append([df[9][row], df[0][row-1], df[6][row-1]])
-                    mrn_dict[int(df[0][row-1])].append([pdf_date, df[9][row]])
+                    try:
+                        mrn_dict[int(df[0][row-1])].append([pdf_date, df[9][row]])
+                    except:
+                        mrn_dict[int(df[0][row-1])] = [[pdf_date, df[9][row]]]
                     if pdf_date not in date_list:
                         if pdf_date.day<16:
                             date_list.append(pdf_date)
-                except:
-                    pdf_date = datetime.strptime(df[6][row-1], "%m/%d/%Y")
-                    # mrn_dict[df[1][row-1]] = [[df[9][row], df[0][row-1], df[6][row-1]]]
-                    mrn_dict[int(df[0][row-1])] = [[pdf_date, df[9][row]]]
-                    if pdf_date not in date_list:
-                        if pdf_date.day<16:
-                            date_list.append(pdf_date)
+                # except:
+                    # try:
+                    #     pdf_date = datetime.strptime(df[6][row-2], "%m/%d/%Y")
+                    #     # mrn_dict[df[1][row-1]] = [[df[9][row], df[0][row-1], df[6][row-1]]]
+                    #     try:
+                    #         mrn_dict[int(df[0][row-2])].append([pdf_date, df[9][row]])
+                    #     except:
+                    #         mrn_dict[int(df[0][row-2])] = [[pdf_date, df[9][row]]]
+                    #     if pdf_date not in date_list:
+                    #         if pdf_date.day<16:
+                    #             date_list.append(pdf_date)
+                    # except:
+                    #     try:
+                    #         pdf_date = datetime.strptime(df[6][row-3], "%m/%d/%Y")
+                    #         # mrn_dict[df[1][row-1]] = [[df[9][row], df[0][row-1], df[6][row-1]]]
+                    #         try:
+                    #             mrn_dict[int(df[0][row-3])].append([pdf_date, df[9][row]])
+                    #         except:
+                    #             mrn_dict[int(df[0][row-3])] = [[pdf_date, df[9][row]]]
+                    #         if pdf_date not in date_list:
+                    #             if pdf_date.day<16:
+                    #                 date_list.append(pdf_date)
+                    #     except:
+                    #         try:
+                    #             pdf_date = datetime.strptime(df[6][row-4], "%m/%d/%Y")
+                    #             # mrn_dict[df[1][row-1]] = [[df[9][row], df[0][row-1], df[6][row-1]]]
+                    #             try:
+                    #                 mrn_dict[int(df[0][row-4])].append([pdf_date, df[9][row]])
+                    #             except:
+                    #                 mrn_dict[int(df[0][row-4])] = [[pdf_date, df[9][row]]]
+                    #             if pdf_date not in date_list:
+                    #                 if pdf_date.day<16:
+                    #                     date_list.append(pdf_date)
+                except Exception as e:
+                    raise e
             elif df[1][row] == "AL: LOCATION"   and rack:
                 if df[1][row-1] == "MASON CITY":
                     df[1][row-1] = "CLEAR LAKE"
