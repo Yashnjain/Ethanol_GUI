@@ -40,7 +40,8 @@ def rackbacktrack(input_date, output_date):
 
         input_day_month = datetime.strftime(input_datetime-timedelta(days=0), "%b%d")
         input_month_year = datetime.strftime(input_datetime-timedelta(days=0), "%b %Y")
-        other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
+        input_day_month_other = datetime.strftime(input_datetime-timedelta(days=1), "%b%d")
+        other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month_other}.xlsx"
 
         # input_open_gr= curr_loc+r'\RackBackTrack\Raw Files'+f'\\Open GR Rack.xlsx'
         input_open_gr= j_loc_bbr+f'\\Open GR Rack.xlsx'
@@ -90,7 +91,13 @@ def rackbacktrack(input_date, output_date):
                 return(f"{input_lrti_xl} Excel file not present")
 
         mtm_df = pd.read_excel(input_cta,sheet_name="BioUrjaNet", header=2)
-        df, pdf_date = rack_pdf_data_extractor(rack_pdf)
+        try:
+            df, pdf_date = rack_pdf_data_extractor(rack_pdf)
+        except Exception as e:
+            if messagebox.askyesno("Error in Reading Rack pdf",f'Do you want to continue rest process?'):
+                pass
+            else:
+                raise e
         if pdf_date != file_date:
             return f"Pdf file date({pdf_date}) and and excel date({file_date} does not match please check pdf file and run job again)"  
         retry=0
@@ -169,25 +176,33 @@ def rackbacktrack(input_date, output_date):
         if input_day <=15:
             mrn_dict = {}
             date_list = []
-            for pdf_file in glob.glob(mrn_pdf_loc+"\\*.pdf"):
-                filename = pdf_file.split("\\")[-1]
-                pdf_file_date = filename.replace("MRN.", "").replace(" done.pdf","").replace(".pdf", "")
-                pdf_file_date = datetime.strptime(pdf_file_date, "%m.%d.%Y").day
-                if pdf_file_date <=17:
-                    #extract data from pdf
-                    date_list, mrn_dict = mrn_pdf_extractor(pdf_file, mrn_dict, date_list)
+            try:
+                for pdf_file in glob.glob(mrn_pdf_loc+"\\*.pdf"):
+                    filename = pdf_file.split("\\")[-1]
+                    pdf_file_date = filename.replace("MRN.", "").replace(" done.pdf","").replace(".pdf", "")
+                    pdf_file_date = datetime.strptime(pdf_file_date, "%m.%d.%Y").day
+                    if pdf_file_date <=17:
+                        #extract data from pdf
+                        date_list, mrn_dict = mrn_pdf_extractor(pdf_file, mrn_dict, date_list)
+            except Exception as e:
+                if messagebox.askyesno("Error in Reading MRN pdf",f'Do you want to continue rest process?'):
+                    pass
+                else:
+                    raise e
                     
             #Filling Data in Excel
+            wb.activate()
+            sht3.activate()
             # for loc in range()
             if len(date_list):
                 date_list = sorted(date_list)
-                sht3.range(f"C1").value = date_list
+                sht3.range(f"D1").value = date_list
                 sht3_c_last_row = sht3.range(f"C{sht3.cells.last_cell.row}").end("up").row
                 sht3_a_last_row = sht3.range(f"A{sht3.cells.last_cell.row}").end("up").row
                 sht3_last_col_num  = len(date_list)+2
                 sht3_last_col = num_to_col_letters(sht3_last_col_num)
                 #Clearing old data
-                sht3.range(f"C2:{sht3_last_col}{sht3_c_last_row}").clear_contents()
+                sht3.range(f"D2:{sht3_last_col}{sht3_c_last_row}").clear_contents()
 
                 s_mrn_dict = sorted(mrn_dict)
                 key_num = 0
@@ -200,7 +215,8 @@ def rackbacktrack(input_date, output_date):
                         for date_col in range(len(date_list)):
                             if date_list[date_col].day<16:
                                 if mrn_dict[s_mrn_dict[key_num]][col_num][0] == date_list[date_col]:
-                                    date_column = num_to_col_letters(date_col+3)
+                                    # date_column = num_to_col_letters(date_col+3)
+                                    date_column = num_to_col_letters(date_col+4)
                                     print(date_column)
                                     print("Entering value now")
                                     sht3.range(f"{date_column}{i}").value = mrn_dict[s_mrn_dict[key_num]][col_num][1]
@@ -213,12 +229,12 @@ def rackbacktrack(input_date, output_date):
 
              #Sheet 3 total column logic
             sht3_total_col = num_to_col_letters(sht3_last_col_num+1)
-            sht3.range(f"{sht3_total_col}1").value = "Total"
-            sht3.range(f"{sht3_total_col}2").formula = f"=SUM(C2:{sht3_last_col}2)"
+            # sht3.range(f"{sht3_total_col}1").value = "Total"
+            # sht3.range(f"{sht3_total_col}2").formula = f"=SUM(C2:{sht3_last_col}2)"
             wb.activate()
             sht3.activate()
-            sht3.range(f"{sht3_total_col}2:{sht3_total_col}{sht3_a_last_row}").select()
-            wb.app.selection.api.FillDown()
+            # sht3.range(f"{sht3_total_col}2:{sht3_total_col}{sht3_a_last_row}").select()
+            # wb.app.selection.api.FillDown()
 
             #Making dataframe
             sht3_df = sht3.range(f"B1:{sht3_total_col}{sht3_a_last_row}").options(pd.DataFrame, 
@@ -233,7 +249,13 @@ def rackbacktrack(input_date, output_date):
 
             mrn_dict = {}
             date_list = []
-            date_list, mrn_dict = mrn_pdf_extractor(monthly_mrn_loc, mrn_dict, date_list, rack=True)
+            try:
+                date_list, mrn_dict = mrn_pdf_extractor(monthly_mrn_loc, mrn_dict, date_list, rack=True)
+            except Exception as e:
+                if messagebox.askyesno("Error in Reading Rack MRN pdf",f'Do you want to continue rest process?'):
+                    pass
+                else:
+                    raise e
             
             wb.activate()
             pivot_sht.activate()
@@ -318,7 +340,10 @@ def rackbacktrack(input_date, output_date):
          
         wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
         #Removing Gasoline from filter
-        wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems("Gasoline").Visible = False
+        try:
+            wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems("Gasoline").Visible = False
+        except:
+            pass
         #creating Sheet2 from Pivot Table
         try:
             wb.sheets("Sheet2").delete()
