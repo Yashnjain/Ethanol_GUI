@@ -368,9 +368,18 @@ def ar_ageing_bulk(input_date, output_date):
                             input_tab.api.Range(f"{columns}{inital_value+2}")._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
                             wb.app.api.CutCopyMode=False
                         if input_tab.range(f"{columns}{value}").value>0:
-                            input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
-                            input_tab.api.Range(f"{shifting_columns[index2+1]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
-                            input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").ClearContents()
+                            new_column = shifting_columns[shifting_columns.index(columns)-1]
+                            while new_column !="P":
+                                if input_tab.range(f"{new_column}{value}").value<0:
+                                    input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").Copy() 
+                                    input_tab.api.Range(f"{shifting_columns[index2]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
+                                    input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").ClearContents()
+                                    #move those
+                                new_column = shifting_columns[shifting_columns.index(new_column)-1]
+                            if input_tab.range(f"{columns}{value}").value>0:
+                                input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
+                                input_tab.api.Range(f"{shifting_columns[index2+1]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
+                                input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").ClearContents()
 
                     inital_value = value
 
