@@ -73,7 +73,20 @@ def rackbacktrack(input_date, output_date):
                 other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
                 
                 if retry ==3:
-                    return(f"{other_loc} Excel file not present for date {input_day_month}")
+                    other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month_other}.xlsx"
+                    retry=0
+                    while retry < 4:
+                        try:
+                            spcl_loc_df = pd.read_excel(other_loc)
+                            break
+                        except Exception as e:
+                            retry+=1
+                            input_day_month = datetime.strftime(input_datetime-timedelta(days=retry), "%b%d")
+                            other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
+                            
+                            if retry ==3:
+                                return(f"{other_loc} Excel file not present for date {input_day_month}")
+                    
         
         if not os.path.exists(input_sheet):
             return(f"{input_sheet} Excel file not present for date {input_date}")
