@@ -405,6 +405,8 @@ def rackbacktrack(input_date, output_date):
         sht4_last_row = len(mrn_df)+2#{len(mrn_df)+2 +2 for zero index and excluding heading
         sht4_date_col = mrn_df.columns.get_loc("Date")+1
         sht4_date_letter = num_to_col_letters(sht4_date_col)
+        sht4_term_col = mrn_df.columns.get_loc("Terminal ")+1
+        sht4_term_letter = num_to_col_letters(sht4_term_col)
         sht_4.range(f"{p_row_label}1:K{sht4_last_row}").api.Sort(Key1=sht_4.range(f"{sht4_date_letter}1:{sht4_date_letter}{sht4_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
 
@@ -432,6 +434,14 @@ def rackbacktrack(input_date, output_date):
                     criteria_value = pivot2_sht.range(f"G{i-1}").value
                     sht_4.api.AutoFilterMode=False
                     sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:=criteria_value)
+                    if input_day <=15:
+                        st_dt=input_datetime.replace(day=1)
+                        
+                    else:
+                        st_dt=input_datetime.replace(day=16)
+                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:=[f'>={st_dt}'],
+                                                                        Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
+                        
                     #Check if Filter contains row or not
                     if sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row != 1:
                         sht_4.range(f"2:{sht4_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(sht_4.range(f"A{sht4_last_row+5}").api)
@@ -602,12 +612,24 @@ def rackbacktrack(input_date, output_date):
             rack_costing_sht.activate()
             rack_costing_sht.api.AutoFilterMode=False
             rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
-            rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
+            if input_day <=15:
+                st_dt=input_datetime.replace(day=1)         
+            else:
+                st_dt=input_datetime.replace(day=16)
+            rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'>={st_dt}'],
+                                                                        Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
+            # rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
             rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key)
             
             if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row == 1:
                 rack_costing_sht.api.AutoFilterMode=False
-                rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
+                if input_day <=15:
+                    st_dt=input_datetime.replace(day=1)
+                else:
+                    st_dt=input_datetime.replace(day=16)
+                rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'>={st_dt}'],
+                                                                            Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
+                # rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
                 rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key.replace(" ", ""))
             rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
             if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row != 1:
@@ -695,9 +717,16 @@ def rackbacktrack(input_date, output_date):
                     (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0
                 except:
                     new_i += 1
-                if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                    while lr_costing_sht.range(f"E{new_i+2}").value is None:
+                        new_i += 1
+                if (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                # if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
                 # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
-                    
+                # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
+                    #Logic for sorting data date wise
+                    data_lst_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                    lr_costing_sht.range(f"A{data_st_row}:AB{data_lst_row}").api.Sort(Key1=lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api,
+                        Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
                     #Ignoring row with zero value
                     while lr_costing_sht.range(f"E{data_st_row}").value == 0:
                         data_st_row+=1
