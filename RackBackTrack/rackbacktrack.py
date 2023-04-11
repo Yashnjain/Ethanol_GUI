@@ -439,7 +439,7 @@ def rackbacktrack(input_date, output_date):
                         
                     else:
                         st_dt=input_datetime.replace(day=16)
-                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:=[f'>={st_dt}'],
+                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_date_col}", Criteria1:=[f'>={st_dt}'],
                                                                         Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
                         
                     #Check if Filter contains row or not
@@ -664,6 +664,12 @@ def rackbacktrack(input_date, output_date):
                 qty_match = "B1"
                 # if key == "BioUrja/North Magel":
                 qty_match = f"B{data_st_row-4}"
+                if input_day <=15:
+                    st_dt=input_datetime.replace(day=1)
+                else:
+                    st_dt=input_datetime.replace(day=16)
+                sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_date_col}", Criteria1:=[f'>={st_dt}'],
+                                                                        Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
                 if qty_match == "B0":
                     qty_match = "B1"
                     
