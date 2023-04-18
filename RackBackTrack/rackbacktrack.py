@@ -383,14 +383,22 @@ def rackbacktrack(input_date, output_date):
         ##################Updating PIVOT Sheet Total Column#########################################
         wb.activate()
         pivot_sht.activate()
-        pivot_sht_cols = pivot_sht.range("A4").expand("right").value
+        pivot_sht_cols = pivot_sht.range("A4").expand("right").value     
         p_total_col_num = pivot_sht_cols.index("Total")+1#+1 for ignoring zero index
         p_total_col = num_to_col_letters(p_total_col_num)
+        pivote_date_col_num = p_total_col_num - 1
+        pivote_date_col = num_to_col_letters(pivote_date_col_num)
         p_row_label_num = pivot_sht_cols.index("Row Labels")+1
         p_row_label = num_to_col_letters(p_row_label_num)
         p_diff_num = pivot_sht_cols.index("Diff")+1
         p_diff_col = num_to_col_letters(p_diff_num)
         
+        #Filling down and formating till lat row of pivot sheet
+        pivot_sht.range(f"{pivote_date_col}5:{pivote_date_col}{pivot_last_row}").api.Select()
+        wb.app.selection.api.FillDown()
+        #adding sum formula
+        pivot_sht.range(f"{pivote_date_col}{pivot_last_row}").formula = f"=SUM({pivote_date_col}5:{pivote_date_col}{pivot_last_row-1}"
+        pivot_sht.range(f"{p_total_col}{pivot_last_row}").formula = f"=SUM({p_total_col}5:{p_total_col}{pivot_last_row-1}"
         ##Entering values based on location from dataframe
         location_list = pivot_sht.range("A5").expand("down").value
         for location in range(len(location_list)-1):
