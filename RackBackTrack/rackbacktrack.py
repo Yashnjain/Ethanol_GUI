@@ -164,6 +164,8 @@ def rackbacktrack(input_date, output_date):
                 column_1 = spcl_loc_df.columns._values[0]
                 ethrin_value = spcl_loc_df.iloc[spcl_loc_df.loc[spcl_loc_df[column_1]==spcl_dict[loc_list[location]]].index.values[0]+1]['Unnamed: 3']
                 inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
+                #Removing extra values
+                inv_mtm_sht.range(f"C{inv_mtm_st_row+location}").formula = inv_mtm_sht.range(f"C{inv_mtm_st_row+location}").formula.split(")+")[0]
                 
             else:
                 index_list=mtm_df.loc[mtm_df['Unnamed: 0']==loc_list[location].split(',')[0]].index.values
