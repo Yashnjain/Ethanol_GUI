@@ -92,7 +92,7 @@ def rackbacktrack(input_date, output_date):
             return(f"{input_sheet} Excel file not present for date {input_date}")
 
         if not os.path.exists(rack_pdf):
-            return(f"{rack_pdf} Excel file not present for date {input_date}")
+            return(f"{rack_pdf} PDF file not present for date {input_date}")
         
         if not os.path.exists(input_cta):
             return(f"{input_cta} Excel file not present")
@@ -111,8 +111,8 @@ def rackbacktrack(input_date, output_date):
                 pass
             else:
                 raise e
-        if pdf_date != file_date:
-            return f"Pdf file date({pdf_date}) and and excel date({file_date} does not match please check pdf file and run job again)"  
+        # if pdf_date != file_date:
+        #     return f"Pdf file date({pdf_date}) and and excel date({file_date} does not match please check pdf file and run job again)"  
         retry=0
         while retry < 10:
             try:
@@ -151,8 +151,9 @@ def rackbacktrack(input_date, output_date):
         wb.activate()
         inv_mtm_sht.activate()
         data_list = []
+        inv_mtm_st_row = inv_mtm_sht.range(f"B1").end("down").row + 1 #+1 for excluding RowLabel Header
         # inv_mtm_last_row = inv_mtm_sht.range(f'A'+ str(inv_mtm_sht.cells.last_cell.row)).end('up').row
-        loc_list = inv_mtm_sht.range(f"B8").expand("down").value
+        loc_list = inv_mtm_sht.range(f"B{inv_mtm_st_row}").expand("down").value
         loc_dict = {"FORT SMITH, AR":"FT. SMITH", "MPLS/ST. PAUL, MN":"MPLS/ST.PAUL", "NLITTLEROCKNORTH, AR":"LITTLE ROCK", "NLITTLEROCKSOUTH, AR":"LITTLE ROCK"}
         spcl_dict = {'ODESSA, TX':'Odessa TX Magellan', 'East Houston, TX':'Houston TX Magellan'}
         for location in range(len(loc_list)-1):#Ifgnoring grand total
@@ -162,7 +163,7 @@ def rackbacktrack(input_date, output_date):
                 index_list = []
                 column_1 = spcl_loc_df.columns._values[0]
                 ethrin_value = spcl_loc_df.iloc[spcl_loc_df.loc[spcl_loc_df[column_1]==spcl_dict[loc_list[location]]].index.values[0]+1]['Unnamed: 3']
-                inv_mtm_sht.range(f"F{8+location}").value = ethrin_value
+                inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
                 
             else:
                 index_list=mtm_df.loc[mtm_df['Unnamed: 0']==loc_list[location].split(',')[0]].index.values
@@ -179,7 +180,7 @@ def rackbacktrack(input_date, output_date):
                         rack_col = list(ethrin_df.apply(lambda row: row[row == substring].index, axis=1))[0][0]
                         ethrin_value = rack_df[rack_col]._values[0]
                         # data_list.append(ethrin_value)
-                        inv_mtm_sht.range(f"F{8+location}").value = ethrin_value
+                        inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
                         break
                     print(i)
 
@@ -206,6 +207,8 @@ def rackbacktrack(input_date, output_date):
             #Filling Data in Excel
             wb.activate()
             sht3.activate()
+            pivot_last_row = pivot_sht.range(f"A{pivot_sht.cells.last_cell.row}").end("up").row
+            p_loc_r1 = pivot_sht.range(f"A{pivot_last_row}").end('up').row
             # for loc in range()
             if len(date_list):
                 date_list = sorted(date_list)
@@ -396,6 +399,8 @@ def rackbacktrack(input_date, output_date):
         #Filling down and formating till lat row of pivot sheet
         pivot_sht.range(f"{pivote_date_col}5:{pivote_date_col}{pivot_last_row}").api.Select()
         wb.app.selection.api.FillDown()
+        #Clearing extar data
+        pivot_sht.range(f"{pivote_date_col}{pivot_last_row+1}:G{p_loc_r1 - 1}").clear()
         #adding sum formula
         pivot_sht.range(f"{pivote_date_col}{pivot_last_row}").formula = f"=SUM({pivote_date_col}5:{pivote_date_col}{pivot_last_row-1}"
         pivot_sht.range(f"{p_total_col}{pivot_last_row}").formula = f"=SUM({p_total_col}5:{p_total_col}{pivot_last_row-1}"
@@ -716,8 +721,8 @@ def rackbacktrack(input_date, output_date):
                     lr_costing_sht.range(f"{li_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
                     lr_costing_sht.range(f"{li_invdate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
                     lr_costing_sht.range(f"{li_vendor_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Vend"])
-                    lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
-                    lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
+                    lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = None#list(li_df["price"])
+                    lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = None#list(li_df["price"])
 
 
                     #Updating formula
