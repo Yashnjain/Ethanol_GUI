@@ -55,7 +55,7 @@ def rackbacktrack(input_date, output_date):
         truefile_loc = f"J:\\India\Trueup\\TrueupAutomation\\AP_Rack_TrueUp\\Output\\Rack AP Data {input_month_year}.xlsx"
         rack_po_loc = f'J:\\India\\Trueup\\TrueupAutomation\\AP_Rack_TrueUp\\Rack PO details\\{input_month+str(input_year)} AP PO.xlsx'
 
-        last_date = datetime.strftime(last_day_of_month(input_datetime.date()), "%m.%d.%Y")  
+        last_date = datetime.strftime(last_day_of_month(input_datetime.date()), "%m.%d.%Y")
         if input_date==last_date:#Montlhy True up condition
             if not os.path.exists(truefile_loc):
                 return(f"{truefile_loc} Excel file not present for date {input_date}")
@@ -86,8 +86,7 @@ def rackbacktrack(input_date, output_date):
                             
                             if retry ==3:
                                 return(f"{other_loc} Excel file not present for date {input_day_month}")
-                    
-        
+
         if not os.path.exists(input_sheet):
             return(f"{input_sheet} Excel file not present for date {input_date}")
 
@@ -97,7 +96,6 @@ def rackbacktrack(input_date, output_date):
         if not os.path.exists(input_cta):
             return(f"{input_cta} Excel file not present")
 
-        
         if not os.path.exists(input_lrti_xl):
             input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank.xlsx'
             if not os.path.exists(input_lrti_xl):
@@ -145,8 +143,6 @@ def rackbacktrack(input_date, output_date):
                     sht6.range(f"D{row}").formula = f"={sht6.range(f'D{row}').value} + {d_value}"#=-23+23
                     sht6.range(f"E{row}").formula = f"={sht6.range(f'E{row}').value} - {d_value}"#=-23+23
 
-        
-
         inv_mtm_sht = wb.sheets("Inv. per MTM")
         wb.activate()
         inv_mtm_sht.activate()
@@ -164,11 +160,11 @@ def rackbacktrack(input_date, output_date):
                 column_1 = spcl_loc_df.columns._values[0]
                 ethrin_value = spcl_loc_df.iloc[spcl_loc_df.loc[spcl_loc_df[column_1]==spcl_dict[loc_list[location]]].index.values[0]+1]['Unnamed: 3']
                 inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
-                #Removing extra values
-                inv_mtm_sht.range(f"C{inv_mtm_st_row+location}").formula = inv_mtm_sht.range(f"C{inv_mtm_st_row+location}").formula.split(")+")[0]
-                
+
             else:
                 index_list=mtm_df.loc[mtm_df['Unnamed: 0']==loc_list[location].split(',')[0]].index.values
+            #Removing extra values
+            inv_mtm_sht.range(f"C{inv_mtm_st_row+location}").formula = inv_mtm_sht.range(f"C{inv_mtm_st_row+location}").formula.split(")+")[0]
             if len(index_list):
                 for i in range(len(index_list)):
                     if index_list[i] != index_list[-1]:
@@ -205,7 +201,7 @@ def rackbacktrack(input_date, output_date):
                     pass
                 else:
                     raise e
-                    
+
             #Filling Data in Excel
             wb.activate()
             sht3.activate()
@@ -230,20 +226,25 @@ def rackbacktrack(input_date, output_date):
                     print(sht3.range(f"A{i}").value)
                     if sht3.range(f"A{i}").value == s_mrn_dict[key_num]:
                         col_num= 0 
-                        for date_col in range(len(date_list)):
-                            if date_list[date_col].day<16:
-                                if mrn_dict[s_mrn_dict[key_num]][col_num][0] == date_list[date_col]:
-                                    # date_column = num_to_col_letters(date_col+3)
-                                    date_column = num_to_col_letters(date_col+4)
-                                    print(date_column)
-                                    print("Entering value now")
-                                    sht3.range(f"{date_column}{i}").value = mrn_dict[s_mrn_dict[key_num]][col_num][1]
-                                    if col_num != len(mrn_dict[s_mrn_dict[key_num]])-1:
-                                        col_num+=1
-                                
-                                
+                        # for date_col in range(len(date_list)):
+                        #     if date_list[date_col].day<16:
+                        #         if mrn_dict[s_mrn_dict[key_num]][col_num][0] == date_list[date_col]:
+                        #             # date_column = num_to_col_letters(date_col+3)
+                        #             date_column = num_to_col_letters(date_col+4)
+                        #             print(date_column)
+                        #             print("Entering value now")
+                        #             sht3.range(f"{date_column}{i}").value = mrn_dict[s_mrn_dict[key_num]][col_num][1]
+                        #             if col_num != len(mrn_dict[s_mrn_dict[key_num]])-1:
+                        #                 col_num+=1
+                        xl_date_list = sht3.range(f"D1").expand('right').value
+                        for date_col in mrn_dict[s_mrn_dict[key_num]].keys():
+                            if date_col.day<16:
+                                date_index = xl_date_list.index(date_col)
+                                date_column = num_to_col_letters(date_index+4)
+                                sht3.range(f"{date_column}{i}").value = mrn_dict[s_mrn_dict[key_num]][date_col]
+
                         key_num+=1
-            
+
 
              #Sheet 3 total column logic
             sht3_total_col = num_to_col_letters(sht3_last_col_num+1)
@@ -251,6 +252,7 @@ def rackbacktrack(input_date, output_date):
             # sht3.range(f"{sht3_total_col}2").formula = f"=SUM(C2:{sht3_last_col}2)"
             wb.activate()
             sht3.activate()
+            sht3.autofit()
             # sht3.range(f"{sht3_total_col}2:{sht3_total_col}{sht3_a_last_row}").select()
             # wb.app.selection.api.FillDown()
 
@@ -274,7 +276,7 @@ def rackbacktrack(input_date, output_date):
                     pass
                 else:
                     raise e
-            
+
             wb.activate()
             pivot_sht.activate()
             pivot_last_row = pivot_sht.range(f"A{pivot_sht.cells.last_cell.row}").end("up").row
@@ -303,8 +305,8 @@ def rackbacktrack(input_date, output_date):
             # pivot_dict = pivot_df.set_index(0).to_dict()[1]
             pivot_dict = pivot_df.set_index(0).to_dict()[2]
 
-            
-       
+
+
         #For monthly caseMultiplying by 42 to convert into gallons from barrels
         # sht3_df["Total"] = sht3_df["Total"]*42
         
@@ -323,7 +325,7 @@ def rackbacktrack(input_date, output_date):
             wb.sheets["Sheet1"].delete()
         except:
             pass
-        
+
         # #Copy Sheet1 from open gr sheet1
         gr_wb.sheets("Sheet1").copy(name="Sheet1", after=wb.sheets["Little Rock Costing"])
         open_gr_sht = wb.sheets["Sheet1"]
@@ -354,8 +356,7 @@ def rackbacktrack(input_date, output_date):
         wb.activate()
         pivot_sht.activate()
         wb.api.ActiveSheet.PivotTables(1).PivotCache().SourceData = f"Sheet1!R{gr_head_row}C2:R{ mrn_last_row}C{gr_last_col}"#as list starts from B for for selecting  -1
-        
-         
+
         wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
         #Removing Gasoline from filter
         try:
@@ -425,7 +426,7 @@ def rackbacktrack(input_date, output_date):
         sht_4.range(f"{p_row_label}1:K{sht4_last_row}").api.Sort(Key1=sht_4.range(f"{sht4_date_letter}1:{sht4_date_letter}{sht4_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
 
-        
+
         # #Updating mrns in Pivot2 sheet
         pivot2_sht = wb.sheets("Pivot2")
         pivot2_last_row = pivot2_sht.range(f"G{pivot2_sht.cells.last_cell.row}").end("up").row
@@ -493,7 +494,9 @@ def rackbacktrack(input_date, output_date):
                             new_i = i + sht_4.range(f"A{sht4_last_row+5}").expand('down').rows.count - delete_count
 
                         #deleting copied data from sheet 4
+                        pv_2_row_count = sht_4.range(f"A{sht4_last_row+5}").expand('down').rows.count
                         sht_4.range(f"A{sht4_last_row+5}").expand('down').api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
+                        
                         
                         #Updating total formulas
                         pivot2_sht.range(f"I{new_i}").formula = f"=+SUBTOTAL(9,I{start_row}:I{new_i-1})"
@@ -505,8 +508,11 @@ def rackbacktrack(input_date, output_date):
                         # pivot2_sht.range(f"M{i}:P{new_i}").formula = f"=+SUBTOTAL(9,N{start_row}:N{new_i-1})"
 
                         #Updating  Amount 	 Final Amount 	 Final Price 	 True-Up 	 Freight Rate 	 Freight Amount 
-                        
-                        pivot2_sht.range(f"M{start_row+1}:P{start_row+1}").copy(pivot2_sht.range(f"M{start_row+2}:P{new_i-1}"))
+                        # pivot2_sht.range(f"M{start_row+1}:P{start_row+1}").copy(pivot2_sht.range(f"M{start_row+2}:P{new_i-1}"))
+                        pivot2_sht.range(f"M{start_row+1}:P{start_row+1}").copy(pivot2_sht.range(f"M{new_i-pv_2_row_count}:P{new_i-1}"))
+                        #updating O column Final Price forula
+                        pivot2_sht.range(f"O{new_i-pv_2_row_count}").formula = f"=+K{new_i-pv_2_row_count}"
+                        pivot2_sht.range(f"O{new_i-pv_2_row_count}").copy(pivot2_sht.range(f"O{new_i-pv_2_row_count}:O{new_i-1}"))
                         i=new_i
 
                         print("Selected")
@@ -530,15 +536,15 @@ def rackbacktrack(input_date, output_date):
                             elif start_value < pivot2_sht.range(f"H{i}").value:
                                 pivot2_sht.range(f"I{start_row}").value = -start_value
 
-                    else: 
+                    else:
                         prev_row = i+1
-                        
+
 
                 else:
                     prev_row=i+1
             i+=1
             pivot2_last_row = pivot2_sht.range(f"G{pivot2_sht.cells.last_cell.row}").end("up").row
-        
+
 
 
         #Updating Litle Rock Tank Inventory(Little Rock Costing Tab)
@@ -610,7 +616,7 @@ def rackbacktrack(input_date, output_date):
         # li_last_col_letter = num_to_col_letters(li_last_col_col)
         li_last_col_letter = "AB" #Hard coded due to many gaps in column
 
-        
+
 
 
         lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
@@ -628,7 +634,7 @@ def rackbacktrack(input_date, output_date):
             rack_costing_sht.api.AutoFilterMode=False
             rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
             if input_day <=15:
-                st_dt=input_datetime.replace(day=1)         
+                st_dt=input_datetime.replace(day=1)
             else:
                 st_dt=input_datetime.replace(day=16)
             rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'>={st_dt}'],
@@ -649,8 +655,8 @@ def rackbacktrack(input_date, output_date):
             rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
             if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row != 1:
                 rack_costing_sht.range(f"2:{rack_costing_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
-            
-                               
+
+
                 data_st_row = lr_filter_dict[key]+2
                 data_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
                 lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').api.EntireRow.Copy()
@@ -663,6 +669,8 @@ def rackbacktrack(input_date, output_date):
                 lr_costing_sht.range(f"A{lr_costing_last_row+20+row_count}").expand('down').api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
                 wb.app.api.CutCopyMode=False
                 lr_costing_sht.range(f"O{data_row}:AB{data_row}").copy(lr_costing_sht.range(f"O{data_row+1}:AB{new_i}"))
+                lr_costing_sht.range(f"O{data_row+1}:O{new_i}").value = None
+                lr_costing_sht.range(f"R{data_row+1}:R{new_i}").value = None
                 
                 
                 lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
@@ -712,7 +720,7 @@ def rackbacktrack(input_date, output_date):
 
 
 
-                    
+
                     #After row insertion add data
                     lr_costing_sht.range(f"{li_atlas_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
                     lr_costing_sht.range(f"{li_bol_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["BOLNumber"])
@@ -723,8 +731,8 @@ def rackbacktrack(input_date, output_date):
                     lr_costing_sht.range(f"{li_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
                     lr_costing_sht.range(f"{li_invdate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
                     lr_costing_sht.range(f"{li_vendor_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Vend"])
-                    lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = None#list(li_df["price"])
-                    lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = None#list(li_df["price"])
+                    lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
+                    lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
 
 
                     #Updating formula
@@ -741,6 +749,46 @@ def rackbacktrack(input_date, output_date):
                     while lr_costing_sht.range(f"E{new_i+2}").value is None:
                         new_i += 1
                 if (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                    wb.activate()
+                    lr_costing_sht.activate()
+                # if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
+                # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
+                    #Logic for sorting data date wise
+                    data_lst_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                    lr_costing_sht.range(f"A{data_st_row}:AB{data_lst_row}").api.Sort(Key1=lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api,
+                        Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
+                    #Ignoring row with zero value
+                    while lr_costing_sht.range(f"E{data_st_row}").value == 0:
+                        data_st_row+=1
+                    # while lr_costing_sht.range(f"E{data_st_row}").value <=   (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
+                    while lr_costing_sht.range(f"E{data_st_row}").value <=   lr_costing_sht.range(f"E{new_i+3}").value:
+                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{data_st_row}").value
+                        lr_costing_sht.range(f"E{data_st_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+                        lr_costing_sht.range(f"D{data_st_row}").api.NumberFormat = 'General'
+                        data_st_row += 1
+                    if  lr_costing_sht.range(f"E{data_st_row}").value >  lr_costing_sht.range(f"E{new_i+3}").value:
+                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{new_i+3}").value
+                        data_st_row +=1
+
+                    print("Done")
+            else:
+                # continue
+                data_st_row = lr_filter_dict[key]+2
+                data_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                new_i = data_row
+                qty_match = f"B{data_st_row-4}"
+                if qty_match == "B0":
+                    qty_match = "B1"
+                try:
+                    (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0
+                except:
+                    new_i += 1
+                    while lr_costing_sht.range(f"E{new_i+2}").value is None:
+                        new_i += 1
+                if (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                    wb.activate()
+                    lr_costing_sht.activate()
                 # if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
                 # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
                 # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
@@ -791,11 +839,7 @@ def rackbacktrack(input_date, output_date):
 
         credit_count = credit_range.Count
 
-        
-        
         debit_count = debit_range.Count
-
-        
 
         if debit_count != credit_count:
             open_gr_sht.api.AutoFilterMode=False
@@ -812,8 +856,6 @@ def rackbacktrack(input_date, output_date):
 
         #Updating Difference in Accrual tab
 
-        
-        
 
         credit_range = open_gr_sht.range(f"{open_gr_credit_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
         debit_range = open_gr_sht.range(f"{open_gr_debit_col}7").end("down").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
@@ -825,8 +867,8 @@ def rackbacktrack(input_date, output_date):
         open_gr_sht.api.AutoFilterMode=False
 
         accrual_sht = wb.sheets["Accrual"]
-        
-        
+
+
         wb.activate()
         accrual_sht.activate()
         accrual_last_row = accrual_sht.range(f"A{accrual_sht.cells.last_cell.row}").end("up").row
@@ -857,7 +899,7 @@ def rackbacktrack(input_date, output_date):
 
         accr_last_mrn = accrual_sht.range(f"B2").end("down").row
 
-        
+
         wb.api.ActiveSheet.PivotTables("PivotTable1").SourceData = f'Accrual!R1C1:R{accr_last_mrn}C23'
         wb.api.ActiveSheet.PivotTables("PivotTable1").PivotCache().Refresh()
 
@@ -875,7 +917,7 @@ def rackbacktrack(input_date, output_date):
         
         rack_date = datetime.strftime(last_day_of_month(accr_pvi_date.date()), "%Y%m%d")
 
-        
+
         input_open_mrn = f"\\\\BIO-INDIA-FS\\India Sync$\\India\\{accr_pvi_year}\\{accr_pvi_month_year}\\Rack\\Open MRN Rack_{rack_date}.xlsx"#f'\\\\BIO-INDIA-FS\\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank Inv Reco.xlsx'
         # input_open_mrn = curr_loc+r'\RackBackTrack\Raw Files'+f'\\OpenMRNRack{prev_mrn_date}.xlsx' #Open MRN Rack_20221130.xlsx
         if not os.path.exists(input_open_mrn):
@@ -918,7 +960,7 @@ def rackbacktrack(input_date, output_date):
         sht_5_debit_col_num =  sht_5_cols.index("Debit Amount")+1
         sht_5_debit_col = num_to_col_letters(sht_5_debit_col_num)
 
-        
+
         #####ADD CONDTION FOR DUPLICATE PVI BOL$+###########################
         #Filtering duplicate bols
         sht_5.api.AutoFilterMode=False
@@ -939,7 +981,7 @@ def rackbacktrack(input_date, output_date):
 
 
 
-        
+
 
         print("PVi data pasted")
 
@@ -979,7 +1021,7 @@ def rackbacktrack(input_date, output_date):
             #reassigning sht5_pivot_end
             sht5_pivot_end = sht_5.range(f"A{sht5_pivot_start}").end("down").row
 
-            
+
 
 
 
@@ -1020,7 +1062,7 @@ def rackbacktrack(input_date, output_date):
         #Remove last line containing Grand or Grnad Total
         pivot1_df = pivot1_df[:-1]
         pivot2_df = pivot2_df[:-1]
-    
+
         # mrn_df = pd.merge(pivot1_df,pivot2_df, on="Row Labels", how="outer")
 
         df = pivot1_df.set_index('Row Labels').add(pivot2_df.set_index('Row Labels'), fill_value=0).reset_index()
@@ -1035,7 +1077,7 @@ def rackbacktrack(input_date, output_date):
                                 header=None,
                                 index=False 
                                 ).value = df
-        
+
         pivot_last_row = accrual_sht.range(f"E{accrual_sht.cells.last_cell.row}").end("up").row
 
         #Adding Total and it formula
@@ -1046,10 +1088,6 @@ def rackbacktrack(input_date, output_date):
         accrual_sht.range(f"E{pivot_last_row+1}:F{pivot_last_row+1}").api.Interior.Color = pivot_color
 
 
-
-        
-
-        
 
         ##################updating balance sheet amount############################
         bs_rack_inp = j_loc_bbr+f'\\BS Rack.xlsx'
@@ -1092,7 +1130,7 @@ def rackbacktrack(input_date, output_date):
 
         pivot2_rate_col_num = pivot2_cols.index("Rate")+1
         pivot2_rate_col = num_to_col_letters(pivot2_rate_col_num)
-        
+
         pivot2_amt_col_num = pivot2_cols.index("Amount")+1
         pivot2_amt_col = num_to_col_letters(pivot2_amt_col_num)
         
@@ -1121,7 +1159,7 @@ def rackbacktrack(input_date, output_date):
         pivot2_bol_col = num_to_col_letters(pivot2_bol_col_num)
 
 
-        
+
 
         #Applyling Filters
         pivot2_sht.api.AutoFilterMode=False
@@ -1203,7 +1241,7 @@ def rackbacktrack(input_date, output_date):
         pivot2_sht.api.AutoFilterMode=False
         pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_date_col_num, 
         Criteria1:=f">={input_datetime.replace(day=1)}", Operator:=7)
-        # pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_fbill_col_num, 
+        # pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_fbill_col_num,
         # Criteria1:=f"<>", Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:="<>No Freight")
         flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_amt_col, pivot2_sht,wb)
         # sp_lst_row = pivot2_sht.range(f"{pivot2_amt_col}{pivot2_sht.cells.last_cell.row}").end("up").row
@@ -1212,7 +1250,7 @@ def rackbacktrack(input_date, output_date):
         #     f_bill = pivot2_sht.range(f"{pivot2_fbill_col}{i}").value
 
         ####################
-        
+
         frt_sht = wb.sheets("Frt GL")
         wb.activate()
         frt_sht.activate()
@@ -1284,7 +1322,7 @@ def rackbacktrack(input_date, output_date):
             pivot2_sht.range(f"{bill_d_address}").api._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
 
 
-        
+
         #Removing filters from all sheets
         open_gr_sht.api.AutoFilterMode=False
         pivot2_sht.api.AutoFilterMode=False
@@ -1292,7 +1330,7 @@ def rackbacktrack(input_date, output_date):
         accrual_sht.api.AutoFilterMode=False
         sht_4.api.AutoFilterMode=False
         sht6.api.AutoFilterMode=False
-                
+
 
         wb.save(output_location+f"\\RackBackTrack_{input_date}.xlsx")
         print("Done")

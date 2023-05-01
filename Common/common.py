@@ -368,27 +368,76 @@ def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
             df = read_pdf(pdf_file , pages = 'all', guess = False, stream = True ,
                 pandas_options={'header':None}, area = ["110,30,560,680"], columns = ["70,125,200,250,280,365,415,460,560,610,660"])
             df = pd.concat(df, ignore_index=True)
+            df = df.dropna(subset=[6]).reset_index(drop=True)
+            df.sort_values([1, 6], ascending=[True, True]).reset_index(drop=True)
+            prev_date = None
+            prev_loc = None
         else:
             df = read_pdf(pdf_file , pages = 'all', guess = False, stream = True ,
                 pandas_options={'header':None}, area=['110,30,560,680'], columns = ["50,125,200,250,280,365,415,460,560,610,630"])
             df = pd.concat(df, ignore_index=True)
+
         print(df)
         df = df.dropna(subset=[0]).reset_index(drop=True)
         if len(df)==0:
             print(f"Unable to read Data in {pdf_file} continuing with Next Pdf")
-            messagebox.askyesno("Data not Found in Pdf",f"Unable to read Data in {pdf_file} continue with Next Pdf?")
+            if messagebox.askyesno("Data not Found in Pdf",f"Unable to read Data in {pdf_file} continue with Next Pdf?"):
+                pass
+            else:
+                raise f"No Data found in {pdf_file}"
         for row in range(len(df)):
-            if df[1][row] == "AL: LOCATION" and not rack:
+            if df[1][row] != "AL: LOCATION" and not rack:
                 try:
-                    pdf_date = datetime.strptime(df[6][row-1], "%m/%d/%Y")#Picking tikcet open dates
-                    # mrn_dict[df[1][row-1]].append([df[9][row], df[0][row-1], df[6][row-1]])
+                    pdf_date = datetime.strptime(df[6][row], "%m/%d/%Y")#Picking ticket open dates
+                    file_date_month = datetime.strptime(pdf_file.split("MRN.")[-1].replace(".pdf",""), "%m.%d.%Y").month
+                    pdf_date_month = pdf_date.month
+                    if file_date_month != pdf_date_month:
+                        if messagebox.askyesno("Different date in pdf found",f'Do you want to add {df[1][row]} with date {pdf_date.date()}'):
+                            pdf_date = datetime.strptime(df[2][row], "%m/%d/%Y")
+                        else:
+                            continue
+                    galon_value =  int(df[9][row].replace(',',''))
                     try:
-                        mrn_dict[int(df[0][row-1])].append([pdf_date, df[9][row]])
+                        # if pdf_date !=  prev_date and df[0][row] == prev_loc:
+                            
+                        #     # mrn_dict[int(df[0][row])].append([pdf_date, galon_value])
+                        #     mrn_dict[int(df[0][row])][pdf_date] = galon_value
+                        # elif pdf_date ==  prev_date and df[0][row] == prev_loc:
+                        #     mrn_dict[int(df[0][row])][pdf_date] = mrn_dict[int(df[0][row])][pdf_date]+galon_value
+                        #     # mrn_dict[int(df[0][row])]= [int(df[0][row])][0][1]+galon_value
+                        # else:
+                        mrn_dict[int(df[0][row])][pdf_date] = mrn_dict[int(df[0][row])][pdf_date]+galon_value
                     except:
-                        mrn_dict[int(df[0][row-1])] = [[pdf_date, df[9][row]]]
+                        try:
+                            mrn_dict[int(df[0][row])][pdf_date] = galon_value
+                        except:
+                            try:
+                                mrn_dict[int(df[0][row])] = {}
+                                mrn_dict[int(df[0][row])][pdf_date] = galon_value
+                            except Exception as e:
+                                raise e
+                            
+                            # mrn_dict[int(df[0][row])] = [[pdf_date, galon_value]]
+                        
+                    # except:
+                    #     mrn_dict[int(df[0][row])] = {}
+                    #     mrn_dict[int(df[0][row])][pdf_date] = galon_value
                     if pdf_date not in date_list:
                         if pdf_date.day<16:
                             date_list.append(pdf_date)
+                    prev_date = pdf_date
+                    prev_loc = df[0][row]
+            # if df[1][row] == "AL: LOCATION" and not rack:
+            #     try:
+            #         pdf_date = datetime.strptime(df[6][row-1], "%m/%d/%Y")#Picking ticket open dates
+            #         # mrn_dict[df[1][row-1]].append([df[9][row], df[0][row-1], df[6][row-1]])
+            #         try:
+            #             mrn_dict[int(df[0][row-1])].append([pdf_date, df[9][row]])
+            #         except:
+            #             mrn_dict[int(df[0][row-1])] = [[pdf_date, df[9][row]]]
+            #         if pdf_date not in date_list:
+            #             if pdf_date.day<16:
+            #                 date_list.append(pdf_date)
                 # except:
                     # try:
                     #     pdf_date = datetime.strptime(df[6][row-2], "%m/%d/%Y")
