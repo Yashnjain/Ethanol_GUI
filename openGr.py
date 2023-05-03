@@ -1,59 +1,163 @@
-from email.mime import message
-import tkinter as tk
-from tkinter.filedialog import askdirectory, askopenfilename
-from tkinter import N, Menubutton, Tk, StringVar, Text
-from tkinter import PhotoImage
-from tkinter.font import Font
-from tkinter.ttk import Label
-from tkinter import Button
-from tkinter.ttk import Frame, Style
-from tkinter.ttk import OptionMenu
-from tkinter import Label as label
-from tkcalendar import DateEntry
-from tkinter import messagebox
-# from typing import Text
-import traceback
-from pandas.core import frame 
-import requests, json
-from datetime import date, datetime, timedelta
-import numpy as np
-import glob, time
-from tkinter.messagebox import showerror
-import pandas as pd
-import os
 import xlwings as xw
-from tabula import read_pdf
-# import PyPDF2
-from collections import defaultdict
 import xlwings.constants as win32c
-import sys, traceback
-import PyPDF2
-from collections import OrderedDict
-import calendar
-from dateutil.relativedelta import relativedelta
-import shutil
-from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.firefox import GeckoDriverManager
-from selenium.webdriver.firefox.options import Options
+import os, time
+from datetime import datetime, timedelta
 import re
-import array
-# from Common.common import num_to_col_letters
-from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
+import pandas as pd
 
-
-
-
-
-def openGr(start_date,input_date):
+def num_to_col_letters(num):
     try:
-        start_date_day= datetime.strptime(start_date, "%m.%d.%Y").date().day
-        start_time = datetime.now()
+        letters = ''
+        while num:
+            mod = (num - 1) % 26
+            letters += chr(mod + 65)
+            num = (num - 1) // 26
+        return ''.join(reversed(letters))
+    except Exception as e:
+        raise e
+
+def conditional_formatting(columnvalue:str,working_sheet,working_workbook):
+
+    try:
+
+        font_colour = -16383844
+
+        Interior_colour = 13551615
+
+        working_sheet.api.Range(f"{columnvalue}:{columnvalue}").Select()
+
+        working_workbook.app.selection.api.FormatConditions.AddUniqueValues()
+
+        working_workbook.app.selection.api.FormatConditions(working_workbook.app.selection.api.FormatConditions.Count).SetFirstPriority()
+
+ 
+
+        working_workbook.app.selection.api.FormatConditions(1).DupeUnique = win32c.DupeUnique.xlDuplicate
+
+ 
+
+        working_workbook.app.selection.api.FormatConditions(1).Font.Color = font_colour
+
+        working_workbook.app.selection.api.FormatConditions(1).Interior.Color = Interior_colour
+
+        working_workbook.app.selection.api.FormatConditions(1).Interior.PatternColorIndex = win32c.Constants.xlAutomatic
+
+        return font_colour,Interior_colour
+
+    except Exception as e:
+
+        raise e
+
+
+
+def knockOffAmtDiff(curr,final, wb, input_sht, input_sht2, credit_col_letter, debit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter, eth_trueup_col_letter=None):
+    if abs(input_sht.range(f"{credit_col_letter}{curr}").value) == abs(input_sht2.range(f"{debit_col_letter}{final}").value):
+        print(f"Moving {curr} to knockoff")
+        knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
+
+        #Copy Pasting Whole data
+        # input_sht.range(f"{curr}:{final}").api.Copy()
+        # wb.activate()
+        # knock_off_sht.activate()
+        # knock_off_sht.range(f"A{knock_off_last_row+1}").api.Select()
+        # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+        # knock_off_sht.autofit()
+        if input_sht==input_sht2:
+            input_sht.range(f"{curr}:{final}").copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
+
+            input_sht.range(f"{curr}:{final}").delete()
+
+        else:
+            input_sht.range(f"{curr}:{curr}").copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
+            input_sht2.range(f"B{final}:{eth_trueup_col_letter}{final}").copy(knock_off_sht.range(f"A{knock_off_last_row+2}"))
+
+            #shifting credit amount to right cell copied from ethanol accrual
+            knock_off_sht.range(f"K{knock_off_last_row+2}").copy(knock_off_sht.range(f"L{knock_off_last_row+2}"))
+            knock_off_sht.range(f"K{knock_off_last_row+2}").clear()
+            knock_off_sht.range(f"M{knock_off_last_row+2}").clear()#Clearing Final Amount
+
+            
+
+            input_sht.range(f"{curr}:{curr}").delete()
+            input_sht2.range(f"{final}:{final}").delete()
+
+        curr-=1
+    elif (abs(input_sht.range(f"{credit_col_letter}{curr}").value) - abs(input_sht2.range(f"{debit_col_letter}{final}").value))<10:
+        #amt diff
+        print(f"Moving {curr} to amount diff")
+        amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
+
+        if input_sht==input_sht2:
+            input_sht.range(f"{curr}:{final}").api.Copy()
+            wb.activate()
+            amt_diff_sht.activate()
+            amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
+            wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+            amt_diff_sht.autofit()
+            # input_sht.range(f"{i}:{i+1}").copy(amt_diff_sht.range(f"A{amt_diff_last_row+1}"))
+
+            input_sht.range(f"{curr}:{final}").delete()
+        else:
+            input_sht.range(f"{curr}:{curr}").api.Copy()
+            wb.activate()
+            amt_diff_sht.activate()
+            amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
+            wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+            
+            input_sht2.range(f"B{final}:{eth_trueup_col_letter}{final}").api.Copy()
+            wb.activate()
+            amt_diff_sht.activate()
+            amt_diff_sht.range(f"A{amt_diff_last_row+2}").api.Select()
+            wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+
+            amt_diff_sht.range(f"K{knock_off_last_row+2}").copy(amt_diff_sht.range(f"L{knock_off_last_row+2}"))
+            amt_diff_sht.range(f"K{knock_off_last_row+2}").clear()
+            amt_diff_sht.range(f"M{knock_off_last_row+2}").clear()#Clearing Final Amount
+            
+
+            amt_diff_sht.autofit()
+            # input_sht.range(f"{i}:{i+1}").copy(amt_diff_sht.range(f"A{amt_diff_last_row+1}"))
+
+            input_sht.range(f"{curr}:{curr}").delete()
+            input_sht2.range(f"{final}:{final}").delete()
+
+        curr-=1
+    else:
+        #line for ethnaol accrual tab
+        print(f'current line {curr} remains here for ethanol accrual tab having mrn no.{input_sht.range(f"{mrn_col_letter}{curr}")}')
+    return curr
+
+def row_range_calc(input_sht, wb):
+    sp_lst_row = input_sht.range(f'A'+ str(input_sht.cells.last_cell.row)).end('up').row
+
+    sp_address= input_sht.api.Range(f"A2:A{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address
+
+    sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]        
+
+    row_range = sorted([int(i) for i in list(set(re.findall("\d+",sp_address.replace("$",""))))])
+
+    while row_range[-1]!=sp_lst_row:
+
+        sp_lst_row = input_sht.range(f'A'+ str(input_sht.cells.last_cell.row)).end('up').row
+
+        sp_address.extend(input_sht.api.Range(f"A{row_range[-1]}:A{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Address)
+
+        # sp_initial_rw = re.findall("\d+",sp_address.replace("$","").split(":")[0])[0]        
+
+        # row_range.extend(sorted([int(i) for i in list(set(re.findall("\d+",sp_address.replace("$",""))))]))
+        
+    
+    sp_address = sp_address.replace("$","").split(",")
+    init_list= [list(range(int(i.split(":")[0]), int(i.split(":")[1])+1)) for i in sp_address]
+    sublist = []
+    flat_list = [item for sublist in init_list for item in sublist]
+    return flat_list, sp_lst_row,sp_address
+
+def openGr2(input_date, output_date):
+    try:
         input_datetime = datetime.strptime(input_date, "%m.%d.%Y")
-        month = datetime.strftime(input_datetime, "%m")
-        day = datetime.strftime(input_datetime, "%d")
+        month = input_datetime.month
+        day = input_datetime.day
         j_loc = r"J:\India\BBR\IT_BBR\Reports"
         # curr_loc = os.getcwd()
         # input_sheet= curr_loc+r'\Raw Files'+f'\\Open GR {month}{day}.xlsx'
@@ -78,8 +182,8 @@ def openGr(start_date,input_date):
         
        
         #Deleting extras
-        input_sht.range("A:A").api.Delete()
-        input_sht.range(f'1:{input_sht.range("A1").end("down").end("down").row-1}').api.Delete()
+        input_sht.range("A:A").delete()
+        input_sht.range(f'1:{input_sht.range("A1").end("down").end("down").row-1}').delete()
 
         #Checking Opening Balance
         curr_col_list = input_sht.range("A1").expand('right').value
@@ -113,33 +217,29 @@ def openGr(start_date,input_date):
         while len(req_col_list) <=len(curr_col_list):
             curr_col = num_to_col_letters(i+1)
             if input_sht.range(f"{curr_col}1").value not in req_col_list:
-                input_sht.range(f"{curr_col}:{curr_col}").api.Delete()
+                input_sht.range(f"{curr_col}:{curr_col}").delete()
                 i-=1
             curr_col_list = input_sht.range("A1").expand('right').value
             i+=1
         #Delete extra rows of total in starting
         to_be_deleted = input_sht.range("A1").end('down').row
-        input_sht.range(f"2:{to_be_deleted-1}").api.Delete()
+        input_sht.range(f"2:{to_be_deleted-1}").delete()
         #Sorting by railcar
         curr_last_row = input_sht.range(f'A'+ str(input_sht.cells.last_cell.row)).end('up').row
         curr_last_col = len(curr_col_list)
         curr_last_col_letter = num_to_col_letters(curr_last_col)
         railcar_col = curr_col_list.index("Rail Car/Truck #")
         railcar_col_letter = num_to_col_letters(railcar_col+1)
-        vendor_ref_col = curr_col_list.index("Vendor Ref")
-        vendor_ref_col_letter = num_to_col_letters(vendor_ref_col+1)
         
-        input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{vendor_ref_col_letter}1:{vendor_ref_col_letter}{curr_last_row}").api,
-            Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
+
         input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{railcar_col_letter}1:{railcar_col_letter}{curr_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
-        
 
         # #Removing Extra total
         to_be_deleted_final = input_sht.range(f'B'+ str(input_sht.cells.last_cell.row)).end('up').row
         to_be_deleted_init = input_sht.range(f'A'+ str(input_sht.cells.last_cell.row)).end('up').row
 
-        input_sht.range(f"{to_be_deleted_init+1}:{to_be_deleted_final+5}").api.Delete()#+% for deleting extra line border
+        input_sht.range(f"{to_be_deleted_init+1}:{to_be_deleted_final+5}").delete()#+% for deleting extra line border
         input_sht.copy(name = "Input_Main2", after = wb.sheets["Input_Main"])
         input_sht = wb.sheets["Input_Main2"]
 
@@ -162,15 +262,11 @@ def openGr(start_date,input_date):
         bol_col = curr_col_list.index("BOL Number")
         bol_col_letter = num_to_col_letters(bol_col+1)
 
-        
-
 
         last_row = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
         curr_month_num =datetime.strptime(input_date,"%m.%d.%Y").month
         curr_month = datetime.strftime(datetime.strptime(input_date,"%m.%d.%Y"), "%b")
         prev_month = datetime.strftime((datetime.strptime(input_date,"%m.%d.%Y").replace(day=1) -timedelta(days=1)), "%b")
-        old_prev_month = datetime.strftime(input_datetime.replace(day=1,month=input_datetime.month-3), "%b")
-        old_curr_month = datetime.strftime(input_datetime.replace(day=1,month=input_datetime.month-2), "%b")
 
 
         #Adding all sheets at once #Logic avoided as these sheets presaent from previous file
@@ -190,7 +286,7 @@ def openGr(start_date,input_date):
         input_sht.range(f"A1").expand("right").copy(amt_diff_sht.range("A1"))
         input_sht.range(f"A1").expand("right").copy(diff_month_sht.range("A1"))
         ignore_check= False
-        if start_date_day == 1:#replace else append
+        if day == 15:#replace else append
 
             knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
             knock_off_sht.range(f"A2:A{knock_off_last_row}").api.EntireRow.Delete()
@@ -199,23 +295,13 @@ def openGr(start_date,input_date):
             diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
             if diff_month_last_row!=1:
                 diff_month_sht.range(f"A2:A{diff_month_last_row}").api.EntireRow.Delete()
-            #Deleting previous prev mrn booked in current month sheet
-            try:
-                wb.sheets(f"{old_prev_month} MRN booked in {old_curr_month}").delete()
-            except:
-                pass
-
 
         knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
         amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
         diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
 
         i=2
-        row_dict = {}
-        row_dict["Knock_Off"] = []
-        row_dict["Amt_Dff"] = []
-        # amtdiff_dict = {}
-        
+
         while i <=last_row:
             if not ignore_check:
                 #Checking Mrn with next pjv row
@@ -225,9 +311,9 @@ def openGr(start_date,input_date):
                     if input_sht.range(f"{date_col_letter}{i}").value.month == curr_month_num:
                         #knock Off
                         if input_sht.range(f"{credit_col_letter}{i}").value is not None and input_sht.range(f"{debit_col_letter}{i+1}").value is not None:
-                            i, row_dict = knockOffAmtDiff(i, i+1, wb, input_sht, input_sht, credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter, row_dict)
+                            i = knockOffAmtDiff(i, i+1, wb, input_sht, input_sht, credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter)
                         else:#interchange debit and credit col
-                            i, row_dict = knockOffAmtDiff(i, i+1, wb, input_sht, input_sht, debit_col_letter, credit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter, row_dict)
+                            i = knockOffAmtDiff(i, i+1, wb, input_sht, input_sht, debit_col_letter, credit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter)
 
 
 
@@ -250,7 +336,7 @@ def openGr(start_date,input_date):
 
                         # input_sht.range(f"{i}:{i+1}").copy(diff_month_sht.range(f"A{diff_month_last_row+1}"))
 
-                        input_sht.range(f"{i}:{i+1}").api.Delete()
+                        input_sht.range(f"{i}:{i+1}").delete()
 
                         i-=1
                     else:
@@ -261,68 +347,19 @@ def openGr(start_date,input_date):
             else:
                 print(f"pjv row num is {i}")
             i+=1
-        
-        ###########################Copy pasting based on lista###################################################################
-        colorList = []
-        for key in row_dict.keys():
-    
-            for rowList in row_dict[key]:
-                rows = ",".join(rowList)
-                if key == "Knock_Off":
-                    knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
-                    input_sht.range(rows).copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
-                    input_sht.range(rows).color = "#00FF0"
-                    if input_sht.range(rows).api.Interior.Color not in colorList:
-                        colorList.append(input_sht.range(rows).api.Interior.Color)
-                else:
-                    wb.activate()
-                    input_sht.activate()
-                    input_last_row1 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row +3
-                    input_sht.range(rows).copy(input_sht.range(f"A{input_last_row1}"))
-                    input_last_row2 = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
-                    amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-                    input_sht.range(f"{input_last_row1}:{input_last_row2}").api.Copy()
-
-                    wb.activate()
-                    amt_diff_sht.activate()
-                    amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-                    amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
-                    wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                    amt_diff_sht.autofit()
-                    input_sht.activate()
-                    input_sht.range(rows).color = "#FFFF00"
-                    if input_sht.range(rows).api.Interior.Color not in colorList:
-                        colorList.append(input_sht.range(rows).api.Interior.Color)
-
-                    input_sht.range(f"{input_last_row1}:{input_last_row2}").delete()
-
-        ###########################Deletion Logic#################################################################################
-        for colors in colorList:
-            input_sht.activate()
-            input_sht.api.AutoFilterMode=False
-            input_sht.api.Range(f"{railcar_col_letter}1").AutoFilter(Field:=f"{railcar_col+1}", Criteria1:=colors, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
-            fil_last_row = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
-            if fil_last_row !=1:
-                input_sht.range(f"2:{fil_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Delete(win32c.DeleteShiftDirection.xlShiftUp)
         ##########################################################################################################################
-
-
-        input_sht.api.AutoFilterMode=False
         #Filtering out remaining
         input_sht.autofit()
         input_sht.activate()
-        font_colour,Interior_colour = conditional_formatting(f"{railcar_col_letter}:{railcar_col_letter}",input_sht,wb)
+        font_colour,Interior_colour = conditional_formatting(railcar_col_letter,input_sht,wb)
         input_sht.api.AutoFilterMode=False
         input_sht.api.Range(f"{railcar_col_letter}1").AutoFilter(Field:=f"{railcar_col+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
-        input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{vendor_ref_col_letter}1:{vendor_ref_col_letter}{curr_last_row}").api,
-            Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{railcar_col_letter}1:{railcar_col_letter}{curr_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
-        
 
         #Finding filtered range
 
-        row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
+        row_range, sp_lst_row, sp_address = row_range_calc(input_sht, wb)
         curr_railcar = input_sht.range(f"{railcar_col_letter}{row_range[0]}").value
         curr_index = 0
         final_index = 0
@@ -351,14 +388,14 @@ def openGr(start_date,input_date):
                     # if input_sht.range(f"{credit_col_letter}{row_range[curr_index]}").value is not None and input_sht.range(f"{debit_col_letter}{row_range[final_index]}").value is not None:
                     knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
                     input_sht.range(f"{row_range[curr_index]}:{row_range[final_index]}").copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
-                    input_sht.range(f"{row_range[curr_index]}:{row_range[final_index]}").api.Delete()
+                    input_sht.range(f"{row_range[curr_index]}:{row_range[final_index]}").delete()
 
                     
                     #     i = knockOffAmtDiff(row_range[curr_index], row_range[final_index], wb, input_sht, credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter)
                     # else:#interchange debit and credit col
                     #     i = knockOffAmtDiff(row_range[curr_index], row_range[final_index], wb, input_sht, debit_col_letter, credit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter)
                     # i = knockOffAmtDiff(row_range[curr_index], row_range[final_index], wb, input_sht, credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter)
-                    row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
+                    row_range, sp_lst_row, sp_address = row_range_calc(input_sht, wb)
                     curr_railcar = input_sht.range(f"{railcar_col_letter}{row_range[0]}").value
                     curr_index = 0
                     i=0
@@ -375,8 +412,8 @@ def openGr(start_date,input_date):
 
                     input_sht.range(f"{row_range[curr_index]}:{row_range[final_index]}").copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
 
-                    input_sht.range(f"{row_range[curr_index]}:{row_range[final_index]}").api.Delete()
-                    row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
+                    input_sht.range(f"{row_range[curr_index]}:{row_range[final_index]}").delete()
+                    row_range, sp_lst_row, sp_address = row_range_calc(input_sht, wb)
                     curr_railcar = input_sht.range(f"{railcar_col_letter}{row_range[0]}").value
                     curr_index = 0
                     i=0
@@ -392,17 +429,13 @@ def openGr(start_date,input_date):
             i+=1
 
         #################################Add logic again copy back data from special sheet to input sheet#########################        
-        try:
-            spcl_sht = wb.sheets["Special_Sheet"]
-        except:
-            spcl_sht = wb.sheets.add(name="Special_Sheet", after=reco_sht)
         input_sht.api.AutoFilterMode=False
         spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
         last_row = input_sht.range(f"A{input_sht.cells.last_cell.row}").end("up").row
         spcl_sht.range(f"2:{spcl_sht_last_row}").copy(input_sht.range(f"A{last_row+1}"))
 
         #Deleting copied data from special sheet
-        spcl_sht.range(f"2:{spcl_sht_last_row}").api.Delete()
+        spcl_sht.range(f"2:{spcl_sht_last_row}").delete()
 
         input_sht.range(f"A1:{curr_last_col_letter}{curr_last_row}").api.Sort(Key1=input_sht.range(f"{railcar_col_letter}1:{railcar_col_letter}{curr_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
@@ -490,7 +523,7 @@ def openGr(start_date,input_date):
         #using railcar instead of bol number for getting data from ethanol accrual sheet
         pjv_sht.range(f"{pjv_railcar_col_letter}2:{pjv_railcar_col_letter}{pjv_last_row}").copy(eth_acr_sht.range(f"{eth_rail_col_letter}{sp_lst_row+6}"))
 
-        font_colour,Interior_colour = conditional_formatting(f"{eth_rail_col_letter}:{eth_rail_col_letter}",eth_acr_sht,wb)
+        font_colour,Interior_colour = conditional_formatting(eth_rail_col_letter,eth_acr_sht,wb)
         # eth_acr_sht.api.AutoFilterMode=False
         eth_acr_sht.api.Range(f"{eth_rail_col_letter}1").AutoFilter(Field:=f"{eth_rail_col+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
         
@@ -498,13 +531,13 @@ def openGr(start_date,input_date):
         eth_acr_sht.api.Range(f"B1:{eth_trueup_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
         wb.app.selection.copy(pjv_sht.range(f"A{pjv_last_row+1}"))
 
-        #deleting railcar numbers copied from pjv sheet in eth accr sheet
-        eth_acr_sht.range(f"{eth_rail_col_letter}{sp_lst_row+6}").expand("down").clear()
+        #deleting bol numbers copied from pjv sheet in eth accr sheet
+        eth_acr_sht.range(f"{eth_bol_col_letter}{sp_lst_row+6}").expand("down").clear()
 
 
         #Deleting copied data from ethanol Accrual Sheet
-        # eth_acr_sht.api.Range(f"A2:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        # wb.app.selection.delete(shift='left')
+        eth_acr_sht.api.Range(f"A2:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        wb.app.selection.delete(shift='left')
         eth_acr_sht.api.Range(f"A2:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
         wb.app.selection.delete(shift='up')
         # input_sht.api.AutoFilterMode=False
@@ -540,7 +573,7 @@ def openGr(start_date,input_date):
         pjv_sht.range(f"{pjv_trueup_col_letter}1").value = "TrueUp"
 
         #Deletion and column shifting logic
-        pjv_sht.range(f"{pjv_fin_amt2_col_letter}{pjv_last_row+1}").expand("down").api.Delete()
+        pjv_sht.range(f"{pjv_fin_amt2_col_letter}{pjv_last_row+1}").expand("down").delete()
         pjv_col2_list = pjv_sht.range(f"A{pjv_last_row+1}").expand('right').value
         pjv_trueup2_col = pjv_col2_list.index("TrueUp")
         pjv_trueup2_col_letter = num_to_col_letters(pjv_trueup2_col+1)
@@ -551,7 +584,7 @@ def openGr(start_date,input_date):
         pjv_sht.range(f"{pjv_credit2_col_letter}{pjv_last_row+1}").expand("down").api.Cut(pjv_sht.range(f"{pjv_credit_col_letter}{pjv_last_row+1}").api)
 
         #Deleting secondary headers
-        pjv_sht.range(f"{pjv_last_row+1}:{pjv_last_row+1}").api.Delete()
+        pjv_sht.range(f"{pjv_last_row+1}:{pjv_last_row+1}").delete()
 
         #Sorting by railcar
         pjv_last_row = pjv_sht.range(f'A'+ str(pjv_sht.cells.last_cell.row)).end('up').row
@@ -563,9 +596,6 @@ def openGr(start_date,input_date):
         pjv_sht.range(f"A1:{pjv_trueup_col_letter}{pjv_last_row}").api.Sort(Key1=pjv_sht.range(f"{pjv_railcar_col_letter}1:{pjv_railcar_col_letter}{pjv_last_row}").api,
         Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
 
-        row_dict = {}
-        row_dict["Knock_Off"] = []
-        row_dict["Amt_Dff"] = []
         i=2
         while i <=pjv_last_row:
             if not ignore_check:
@@ -576,9 +606,9 @@ def openGr(start_date,input_date):
                     if pjv_sht.range(f"{date_col_letter}{i}").value.month == curr_month_num:
                         #knock Off
                         if pjv_sht.range(f"{pjv_credit_col_letter}{i}").value is not None and pjv_sht.range(f"{debit_col_letter}{i+1}").value is not None:
-                            i, row_dict = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter, row_dict)
+                            i = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter)
                         else:#interchange debit and credit col
-                            i, row_dict = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_debit_col_letter, pjv_credit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter, row_dict)
+                            i = knockOffAmtDiff(i, i+1, wb, pjv_sht, pjv_sht, pjv_debit_col_letter, pjv_credit_col_letter, knock_off_sht, amt_diff_sht, pjv_mrn_col_letter)
 
 
 
@@ -588,7 +618,7 @@ def openGr(start_date,input_date):
                         # ignore_check=True
                         # print("Move both enteries to knock off tab")
                     #prev month MRN Booked in Current Month
-                    elif pjv_sht.range(f"{date_col_letter}{i}").value.month != curr_month_num:
+                    elif pjv_sht.range(f"{date_col_letter}{2}").value.month != curr_month_num:
                         print("Move both enteries to prev month MRN Booked in Current Month")
                         diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
 
@@ -601,7 +631,7 @@ def openGr(start_date,input_date):
 
                         # pjv_sht.range(f"{i}:{i+1}").copy(diff_month_sht.range(f"A{diff_month_last_row+1}"))
 
-                        pjv_sht.range(f"{i}:{i+1}").api.Delete()
+                        pjv_sht.range(f"{i}:{i+1}").delete()
 
                         i-=1
                     else:
@@ -614,52 +644,7 @@ def openGr(start_date,input_date):
             i+=1
             pjv_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
 
-        ###########################Copy pasting based on lista###################################################################
-        colorList = []
-        for key in row_dict.keys():
-    
-            for rowList in row_dict[key]:
-                rows = ",".join(rowList)
-                if key == "Knock_Off":
-                    knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
-                    pjv_sht.range(rows).copy(knock_off_sht.range(f"A{knock_off_last_row+1}"))
-                    pjv_sht.range(rows).color = "#00FF0"
-                    if pjv_sht.range(rows).api.Interior.Color not in colorList:
-                        colorList.append(pjv_sht.range(rows).api.Interior.Color)
-                else:
-                    wb.activate()
-                    pjv_sht.activate()
-                    input_last_row1 = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row +3
-                    pjv_sht.range(rows).copy(pjv_sht.range(f"A{input_last_row1}"))
-                    input_last_row2 = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
-                    amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-                    pjv_sht.range(f"{input_last_row1}:{input_last_row2}").api.Copy()
-
-                    wb.activate()
-                    amt_diff_sht.activate()
-                    amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-                    amt_diff_sht.range(f"A{amt_diff_last_row+1}").api.Select()
-                    wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                    amt_diff_sht.autofit()
-                    pjv_sht.activate()
-                    pjv_sht.range(rows).color = "#FFFF00"
-                    if pjv_sht.range(rows).api.Interior.Color not in colorList:
-                        colorList.append(pjv_sht.range(rows).api.Interior.Color)
-
-                    pjv_sht.range(f"{input_last_row1}:{input_last_row2}").delete()
-
-        ###########################Deletion Logic#################################################################################
-        for colors in colorList:
-            pjv_sht.activate()
-            pjv_sht.api.AutoFilterMode=False
-            pjv_sht.api.Range(f"A1").AutoFilter(Field:=1, Criteria1:=colors, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
-            fil_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
-            if fil_last_row !=1:
-                pjv_sht.range(f"2:{fil_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        ##########################################################################################################################
-
         
-        pjv_sht.api.AutoFilterMode=False
         pjv_sht.range(f"A1").expand("right").copy(spcl_sht.range("A1"))
         try:
             spcl_sht = wb.sheets["Special_Sheet"]
@@ -667,10 +652,10 @@ def openGr(start_date,input_date):
             spcl_sht = wb.sheets.add(name="Special_Sheet", after=reco_sht)
         spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
 
-        pjv_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
+
         pjv_sht.range(f"2:{pjv_last_row}").copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
 
-        pjv_sht.range(f"2:{pjv_last_row}").api.Delete()
+        pjv_sht.range(f"2:{pjv_last_row}").delete()
 
 
         #Now deleting pjv Sheet
@@ -678,167 +663,66 @@ def openGr(start_date,input_date):
 
         #Now checking input sheet for remaing rows
         input_sht.activate()
-
         #Removing MRR Logic
         input_sht.api.AutoFilterMode=False
-        input_sht.api.Range(f"{voucher_col_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="MRR*", Operator:=2, Criteria2:="Prj*")
+        input_sht.api.Range(f"{voucher_col_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="MRR*", Operator:=7)
 
         #searching all bol numbers in ethanol accrual sheet for each mrr found in inpurt sheet
-        row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
+        row_range, sp_lst_row, sp_address = row_range_calc(input_sht, wb)
         curr=0
+        for i in range(len(row_range)):
 
-        ########################Changing mrr search Logic############################
-        # for i in range(len(row_range)):
+            bol_num = input_sht.range(f"{bol_col_letter}{row_range[i]}").value
+            eth_acr_sht.activate()
+            eth_acr_sht.api.AutoFilterMode=False
+            try:
+                eth_acr_sht.api.Cells.Find(What:=bol_num , After:=eth_acr_sht.api.Application.ActiveCell, LookIn:=win32c.FindLookIn.xlFormulas,
+                LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
 
-        #     bol_num = input_sht.range(f"{bol_col_letter}{row_range[i]}").value
-        #     eth_acr_sht.activate()
-        #     eth_acr_sht.api.AutoFilterMode=False
-        #     try:
-        #         eth_acr_sht.api.Cells.Find(What:=bol_num , After:=eth_acr_sht.api.Application.ActiveCell, LookIn:=win32c.FindLookIn.xlFormulas,
-        #         LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
+                cell_value = eth_acr_sht.api.Application.ActiveCell.Address.replace("$","")
+                row_num = int(re.findall(r'\d+', cell_value)[0])
 
-        #         cell_value = eth_acr_sht.api.Application.ActiveCell.Address.replace("$","")
-        #         row_num = int(re.findall(r'\d+', cell_value)[0])
-
-        #         #Copy delete logic
-        #         curr=knockOffAmtDiff(row_range[i],row_num, wb, input_sht, eth_acr_sht, debit_col_letter, eth_credit_col_letter, knock_off_sht, amt_diff_sht,
-        #         mrn_col_letter, eth_trueup_col_letter)
-        #         curr = row_range[i]-curr
+                #Copy delete logic
+                curr=knockOffAmtDiff(row_range[i],row_num, wb, input_sht, eth_acr_sht, debit_col_letter, eth_credit_col_letter, knock_off_sht, amt_diff_sht,
+                mrn_col_letter, eth_trueup_col_letter)
+                curr = row_range[i]-curr
                 
 
-        #     except:
-        #         spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
-        #         input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
+            except:
+                spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
+                input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
             
-        #         input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").api.Delete()
-
-        #################################################################################################
-        ##########################Moving All MRR Entries to Special Sheet#################################
-        wb.activate()
-        input_sht.activate()
-        if sp_lst_row!=1:
-            input_sht.api.Range(f"A2:{curr_last_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
-            spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
-            wb.app.selection.copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
-            input_sht.api.Range(f"A2:{curr_last_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
-            wb.app.selection.delete(shift='up')
-        ##################################################################################################
-        ######################Moving Exc and Jrn entries to special sheet#################################
-        input_sht.api.AutoFilterMode=False
-        input_sht.api.Range(f"{voucher_col_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="Exc*", Operator:=2, Criteria1:="Jrn*")
-        row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
-        wb.activate()
-        input_sht.activate()
-        if sp_lst_row!=1:
-            input_sht.api.Range(f"A2:{curr_last_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
-            spcl_sht_last_row = spcl_sht.range(f"A{spcl_sht.cells.last_cell.row}").end("up").row
-            wb.app.selection.copy(spcl_sht.range(f"A{spcl_sht_last_row+1}"))
-            input_sht.api.Range(f"A2:{curr_last_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
-            wb.app.selection.delete(shift='up')
-        spcl_sht.autofit()
-        ##################################################################################################
+                input_sht.range(f"{row_range[i]-curr}:{row_range[i]-curr}").delete()
 
 
         #Logic for moving remaining mrn in input sheet to ethanol accrual sheet
         input_sht.api.AutoFilterMode=False
         curr_last_row = input_sht.range(f'A'+ str(input_sht.cells.last_cell.row)).end('up').row
-        eth_acr_sht.api.AutoFilterMode=False
-        # eth_last_row = eth_acr_sht.range(f'A'+ str(eth_acr_sht.cells.last_cell.row)).end('up').row
-        eth_last_row = eth_acr_sht.range(f'B'+ str(eth_acr_sht.cells.last_cell.row)).end('up').row
+        eth_last_row = eth_acr_sht.range(f'A'+ str(eth_acr_sht.cells.last_cell.row)).end('up').row
 
         input_sht.activate()
         row_count = input_sht.range(f"A2").expand("down").count
-        
         for i in range(0,row_count):
             eth_acr_sht.api.Range(f"B{eth_last_row+1}").EntireRow.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
         input_sht.range(f"A2:{credit_col_letter}{curr_last_row}").copy(eth_acr_sht.range(f"B{eth_last_row+1}"))
-        new_eth_last_row = eth_last_row + eth_acr_sht.range(f"B{eth_last_row+1}").expand("down").count
         input_sht.range(f"A2:{credit_col_letter}{curr_last_row}").api.EntireRow.Delete()
         eth_acr_sht.range(f"M{eth_last_row+1}").expand("down").copy(eth_acr_sht.range(f"L{eth_last_row+1}"))
         # eth_acr_sht.range(f"M{eth_last_row+1}").expand("down").clear()
         eth_acr_sht.range(f"M{eth_last_row+1}").expand("down").api.NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
         eth_acr_sht.range(f"L{eth_last_row+1}").expand("down").api.NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
 
-        #Updating formulas
-        eth_acr_sht.range(f"L{new_eth_last_row+2}").formula = f"=SUM(L2:L{new_eth_last_row})"
-        eth_acr_sht.range(f"M{new_eth_last_row+2}").formula = f"=SUM(M2:M{new_eth_last_row})"
-        eth_acr_sht.range(f"N{new_eth_last_row+2}").formula = f"=SUM(N2:N{new_eth_last_row})"
-
-
+        
         eth_acr_sht.activate()
         #Refreshing pivot table in ethanol accrual tab
         pivotCount = wb.api.ActiveSheet.PivotTables().Count
          # 'INPUT DATA'!$A$3:$I$86
-        for j in range(1, pivotCount+1):
-            if j == 1:
-                wb.api.ActiveSheet.PivotTables(j).SourceData = f"'Ethanol Accrual'!R1C2:R{new_eth_last_row}C23"
+        for j in range(1, pivotCount+1):     
             wb.api.ActiveSheet.PivotTables(j).PivotCache().Refresh()
-            
-        #Updating and Refreshing pivot in amount diff
-        wb.activate()
-        amt_diff_sht.activate()
-
-        amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
-        amt_diff_sht.api.Range(f"M2:M{amt_diff_last_row}").Select()
-        wb.app.api.Selection.FillDown()
-        wb.api.ActiveSheet.PivotTables(1).SourceData = f"'Amount Diff'!R1C1:R{amt_diff_last_row}C13"
-        wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
-
-        
-
-        #Updating and Refreshing pivot in prev month mrn booked in current month
-        wb.activate()
-        diff_month_sht.activate()
-        diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
-        diff_month_sht.api.Range(f"M1").Value = "Diff"
-        diff_month_sht.api.Range(f"M2").Formula = "=+K2+L2"
-        diff_month_sht.api.Range(f"M2:M{diff_month_last_row}").Select()
-        wb.app.api.Selection.FillDown()
-        diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
-        if diff_month_last_row != 1:
-            try: #If Pivot Alreay exists
-                wb.api.ActiveSheet.PivotTables(1).SourceData = f"'{diff_month_sht.name}'!R1C1:R{diff_month_last_row}C15"
-                wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
-            except:
-                try:#Create a new Pivot  
-                    #Adding 2 remaining columns
-                    diff_month_sht.range("N1").formula = "=+SUM(K:L)"
-                    diff_month_sht.range("N1").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
-                    diff_month_sht.range("O1").value = "TrueUp"
-                    diff_month_sht.range(f"M1").api.Copy()
-                    diff_month_sht.range(f"O1").api._PasteSpecial(Paste=win32c.PasteType.xlPasteFormats,Operation=win32c.Constants.xlNone)
-                    diff_month_sht.autofit()
-                    PivotCache=wb.api.PivotCaches().Create(SourceType=win32c.PivotTableSourceType.xlDatabase, SourceData=f"'{diff_month_sht.name}'!R1C1:R{diff_month_last_row}C15", Version=win32c.PivotTableVersionList.xlPivotTableVersion14)
-                    PivotTable = PivotCache.CreatePivotTable(TableDestination=f"'{diff_month_sht.name}'!R{diff_month_last_row+5}C6", TableName="prevmonth", DefaultVersion=win32c.PivotTableVersionList.xlPivotTableVersion14)
-                    #logger.info("Adding particular Row Data in Pivot Table")
-                    PivotTable.PivotFields('Vendor Ref').Orientation = win32c.PivotFieldOrientation.xlRowField
-                    # PivotTable.PivotFields('Vendor Ref.').Position = 1
-
-                    #logger.info("Adding particular Data Field in Pivot Table")
-                    PivotTable.PivotFields('Diff').Orientation = win32c.PivotFieldOrientation.xlDataField
-                    try:
-                        PivotTable.PivotFields("Count of Diff").Caption = "Sum of Diff"
-                        PivotTable.PivotFields("Count of Diff").Function = win32c.ConsolidationFunction.xlSum
-                    except:
-                        pass
-
-                    PivotTable.PivotFields('TrueUp').Orientation = win32c.PivotFieldOrientation.xlDataField
-                    PivotTable.CalculatedFields().Add(Name="Net Diff", Formula = "=Diff + TrueUp")
-                    PivotTable.PivotFields('Net Diff').Orientation = win32c.PivotFieldOrientation.xlDataField
-                    PivotTable.PivotFields('Sum of Diff').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
-                    PivotTable.PivotFields('Sum of TrueUp').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
-                    PivotTable.PivotFields('Sum of Net Diff').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
-                except Exception as e:
-                    raise e
-
 
         wb.save(output_location+f"\\Open GR {month}{day}.xlsx")
-        end_time = datetime.now()
-        total_time = end_time - start_time
-        print(f"Total time taken {total_time}")
+
 
         print("Done")
-        return(f"Open GR report for {input_date} has been generated successfully")
     except Exception as e:
         raise e
     finally:
@@ -846,3 +730,7 @@ def openGr(start_date,input_date):
             wb.app.quit()
         except:
             pass
+
+
+
+# openGr("12.31.2022", "12.31.2022")

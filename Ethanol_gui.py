@@ -179,6 +179,7 @@ def main():
             print()
         
         elif 'Select' in Rep_variable.get():
+            text_box.delete(1.0, "end")
             text_box.insert("end", f"Please select job first", "center")
 
 

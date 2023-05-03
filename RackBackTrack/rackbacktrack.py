@@ -743,7 +743,7 @@ def rackbacktrack(input_date, output_date):
 
 
                 try:
-                    (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0
+                    (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0
                 except:
                     new_i += 1
                     while lr_costing_sht.range(f"E{new_i+2}").value is None:
