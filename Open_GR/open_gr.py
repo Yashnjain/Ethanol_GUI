@@ -47,7 +47,7 @@ from Common.common import set_borders,freezepanes_for_tab,interior_coloring,cond
 
 
 
-def openGr(start_date,input_date):
+def openGr(input_date, start_date):
     try:
         start_date_day= datetime.strptime(start_date, "%m.%d.%Y").date().day
         start_time = datetime.now()
@@ -169,8 +169,8 @@ def openGr(start_date,input_date):
         curr_month_num =datetime.strptime(input_date,"%m.%d.%Y").month
         curr_month = datetime.strftime(datetime.strptime(input_date,"%m.%d.%Y"), "%b")
         prev_month = datetime.strftime((datetime.strptime(input_date,"%m.%d.%Y").replace(day=1) -timedelta(days=1)), "%b")
-        old_prev_month = datetime.strftime(input_datetime.replace(day=1,month=input_datetime.month-3), "%b")
-        old_curr_month = datetime.strftime(input_datetime.replace(day=1,month=input_datetime.month-2), "%b")
+        old_prev_month = datetime.strftime(input_datetime.replace(day=1,month=input_datetime.month-2), "%b")
+        old_curr_month = datetime.strftime(input_datetime.replace(day=1,month=input_datetime.month-1), "%b")
 
 
         #Adding all sheets at once #Logic avoided as these sheets presaent from previous file
@@ -180,15 +180,12 @@ def openGr(start_date,input_date):
 
         knock_off_sht = wb.sheets("Knocked Off")
         amt_diff_sht = wb.sheets("Amount Diff")
-        try:
-            diff_month_sht = wb.sheets(f"{prev_month} MRN booked in {curr_month}")
-        except:
-            diff_month_sht = wb.sheets.add(f"{prev_month} MRN booked in {curr_month}",after=amt_diff_sht)
+
 
         #Adding headers in all new sheets
         input_sht.range(f"A1").expand("right").copy(knock_off_sht.range("A1"))
         input_sht.range(f"A1").expand("right").copy(amt_diff_sht.range("A1"))
-        input_sht.range(f"A1").expand("right").copy(diff_month_sht.range("A1"))
+        
         ignore_check= False
         if start_date_day == 1:#replace else append
 
@@ -196,15 +193,22 @@ def openGr(start_date,input_date):
             knock_off_sht.range(f"A2:A{knock_off_last_row}").api.EntireRow.Delete()
             amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
             amt_diff_sht.range(f"A2:A{amt_diff_last_row}").api.EntireRow.Delete()
+            #Deleting previous prev mrn booked in current month sheet
+            try:
+                wb.sheets(f"{old_prev_month} MRN booked in {old_curr_month}").name = f"{prev_month} MRN booked in {curr_month}"
+            except:
+                pass
+            diff_month_sht = wb.sheets(f"{prev_month} MRN booked in {curr_month}")
             diff_month_last_row = diff_month_sht.range(f"A{diff_month_sht.cells.last_cell.row}").end("up").row
             if diff_month_last_row!=1:
                 diff_month_sht.range(f"A2:A{diff_month_last_row}").api.EntireRow.Delete()
-            #Deleting previous prev mrn booked in current month sheet
-            try:
-                wb.sheets(f"{old_prev_month} MRN booked in {old_curr_month}").delete()
-            except:
-                pass
-
+            
+        else:
+                    # try:
+            diff_month_sht = wb.sheets(f"{prev_month} MRN booked in {curr_month}")
+            input_sht.range(f"A1").expand("right").copy(diff_month_sht.range("A1"))
+        # except:
+        #     diff_month_sht = wb.sheets.add(f"{prev_month} MRN booked in {curr_month}",after=amt_diff_sht)
 
         knock_off_last_row = knock_off_sht.range(f"A{knock_off_sht.cells.last_cell.row}").end("up").row
         amt_diff_last_row = amt_diff_sht.range(f"A{amt_diff_sht.cells.last_cell.row}").end("up").row
@@ -498,16 +502,7 @@ def openGr(start_date,input_date):
         eth_acr_sht.api.Range(f"B1:{eth_trueup_col_letter}{sp_lst_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
         wb.app.selection.copy(pjv_sht.range(f"A{pjv_last_row+1}"))
 
-        #deleting railcar numbers copied from pjv sheet in eth accr sheet
-        eth_acr_sht.range(f"{eth_rail_col_letter}{sp_lst_row+6}").expand("down").clear()
 
-
-        #Deleting copied data from ethanol Accrual Sheet
-        # eth_acr_sht.api.Range(f"A2:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        # wb.app.selection.delete(shift='left')
-        eth_acr_sht.api.Range(f"A2:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        wb.app.selection.delete(shift='up')
-        # input_sht.api.AutoFilterMode=False
 
 ############################################Update logic from above for adding bol number of pjv for duplicate check #########################################################################################################################################
         pjv_sht.activate()
@@ -658,9 +653,95 @@ def openGr(start_date,input_date):
                 pjv_sht.range(f"2:{fil_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Delete(win32c.DeleteShiftDirection.xlShiftUp)
         ##########################################################################################################################
 
-        
+
         pjv_sht.api.AutoFilterMode=False
         pjv_sht.range(f"A1").expand("right").copy(spcl_sht.range("A1"))
+        ###############Identifying MRNS present in pjv sheet##############################
+        pjv_last_row = pjv_sht.range(f"A{pjv_sht.cells.last_cell.row}").end("up").row
+        duplicate_remover = []
+        pjv_deleter = []
+        for i in range(2,pjv_last_row+1):
+            if "MRN" in pjv_sht.range(f"{pjv_voucher_col_letter}{i}").value.upper():
+                prev_row_list = []
+                #Find row logic
+                wb.activate()
+                eth_acr_sht.activate()
+                eth_acr_sht.range(f"{eth_rail_col_letter}1").expand('down').select()
+                rail_value = pjv_sht.range(f"{pjv_railcar_col_letter}{i}").value
+                while True:
+                    wb.app.selection.api.Find(What:=rail_value, After:=eth_acr_sht.api.Application.ActiveCell, LookIn:=win32c.FindLookIn.xlFormulas,
+                                            LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
+                    cell_value = eth_acr_sht.api.Application.ActiveCell.Address.replace("$","")
+                    row_value = int(re.findall("\d+",cell_value)[0])
+                    if pjv_sht.range(f"{pjv_bol_col_letter}{i}").value == eth_acr_sht.range(f"{eth_bol_col_letter}{row_value}").value:
+                        duplicate_remover.append(row_value)
+                        prev_row_list.append(row_value)
+                        pjv_deleter.append(i)
+                        break
+                    elif row_value in prev_row_list:
+                        break
+                    else:
+                        print("Searching next rail car number appearence")
+
+                # duplicate_remover.append(pjv_sht.range(f"{pjv_bol_col_letter}{i}:{pjv_railcar_col_letter}{i}").value)
+                # print(pjv_sht.range(f"{pjv_bol_col_letter}{i}:{pjv_railcar_col_letter}{i}").value)
+        #Deleting Railcar from row from pjv sheet
+        pjv_deleter.sort(reverse=True)
+        wb.activate()
+        pjv_sht.activate()
+        for row in pjv_deleter:
+            pjv_sht.range(f"{row}:{row}").api.Delete()
+
+        #deleting railcar numbers copied from pjv sheet in eth accr sheet
+        eth_acr_sht.range(f"{eth_rail_col_letter}{sp_lst_row+6}").expand("down").clear()
+
+        #Deleting data from ethanol accrual sheet and keep rows present in duplicate_remover list
+        wb.activate()
+        eth_acr_sht.activate()
+        row_range, sp_lst_row, sp_address = row_range_calc("B", eth_acr_sht, wb)
+        duplicate_remover.sort(reverse=True)
+        for row_num in duplicate_remover:
+            
+            if row_num != sp_lst_row:
+                eth_acr_sht.api.Range(f"A{row_num+1}:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
+                wb.app.selection.delete(shift='up')
+                sp_lst_row = eth_acr_sht.range(f'A'+ str(eth_acr_sht.cells.last_cell.row)).end('up').row
+            elif row_num == sp_lst_row:
+                sp_lst_row-=1
+            else:
+                raise f"New case found in ethanol acr not to be deleted row num is {row_num}"
+
+        eth_acr_sht.api.AutoFilterMode=False
+        eth_acr_sht.range("A1").select()
+        #Finding row number of duplicate rail car number
+        # eth_rail_list = eth_acr_sht.range(f"{eth_rail_col_letter}2:{eth_rail_col_letter}{sp_lst_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Value
+        # row_range, sp_lst_row, sp_address = row_range_calc(eth_rail_col_letter, eth_acr_sht, wb)
+        # duplicate_index_list = []
+        # for i in range(row_range):
+        #     # for j in range(len(duplicate_remover)):
+        #     for j in range(2, +1):
+        #         if "MRN" in pjv_sht.range(f"{pjv_voucher_col_letter}{i}").value.upper():
+        #             duplicate_remover.append(pjv_sht.range(f"{pjv_bol_col_letter}{i}:{pjv_railcar_col_letter}{i}").value)
+        #         #railcar checker
+        #         if duplicate_remover[j][1] == eth_acr_sht.range(f"{eth_rail_col_letter}{i}").value:
+        #             #bol checker
+        #             if duplicate_remover[j][0] == eth_acr_sht.range(f"{eth_bol_col_letter}{i}").value: 
+        #                 duplicate_index_list.append(i)
+
+        # for i in range(len(duplicate_remover)):
+        #     if duplicate_remover[i][1] in eth_rail_list:
+        #         duplicate_index_list.append(eth_rail_list.index(duplicate_remover[i][1]))
+        
+        
+
+
+
+        #Deleting copied data from ethanol Accrual Sheet
+        # eth_acr_sht.api.Range(f"A2:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        # wb.app.selection.delete(shift='left')
+
+        # input_sht.api.AutoFilterMode=False
+
         try:
             spcl_sht = wb.sheets["Special_Sheet"]
         except:
