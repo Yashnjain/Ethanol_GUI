@@ -7,11 +7,9 @@ import os, time
 from datetime import datetime, timedelta
 import re
 import tabula as tb
-import xlsxwriter
-from tabula import read_pdf
+# import xlsxwriter
 from openpyxl import load_workbook
 import openpyxl as xl
-from datetime import datetime
 
 # date_df = read_pdf(loc, pages = 1, guess = False, stream = True ,
 
