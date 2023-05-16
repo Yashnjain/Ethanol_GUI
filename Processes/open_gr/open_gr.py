@@ -1,20 +1,5 @@
-from email.mime import message
-import tkinter as tk
-from tkinter.filedialog import askdirectory, askopenfilename
-from tkinter import N, Menubutton, Tk, StringVar, Text
-from tkinter import PhotoImage
-from tkinter.font import Font
-from tkinter.ttk import Label
-from tkinter import Button
-from tkinter.ttk import Frame, Style
-from tkinter.ttk import OptionMenu
-from tkinter import Label as label
-from tkcalendar import DateEntry
-from tkinter import messagebox
-# from typing import Text
 import traceback
 from pandas.core import frame 
-import requests, json
 from datetime import date, datetime, timedelta
 import numpy as np
 import glob, time
@@ -23,26 +8,12 @@ import pandas as pd
 import os
 import xlwings as xw
 from tabula import read_pdf
-# import PyPDF2
-from collections import defaultdict
 import xlwings.constants as win32c
 import sys, traceback
 import PyPDF2
-from collections import OrderedDict
-import calendar
-from dateutil.relativedelta import relativedelta
-import shutil
-from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.firefox import GeckoDriverManager
-from selenium.webdriver.firefox.options import Options
 import re
 import array
-# from Common.common import num_to_col_letters
-from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
-
+from Common.common import num_to_col_letters,conditional_formatting,knockOffAmtDiff,row_range_calc
 
 
 

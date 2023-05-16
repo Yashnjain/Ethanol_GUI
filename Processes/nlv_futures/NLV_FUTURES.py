@@ -1,15 +1,10 @@
+import os
+import re
+import PyPDF2
+import xlwings as xw
 from codecs import lookup
 from tabula import read_pdf
-import PyPDF2
-import pandas as pd
-import xlwings as xw
-import os, time
-from datetime import datetime, timedelta
-import re
-import tabula
-# import xlsxwriter
-from openpyxl import load_workbook
-from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
+from datetime import datetime
 
 
 # file = open("C:\DEEPFOLDER\Tasks\BBR_PROCESS\BBR_20221130\Future - BNP.pdf","rb")
