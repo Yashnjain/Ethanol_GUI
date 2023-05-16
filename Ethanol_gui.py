@@ -1,60 +1,29 @@
-from email.mime import message
-import tkinter as tk
-from tkinter.filedialog import askdirectory, askopenfilename
-from tkinter import N, Menubutton, Tk, StringVar, Text
-from tkinter import PhotoImage
-from tkinter.font import Font
-from tkinter.ttk import Label
-from tkinter import Button
-from tkinter.ttk import Frame, Style
-from tkinter.ttk import OptionMenu
-from tkinter import Label as label
-from tkcalendar import DateEntry
-from tkinter import messagebox
-# from typing import Text
+import sys
 import traceback
-from pandas.core import frame 
-import requests, json
-from datetime import date, datetime, timedelta
-import numpy as np
-import glob, time
+from tkcalendar import DateEntry
+from datetime import date,datetime
+from tkinter import Button
+from tkinter.ttk import Label
+from tkinter import messagebox
+from tkinter import PhotoImage
+from tkinter import Label as label
+from tkinter.ttk import OptionMenu
+from tkinter.ttk import Frame, Style
 from tkinter.messagebox import showerror
-import pandas as pd
-import os
-import xlwings as xw
-from tabula import read_pdf
-# import PyPDF2
-from collections import defaultdict
-import xlwings.constants as win32c
-import sys, traceback
-import PyPDF2
-from collections import OrderedDict
-import calendar
-from dateutil.relativedelta import relativedelta
-import shutil
-from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.firefox import GeckoDriverManager
-from selenium.webdriver.firefox.options import Options
-import re
-import array
-from CASH.cash import cash
-from NLV_FUTURES.NLV_FUTURES import NLV_FUTURESSS
-from FOB.fob import fob_runner
-from AR_ageing_bulk.ar_ageing_bulk import ar_ageing_bulk
-from ar_ageing_rack.ar_ageing_rack import ar_ageing_rack
-from purchased_ar.purchased_ar import purchased_ar
-from unbilled_ar.unbilled_ar import unbilled_ar
-from RackBackTrack.rackbacktrack import rackbacktrack
-
-from Open_GR.open_gr import openGr
-# from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
+from tkinter import N, Tk, StringVar, Text
+from Processes.cash.cash import cash
+from Processes.fob.fob import fob_runner
+from Processes.open_gr.open_gr import openGr
+from Processes.delivered_cars.del_cars import del_car
+from Processes.unbilled_ar.unbilled_ar import unbilled_ar
+from Processes.nlv_futures.NLV_FUTURES import NLV_FUTURESSS
+from Processes.purchased_ar.purchased_ar import purchased_ar
+from Processes.rackbacktrack.rackbacktrack import rackbacktrack
+from Processes.ar_ageing_bulk.ar_ageing_bulk import ar_ageing_bulk
+from Processes.ar_ageing_rack.ar_ageing_rack import ar_ageing_rack
 
 
 
-# path = r'C:\Users\imam.khan\OneDrive - BioUrja Trading LLC\Documents\Revelio'
 path = r'J:\India\BBR\IT_BBR\Reports\Ethanol_gui'
 today = datetime.strftime(date.today(), format = "%d%m%Y")
 
@@ -227,7 +196,8 @@ def main():
     # output_date = None
     frame_options.grid(row=1,column=0, pady=30, padx=35, columnspan=2, rowspan=3)
     wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Open Gr':open_gr ,
-    'Ar Ageing Report(Rack)':ar_ageing_rack,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures, 'Rack Back Track':call_rackbacktrack,'BBR FOB':bbr_fob}
+                    'Ar Ageing Report(Rack)':ar_ageing_rack,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures,
+                    'Rack Back Track':call_rackbacktrack,'BBR FOB':bbr_fob,'Delivered Cars':del_car}
     # wp_job_ids = {'ABS':1,'BBR':bbr,'CPR Report':cpr, 'Freight analysis':freight_analysis, 'CTM combined':ctm,'MTM Report':mtm_report,
     #                 'MOC Interest Allocation':moc_interest_alloc,'Open AR':open_ar,'Open AP':open_ap, 'Unsettled Payable Report':unsetteled_payables,'Unsettled Receivable Report':unsetteled_receivables,
     #                 'Storage Month End Report':strg_month_end_report, "Month End BBR":bbr_monthEnd, "Bank Recons Report":bank_recons_rep}

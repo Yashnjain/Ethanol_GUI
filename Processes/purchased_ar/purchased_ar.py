@@ -185,7 +185,8 @@ def purchased_ar(input_date, output_date):
         except:
             b = [str(no).strip().split("#")[1].strip().split(" ")[0] if no!=None else input_tab.api.Range(f"C{index+2}").Value for index,no in enumerate(a)]
             messagebox.showerror("Invoice Number Error", f"Please re-enter correct value for invoice numbers",parent=root)
-            print("Please check invoice numbers")    
+            print("Please check invoice numbers") 
+   
         input_tab.range(f"C2").options(transpose=True).value = b
         input_tab.range(f"B2").value = 2
         input_tab.api.Range(f"B2:B{lst_row}").Select()
@@ -218,6 +219,7 @@ def purchased_ar(input_date, output_date):
         raise e
     finally:
         try:
+            root.destroy()
             wb.app.quit()
         except:
             pass
