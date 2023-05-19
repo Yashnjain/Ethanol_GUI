@@ -5,7 +5,6 @@ from datetime import datetime
 import numpy as np
 # import bu_alerts
 from datetime import datetime
-
 import xlwings as xw
 # from tabula import read_pdf
 # import openpyxl as xl
@@ -13,8 +12,6 @@ from xlwings.constants import DeleteShiftDirection
 import xlwings.constants as win32c
 import random
 # import webcolors
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 import re
 
 
@@ -149,7 +146,6 @@ def fob(wb,wb1,wb2,ws1,ws2,ws3):
             last_row = ws1.range(f'B'+ str(wa.cells.last_cell.row)).end('up').row
             YELLOW = win32c.RgbColor.rgbYellow
             ws1.api.Range(f"B2:{voucher_no_col_letters}{last_row}").AutoFilter(Field:=f"{voucher_no_col+1}",Criteria1=YELLOW,Operator = win32c.AutoFilterOperator.xlFilterCellColor)
-            
             flat_list, sp_lst_row,sp_address = row_range_calc("B",ws1)
             print(sp_address)
             wb1.activate()
@@ -177,9 +173,11 @@ def fob(wb,wb1,wb2,ws1,ws2,ws3):
             ws3.activate()
             # = +XLOOKUP(G2,'[MRN_November2022.xlsx]MRN_November2022'!$F:$F,'[MRN_November2022.xlsx]MRN_November2022'!$AU:$AX,0)
             # ws1.range(f"{frt_amount_letters}{last_row_frt}").formula = f"=+XLOOKUP({ws2.range('G2')},'[{ws3}]{ws3.range('F')},'[{ws3}]{ws3.range('AU:AX')}"
-            ws1.range(f"AK2:AK{last_row_frt}").formula = f"=+XLOOKUP(G2,'[{wb2.name}]{ws3.name}'!$F:$F,'[{wb2.name}]{ws3.name}'!$AU:$AX,0)"
+            ws1.range(f"AK2:AK{last_row_frt}").Formula = f"=+XLOOKUP(G2,'[{wb2.name}]{ws3.name}'!$F:$F,'[{wb2.name}]{ws3.name}'!$AU:$AX,0)"
+            # ws2.api.Range(f"A3").Formula = "=+XLOOKUP(B3,'[BBR Master.xlsx]Bulk - AR Aging Master'!$A:$A,'[BBR Master.xlsx]Bulk - AR Aging Master'!$C:$C,0)"
 
             print("DONE")
+
 
         except Exception as e:
             raise e
@@ -206,6 +204,7 @@ def fob_runner(start_date,end_date):
         ws3 = wb2.sheets[f'MRN_November {start_date3}']
 
         fob(wb,wb1,wb2,ws1,ws3,ws2)
+        return(f"fob report for {start_date} has been generated successfully")
 
     except Exception as e:
         raise e
