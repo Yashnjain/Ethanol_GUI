@@ -345,46 +345,53 @@ def ar_ageing_bulk(input_date, output_date):
                 input_tab.range(f"P{value}").value = f'=+SUM(P{inital_value}:P{value-1})'
                 inital_value = value
 
-        row_range.pop(-1)                      
-        for index,value in enumerate(row_range):
-            if index==0:
-                inital_value = value
-            else: 
-                if input_tab.range(f"K{value}").value>0:
-                    print(f"Accounts payables found:{value}")
-                    inital_value = value
-                else:
-                    print(f"Accounts receivables found:{value}")
-                    print("starting shifting")
-                    shifting_columns = ["P","O","N","M","L"]
-                    for index2,columns in enumerate(shifting_columns):
-                        # if index>0 and index!=len(row_range)-1:
-                        #     inital_value = inital_value+1     
-                        if columns=="L":
-                            print("reached optimum condition")
-                            break
-                        if columns=="P":
-                            input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
-                            input_tab.api.Range(f"{columns}{inital_value+2}")._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
-                            wb.app.api.CutCopyMode=False
-                        if input_tab.range(f"{columns}{value}").value>0:
-                            new_column = shifting_columns[shifting_columns.index(columns)-1]
-                            while new_column !="P":
-                                if input_tab.range(f"{new_column}{value}").value<0:
-                                    input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").Copy() 
-                                    input_tab.api.Range(f"{shifting_columns[index2]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
-                                    input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").ClearContents()
-                                    #move those
-                                new_column = shifting_columns[shifting_columns.index(new_column)-1]
-                            if input_tab.range(f"{columns}{value}").value>0:
-                                input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
-                                input_tab.api.Range(f"{shifting_columns[index2+1]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
-                                input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").ClearContents()
-
-                    inital_value = value
+        row_range.pop(-1) 
 
         input_tab.autofit()
-        input_tab.api.AutoFilterMode=False  
+        input_tab.api.AutoFilterMode=False 
+        
+        if messagebox.showinfo("Prompt box",'Press ok after shifting is done'):
+            print("promt clicked")   
+        else:
+            return "Process aborted by user"                    
+        # for index,value in enumerate(row_range):
+        #     if index==0:
+        #         inital_value = value
+        #     else: 
+        #         if input_tab.range(f"K{value}").value>0:
+        #             print(f"Accounts payables found:{value}")
+        #             inital_value = value
+        #         else:
+        #             print(f"Accounts receivables found:{value}")
+        #             print("starting shifting")
+        #             shifting_columns = ["P","O","N","M","L"]
+        #             for index2,columns in enumerate(shifting_columns):
+        #                 # if index>0 and index!=len(row_range)-1:
+        #                 #     inital_value = inital_value+1     
+        #                 if columns=="L":
+        #                     print("reached optimum condition")
+        #                     break
+        #                 if columns=="P":
+        #                     input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
+        #                     input_tab.api.Range(f"{columns}{inital_value+2}")._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
+        #                     wb.app.api.CutCopyMode=False
+        #                 if input_tab.range(f"{columns}{value}").value>0:
+        #                     new_column = shifting_columns[shifting_columns.index(columns)-1]
+        #                     while new_column !="P":
+        #                         if input_tab.range(f"{new_column}{value}").value<0:
+        #                             input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").Copy() 
+        #                             input_tab.api.Range(f"{shifting_columns[index2]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
+        #                             input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").ClearContents()
+        #                             #move those
+        #                         new_column = shifting_columns[shifting_columns.index(new_column)-1]
+        #                     if input_tab.range(f"{columns}{value}").value>0:
+        #                         input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
+        #                         input_tab.api.Range(f"{shifting_columns[index2+1]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
+        #                         input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").ClearContents()
+
+        #             inital_value = value
+
+  
 
         wb.app.api.ActiveWindow.SplitRow=1
         wb.app.api.ActiveWindow.FreezePanes = True
