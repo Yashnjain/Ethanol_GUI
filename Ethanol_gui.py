@@ -78,22 +78,6 @@ def purchased_ar_(input_date, output_date):
     except Exception as e:
         raise e
 
-
-def ar_ageing_bulk_(input_date, output_date):
-    try:
-        msg = ar_ageing_bulk(input_date, output_date)
-        return msg
-    except Exception as e:
-        raise e
-
-def ar_ageing_rack_(input_date, output_date):
-    try:
-        msg = ar_ageing_rack(input_date, output_date)
-        return msg
-    except Exception as e:
-        raise e
-
-
 def bbr_nlv_futures(start_date,end_date):
     try:
         msg = NLV_FUTURESSS(start_date,end_date)

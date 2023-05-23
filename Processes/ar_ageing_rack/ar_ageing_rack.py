@@ -1,55 +1,16 @@
-from email.mime import message
-import tkinter as tk
-from tkinter.filedialog import askdirectory, askopenfilename
-from tkinter import N, Menubutton, Tk, StringVar, Text
-from tkinter import PhotoImage
-from tkinter.font import Font
-from tkinter.ttk import Label
-from tkinter import Button
-from tkinter.ttk import Frame, Style
-from tkinter.ttk import OptionMenu
-from tkinter import Label as label
-from tkcalendar import DateEntry
-from tkinter import messagebox
-# from typing import Text
-import traceback
-from pandas.core import frame 
-import requests, json
-from datetime import date, datetime, timedelta
-import numpy as np
-import glob, time
-from tkinter.messagebox import showerror
-import pandas as pd
-import os
-import xlwings as xw
-from tabula import read_pdf
-# import PyPDF2
-from collections import defaultdict
-import xlwings.constants as win32c
-import sys, traceback
-import PyPDF2
-from collections import OrderedDict
-import calendar
-from dateutil.relativedelta import relativedelta
-import shutil
-from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.firefox import GeckoDriverManager
-from selenium.webdriver.firefox.options import Options
 import re
-import array
-# from Common.common import num_to_col_letters
-from Common.common import set_borders,freezepanes_for_tab,interior_coloring,conditional_formatting2,interior_coloring_by_theme,num_to_col_letters,insert_all_borders,conditional_formatting,knockOffAmtDiff,row_range_calc,thick_bottom_border
-
-
+import os
+import time
+import pandas as pd
+import xlwings as xw
+import xlwings.constants as win32c
+from datetime import datetime, timedelta
+from Common.common import freezepanes_for_tab,conditional_formatting2,num_to_col_letters,conditional_formatting
 
 
 
 def ar_ageing_rack(input_date, output_date):
-    try:
-        today_date=date.today()     
+    try: 
         job_name = 'ar_ageing_Rack'
         month = input_date.split(".")[0]
         day = input_date.split(".")[1]
@@ -67,7 +28,9 @@ def ar_ageing_rack(input_date, output_date):
         if not os.path.exists(input_sheet3):
             return(f"{input_sheet3} Excel file not present")    
         if not os.path.exists(input_sheet4):
-            return(f"{input_sheet4} Excel file not present")                       
+            return(f"{input_sheet4} Excel file not present") 
+        if not os.path.exists(grp_sheet):
+            return(f"{grp_sheet} Excel file not present")                               
         raw_df = pd.read_excel(input_sheet,skiprows=[0,1,2,3,4,5])    
         # raw_df = raw_df[(raw_df[raw_df.columns[0]] == 'Demurrage')]
         # raw_df = raw_df.iloc[:,[0,1,-6,-5,-4,-3,-2,-1]]
@@ -182,99 +145,6 @@ def ar_ageing_rack(input_date, output_date):
             else:
                 pass  
 
-        # input_tab.range(f"Q{sp_initial_rw}:Q{sp_lst_row}")
-        
-        # voucher_filters = input_tab.range(f"E2:E{sp_lst_row}").value
-        # jeneral_entry =[{index+2:filter} for index,filter in enumerate(voucher_filters) if filter!=None and "Jrn" in filter]
-        # input_tab.api.AutoFilterMode=False
-        # if len(jeneral_entry)>0:
-        #     for value in jeneral_entry:
-        #         for index,filter in value.items():
-        #             try:
-        #                 input_tab.api.Range(f"{Voucher_No_column_letter}1").AutoFilter(Field:=f'{Voucher_No_column_no}', Criteria1:=[filter])
-        #                 time.sleep(1)
-        #                 sp_lst_row_ex = input_tab.range(f'{Voucher_No_column_letter}'+ str(input_tab.cells.last_cell.row)).end('up').row
-        #                 sp_address_Ex= input_tab.api.Range(f"{Voucher_No_column_letter}2:L{sp_lst_row_ex}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address
-        #                 sp_initial_rw_ex = re.findall("\d+",sp_address_Ex.replace("$","").split(":")[0])[0]
-        #                 if messagebox.askyesno("Jrn Entry Found!!!",'Do you want this entry to be removed'):
-        #                     print("remove entry") 
-        #                     company_key = input_tab.range(f"A{sp_initial_rw_ex}").value  
-        #                     input_tab.range(f"{sp_initial_rw_ex}:{sp_initial_rw_ex}").delete()
-        #                     input_tab.api.AutoFilterMode=False 
-        #                     input_tab.api.Range(f"A1").AutoFilter(Field:=1, Criteria1:=[company_key+f"*"],Operator:=1)
-        #                     sp_lst_row_sc = input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
-        #                     sp_address_sc= input_tab.api.Range(f"A2:B{sp_lst_row_sc}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address
-        #                     sp_initial_rw_sc = re.findall("\d+",sp_address_sc.replace("$","").split(":")[0])[0]
-        #                     length = len(input_tab.api.Range(f"A{sp_initial_rw_sc}:B{sp_lst_row_sc}").SpecialCells(win32c.CellType.xlCellTypeVisible).Rows.Value)
-        #                     if length <=1:
-        #                         input_tab.range(f"{sp_initial_rw_sc}:{sp_initial_rw_sc}").delete() 
-        #                         input_tab.range(f"{sp_initial_rw_sc}:{sp_initial_rw_sc}").delete()
-        #                     else:
-        #                         print("Entries found hence no bucket deletion")
-        #                     input_tab.api.AutoFilterMode=False
-        #                 else:
-        #                     print("continue")
-        #                     input_tab.range(f"D{index}").copy(input_tab.range(f"E{index}"))
-        #                     diff = (datetime.strptime(input_date,'%m.%d.%Y') - datetime.strptime(input_tab.range(f"D{index}").value,"%m-%d-%Y")).days
-        #                     if diff <11:
-        #                         input_tab.range(f"K{index}").copy(input_tab.range(f"L{index}"))
-        #                     elif diff >=11 and diff <31:
-        #                         input_tab.range(f"K{index}").copy(input_tab.range(f"M{index}"))
-        #                     elif diff >=31 and diff <61:
-        #                         input_tab.range(f"K{index}").copy(input_tab.range(f"N{index}"))
-        #                     elif diff >=61 and diff <91:
-        #                         input_tab.range(f"K{index}").copy(input_tab.range(f"O{index}"))
-        #                     else:
-        #                         input_tab.range(f"K{index}").copy(input_tab.range(f"P{index}"))
-        #                     input_tab.api.AutoFilterMode=False    
-        #             except:
-        #                 pass   
-
-        # jeneral_entry =[{index+2:filter} for index,filter in enumerate(voucher_filters) if filter!=None and "Exc" in filter]
-        # input_tab.api.AutoFilterMode=False
-        # if len(jeneral_entry)>0:
-        #     for value in jeneral_entry:
-        #         for index,filter in value.items():
-        #             try:
-        #                 input_tab.api.Range(f"{Voucher_No_column_letter}1").AutoFilter(Field:=f'{Voucher_No_column_no}', Criteria1:=[filter])
-        #                 time.sleep(1)
-        #                 sp_lst_row_ex = input_tab.range(f'{Voucher_No_column_letter}'+ str(input_tab.cells.last_cell.row)).end('up').row
-        #                 sp_address_Ex= input_tab.api.Range(f"{Voucher_No_column_letter}2:L{sp_lst_row_ex}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address
-        #                 sp_initial_rw_ex = re.findall("\d+",sp_address_Ex.replace("$","").split(":")[0])[0]
-        #                 if messagebox.askyesno("Exc Entry Found!!!",'Do you want this entry to be removed'):
-        #                     print("remove entry") 
-        #                     company_key = input_tab.range(f"A{sp_initial_rw_ex}").value  
-        #                     input_tab.range(f"{sp_initial_rw_ex}:{sp_initial_rw_ex}").delete()
-        #                     input_tab.api.AutoFilterMode=False 
-        #                     input_tab.api.Range(f"A1").AutoFilter(Field:=1, Criteria1:=[company_key+f"*"],Operator:=1)
-        #                     sp_lst_row_sc = input_tab.range(f'A'+ str(input_tab.cells.last_cell.row)).end('up').row
-        #                     sp_address_sc= input_tab.api.Range(f"A2:B{sp_lst_row_sc}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address
-        #                     sp_initial_rw_sc = re.findall("\d+",sp_address_sc.replace("$","").split(":")[0])[0]
-        #                     length = len(input_tab.api.Range(f"A{sp_initial_rw_sc}:B{sp_lst_row_sc}").SpecialCells(win32c.CellType.xlCellTypeVisible).Rows.Value)
-        #                     if length <=1:
-        #                         input_tab.range(f"{sp_initial_rw_sc}:{sp_initial_rw_sc}").delete() 
-        #                         input_tab.range(f"{sp_initial_rw_sc}:{sp_initial_rw_sc}").delete()
-        #                     else:
-        #                         print("Entries found hence no bucket deletion")
-        #                     input_tab.api.AutoFilterMode=False
-        #                 else:
-        #                     print("continue")
-        #                     input_tab.range(f"D{sp_initial_rw_ex}").copy(input_tab.range(f"E{sp_initial_rw_ex}"))
-        #                     diff = (datetime.strptime(input_date,'%m.%d.%Y') - datetime.strptime(input_tab.range(f"D{sp_initial_rw_ex}").value,"%m-%d-%Y")).days
-        #                     if diff <11:
-        #                         input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"L{sp_initial_rw_ex}"))
-        #                     elif diff >=11 and diff <31:
-        #                         input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"M{sp_initial_rw_ex}"))
-        #                     elif diff >=31 and diff <61:
-        #                         input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"N{sp_initial_rw_ex}"))
-        #                     elif diff >=61 and diff <91:
-        #                         input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"O{sp_initial_rw_ex}"))
-        #                     else:
-        #                         input_tab.range(f"K{sp_initial_rw_ex}").copy(input_tab.range(f"P{sp_initial_rw_ex}"))
-        #                     input_tab.api.AutoFilterMode=False    
-        #             except:
-        #                 pass 
-
         print("entry removed successfully")  
         column_list = input_tab.range("A1").expand('right').value
         DD_No_column_no = column_list.index('Due Date')+1
@@ -388,12 +258,7 @@ def ar_ageing_rack(input_date, output_date):
         input_tab.autofit()
         input_tab.api.AutoFilterMode=False  
 
-        wb.app.api.ActiveWindow.SplitRow=1
-        wb.app.api.ActiveWindow.FreezePanes = True
-
         lstr_rw = input_tab.range(f'H'+ str(input_tab.cells.last_cell.row)).end('up').row
-        # input_tab.range(f"A1:Q{lstr_rw}").unmerge()
-
         rack_tab= temp_wb.sheets["AR Rack"]
         rack_tab.api.Copy(After=wb.api.Sheets(2))
         rack_tab_it = wb.sheets[2]
@@ -410,10 +275,6 @@ def ar_ageing_rack(input_date, output_date):
 
         rack_tab_it.activate()
 
-
-
-        # bulk_tab_it = ""
-        # delete_row_end = rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row
         rack_tab_it.api.Range(f"B9:J27").Delete(win32c.DeleteShiftDirection.xlShiftUp)
 
 
@@ -499,9 +360,6 @@ def ar_ageing_rack(input_date, output_date):
         rack_tab_it.autofit()
         bs_total_row = rack_tab_it.range(f'C{ini_help-1}').end('down').row
         rack_tab_it.range(f"C{bs_total_row}").value = bs_total
-        #     Cells.Find(What:="accounts receivable", After:=ActiveCell, LookIn:= _
-        # xlFormulas2, LookAt:=xlPart, SearchOrder:=xlByRows, SearchDirection:= _
-        # xlNext, MatchCase:=False, SearchFormat:=False).Activate
         companny_name1 = rack_tab_it.range(f"B8:B{ini-1}").value
         refined_name1 = [" ".join(name.split(" ")[:-1]) for name in companny_name1]
         rack_tab_it.range(f"P8").options(transpose=True).value = refined_name1
@@ -522,52 +380,7 @@ def ar_ageing_rack(input_date, output_date):
         rack_tab_it.range(f"L8").expand('table').delete()
         rack_tab_it.api.Range(f"N:N").EntireColumn.Delete()
 
-        # bulk_tab_it.range(f"P8").expand("down").api.Copy(bulk_tab_it.range(f"L8").api)
-        # bulk_tab_it.range(f"M8").expand('down').clear_contents()
-        # bulk_tab_it.range(f"J8").expand("down").api.Copy(bulk_tab_it.range(f"M8").api)
-
-        # bulk_tab_it.api.Range(f"P:P").EntireColumn.Delete()
         rack_tab_it.autofit()
-        # bulk_tab2= temp_wb.sheets["Bulk(2)"]
-        # bulk_tab2.api.Copy(After=wb.api.Sheets(3))
-        # bulk_tab_it2 = wb.sheets[3]
-        # bulk_tab_it2.name = "Bulk_Data(IT)(2)"
-
-        # bulk_tab_it2.api.Cells.Find(What:="INELIGIBLE ACCOUNTS RECEIVABLE", After:=bulk_tab_it2.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
-        # bcell_value = bulk_tab_it2.api.Application.ActiveCell.Address.replace("$","")
-        # brow_value = re.findall("\d+",bcell_value)[0]
-        # bulk_tab_it2.range(f"B{int(brow_value)+1}").expand('table').delete()
-        # bulk_tab_it2.range("B3").value = xl_input_Date
-
-        # bulk_tab_it2.range(f"B9:J{int(brow_value)-1}").delete()
-
-        # delete_row_end = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').row
-        # delete_row_end2 = bulk_tab_it2.range(f'B'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').row
-        # bulk_tab_it2.range(f"{delete_row_end2}:{delete_row_end2}").insert()
-        # bulk_tab_it2.range(f"{delete_row_end2+1}:{delete_row_end+1}").delete()
-
-
-        # bulk_tab_it.api.Range(f"B8:C{ini-1}").Copy(bulk_tab_it2.range(f"B100").api)
-
-
-        # bulk_tab_it2.activate()
-        # bulk_tab_it2.range(f"B100").expand('down').api.EntireRow.Copy()
-        # bulk_tab_it2.range(f"B9").api.EntireRow.Select()
-        # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-
-        # ini2 = bulk_tab_it2.range(f'B'+ str(input_tab.cells.last_cell.row)).end('up').end('up').row
-        # bulk_tab_it2.range(f"B{ini2}").expand('down').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-        
-        # ini2 = bulk_tab_it2.range(f'B'+ str(input_tab.cells.last_cell.row)).end('up').end('up').row
-
-        # bulk_tab_it2.api.Range(f"D8:J{ini2-1}").Select()
-        # wb.app.api.Selection.FillDown()
-
-        # bulk_tab_it2.api.Range(f"8:8").EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-
-        # bulk_tab_it2.api.Range(f"B{ini2-1}").Font.Bold = True
-
-        # bulk_tab_it.api.Range(f"E8:I{ini-1}").Copy(bulk_tab_it2.range(f"E8").api)
 
         rack_tab_it.api.Range(f"J1").Copy()
         rack_tab_it.api.Range(f"C8:C{ini-1}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAllUsingSourceTheme,Operation=win32c.Constants.xlMultiply)
@@ -654,9 +467,15 @@ def ar_ageing_rack(input_date, output_date):
 
                 rack_tab_it.api.Cells.FormatConditions.Delete()
                 rack_tab_it.api.AutoFilterMode=False
-
+              
+      
+        
         rack_tab_it.api.Range(f"L:L").EntireColumn.Delete()
         rack_tab_it.activate()
+        ###################
+        wb.sheets.add("Rest balance(IT)",after=rack_tab_it)
+        temo_rack_tab= wb.sheets["Rest balance(IT)"]
+        ##############
         font_colour,Interior_colour = conditional_formatting2(range=f"C8:C{ini-1}",working_sheet=rack_tab_it,working_workbook=wb)
         rack_tab_it.api.Range(f"C7").AutoFilter(Field:=2, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
 
@@ -666,35 +485,9 @@ def ar_ageing_rack(input_date, output_date):
         if int(sp_initial_rw)==6:
             rack_tab_it.api.Range(f"C7").AutoFilter(Field:=2)
         elif int(sp_lst_row) ==int(sp_initial_rw):
-            val_row = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
-            rack_tab_it.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
-            count_n = rack_tab_it.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Count
-        else:    
-            val_row = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
-            rack_tab_it.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(rack_tab_it.range(f"B100").api)
-            a,b,c =row_range_calc('B',rack_tab_it,wb)
-            a = a[a.index(int(sp_initial_rw)):a.index(int(sp_lst_row))+1]
-            count_n = len(a)
-            # tcount_n = rack_tab_it.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).EntireRow.Count
-
-        # value_row = bulk_tab_it2.range(f'C'+ str(bulk_tab_it2.cells.last_cell.row)).end('up').end('up').end('up').row
-        if rack_tab_it.range(f"B100").value!=None:
-            rack_tab_it.range(f"B100").expand('down').api.EntireRow.Copy()
-            try:
-                rack_tab_it.range(f"A{val_row+2}").api.EntireRow.Select()
-            except:
-                val_row = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row
-                rack_tab_it.range(f"A{val_row+2}").api.EntireRow.Select()
-            wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-            wb.app.api.CutCopyMode=False
-
-            if count_n==1:
-                rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row  
-                rack_tab_it.range(f"B{rw_faltu}").expand('right').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-            else:
-                rw_faltu=rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row      
-                rack_tab_it.range(f"B{rw_faltu}").expand('table').api.EntireRow.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-
+            rack_tab_it.range(f"B{sp_initial_rw}").expand("right").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(temo_rack_tab.range(f"A1").api)
+        else:
+            rack_tab_it.range(f"B{sp_initial_rw}").expand("table").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(temo_rack_tab.range(f"A1").api)
 
 
         if int(sp_initial_rw)==6:
@@ -744,9 +537,6 @@ def ar_ageing_rack(input_date, output_date):
             rack_tab_it.api.AutoFilterMode=False
             rack_tab_it.api.Cells.FormatConditions.Delete()
 
-        # faltu_row = rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row
-        # rack_tab_it.range(f"b{faltu_row}").expand('table').delete()
-
         input_tab.api.AutoFilterMode=False
         rack_tab_it.api.AutoFilterMode=False
         rack_tab_it.api.Cells.FormatConditions.Delete()
@@ -762,13 +552,11 @@ def ar_ageing_rack(input_date, output_date):
         for i in range(len(grp_df['COMPANY'])):
             grp_df['COMPANY'][i] = " ".join(grp_df['COMPANY'][i].split(" ")[:-1]) + f" "
 
-        # bulk_tab_it2.api.Cells.Find(What:="INELIGIBLE ACCOUNTS RECEIVABLE", After:=bulk_tab_it2.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
-        # bcell_value = bulk_tab_it2.api.Application.ActiveCell.Address.replace("$","")
         check_row = rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
         if rack_tab_it.range(f"B{check_row}").value=='Total':
             brow_value = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').row + 2
         else:
-            brow_value = rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row + 1 
+            brow_value = rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row + 1
 
         rack_tab_it.api.Cells.Find(What:="Total", After:=rack_tab_it.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
         helpcell_value = rack_tab_it.api.Application.ActiveCell.Address.replace("$","")
@@ -778,17 +566,11 @@ def ar_ageing_rack(input_date, output_date):
         rack_tab_it.api.Range(f"B{int(ini)}:B{int(ini)+len(grp_df)-1}").EntireRow.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
         rack_tab_it.range(f'B{int(ini)}').options(index = False,header=False).value = grp_df 
 
-        # rack_tab_it.range(f'B{int(brow_value)}').expand('down').font.bold= False
-
-
         rack_tab_it.range(f"B8:J{ini-1}").api.Sort(Key1=rack_tab_it.range(f"B8:B{ini-1}").api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
       
         rack_tab_it.range(f'B{int(ini)}').expand('table').api.Sort(Key1=rack_tab_it.range(f'B{int(ini)+1}').expand('down').api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         tell_row = rack_tab_it.range(f'B{int(brow_value)}').end('down').row 
-        if count_n:
-            count = 0 + count_n
-        else:
-            count = 0   
+
         for i in range(len(grp_df['COMPANY'])):
             conditional_formatting(range=f'B8:B{tell_row}',working_sheet=rack_tab_it,working_workbook=wb)
             rack_tab_it.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
@@ -800,37 +582,21 @@ def ar_ageing_rack(input_date, output_date):
             lst_row = re.findall("\d+",int_check .replace("$","").split(":")[0])[0]
             if rack_tab_it.range(f"C{sp_initial_rw}").value + rack_tab_it.range(f"C{lst_row}").value<=1:
                 rack_tab_it.range(f"{lst_row}:{lst_row}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-                in_rw = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
-                if count>=1:
-                    in_rw = rack_tab_it.range(f'B'+ str(rack_tab_it.cells.last_cell.row)).end('up').row
-                    rack_tab_it.range(f"{sp_initial_rw}:{sp_initial_rw}").api.EntireRow.Copy()
-                    # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                    rack_tab_it.range(f"{in_rw+1}:{in_rw+1}").api.EntireRow.Select()
-                    wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                else:    
-                    rack_tab_it.range(f"{sp_initial_rw}:{sp_initial_rw}").api.EntireRow.Copy()
-                    # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                    rack_tab_it.range(f"{in_rw+2}:{in_rw+2}").api.EntireRow.Select()
-                    wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+
+                llsr = temo_rack_tab.range(f'A'+ str(temo_rack_tab.cells.last_cell.row)).end('up').row 
+                if temo_rack_tab.range(f"A1").value==None:
+                    rack_tab_it.range(f"B{sp_initial_rw}:I{sp_initial_rw}").api.Copy(temo_rack_tab.range(f"A1").api)
+                else:
+                    rack_tab_it.range(f"B{sp_initial_rw}:I{sp_initial_rw}").api.Copy(temo_rack_tab.range(f"A{llsr+1}").api)
+
                 rack_tab_it.range(f"{sp_initial_rw}:{sp_initial_rw}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
                 rack_tab_it.api.AutoFilterMode=False
                 rack_tab_it.api.Cells.FormatConditions.Delete()
-                count+=1
+                # count+=1
             else:
                 print("second case")
                 rack_tab_it.api.AutoFilterMode=False
                 rack_tab_it.api.Cells.FormatConditions.Delete()
-
-        #ineligible accounts check
-        # bulk_tab_it2.api.Cells.Find(What:="INELIGIBLE ACCOUNTS RECEIVABLE", After:=bulk_tab_it2.api.Application.ActiveCell,LookIn:=win32c.FindLookIn.xlFormulas,LookAt:=win32c.LookAt.xlPart, SearchOrder:=win32c.SearchOrder.xlByRows, SearchDirection:=win32c.SearchDirection.xlNext).Activate()
-        # bcell_value = bulk_tab_it2.api.Application.ActiveCell.Address.replace("$","")
-        # brow_value = re.findall("\d+",bcell_value)[0]
-       
-        # if bulk_tab_it2.range(f"B{int(brow_value)+1}").value!=None:
-        #     pass
-        # else:
-        #     bulk_tab_it2.range(f"{brow_value}:{brow_value}").api.Delete(win32c.DeleteShiftDirection.xlShiftUp)
-
 
         #updating formula
 
@@ -844,11 +610,9 @@ def ar_ageing_rack(input_date, output_date):
 
         fst_rng = rack_tab_it.range(f"C8").expand("down").get_address().replace("$","")
 
-        if type(rack_tab_it.range(f"C{formula_row}").end("down").value)==float:
-
-            rw = rack_tab_it.range(f'C'+ str(rack_tab_it.cells.last_cell.row)).end('up').end('up').row
-            mid_range = rack_tab_it.range(f"C{rw}").expand("down").get_address().replace("$","")
-            rack_tab_it.range(f"C{formula_row}").formula = f"=+C{pre_row}-SUM({fst_rng})-SUM({mid_range})"
+        if type(temo_rack_tab.range(f"B1").value)==float:
+            mid_range = temo_rack_tab.range(f"B1").expand("down").get_address().replace("$","")
+            rack_tab_it.range(f"C{formula_row}").formula = f"=+C{pre_row}-SUM({fst_rng})-SUM('{temo_rack_tab.name}'!{mid_range})"
         else:
             rack_tab_it.range(f"C{formula_row}").formula = f"=+C{pre_row}-SUM({fst_rng})" 
 
@@ -869,7 +633,7 @@ def ar_ageing_rack(input_date, output_date):
         input_tab.api.Range(f"A:A")._PasteSpecial(Paste=-4163)
         wb.app.api.CutCopyMode=False
 
-        tablist={input_tab:win32c.ThemeColor.xlThemeColorAccent2,rack_tab_it:win32c.ThemeColor.xlThemeColorAccent6}
+        tablist={input_tab:win32c.ThemeColor.xlThemeColorAccent2,rack_tab_it:win32c.ThemeColor.xlThemeColorAccent6,temo_rack_tab:win32c.ThemeColor.xlThemeColorAccent4}
         for tab,color in tablist.items():
                 tab.activate()
                 tab.api.Tab.ThemeColor = color
