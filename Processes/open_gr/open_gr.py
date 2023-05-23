@@ -1,18 +1,11 @@
-import traceback
-from pandas.core import frame 
-from datetime import date, datetime, timedelta
-import numpy as np
-import glob, time
-from tkinter.messagebox import showerror
+from datetime import datetime, timedelta
+import time
 import pandas as pd
 import os
 import xlwings as xw
-from tabula import read_pdf
 import xlwings.constants as win32c
-import sys, traceback
-import PyPDF2
+import traceback
 import re
-import array
 from Common.common import num_to_col_letters,conditional_formatting,knockOffAmtDiff,row_range_calc
 
 
