@@ -84,7 +84,7 @@ def rackbacktrack(input_date, output_date):
                             input_day_month = datetime.strftime(input_datetime-timedelta(days=retry), "%b%d")
                             other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
                             
-                            if retry ==3:
+                            if retry ==4:
                                 return(f"{other_loc} Excel file not present for date {input_day_month}")
 
         if not os.path.exists(input_sheet):
