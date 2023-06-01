@@ -507,6 +507,35 @@ def rack_pdf_data_extractor(pdf_loc):
     except Exception as e:
         raise e
 
+# def range_divider(list1, list2):
+#     ranges = []
+#     start = 1
+#     for end in list2:
+#         ranges.append(f"{list1[0].split(':')[0]}{start}:{list1[0].split(':')[0]}{end - 1}")
+#         start = end + 1
+#     ranges.append(f"{list1[0].split(':')[0]}{start}:{list1[0].split(':')[1]}")
+#     return ranges
+
+# list1 = ["A1:BM20", "A21:BM28", "A29:BM40"]
+# list2 = [12, 36]
+def range_divider(list1, list2,start_col,end_col):
+    modified_list1 = []
+
+    for range_str in list1:
+        start, end = range_str.split(':')
+        start = int(start)
+        end = int(end)
+        
+        modified_range = []
+        for num in range(start, end+1):
+            if num not in list2:
+                modified_range.append(num)
+        
+        if modified_range:
+            modified_list1.append(f"{start_col}{min(modified_range)}:{end_col}{max(modified_range)}")
+
+    print(modified_list1)
+    return modified_list1
 # def common():
 #     try:
 #         set_borders()

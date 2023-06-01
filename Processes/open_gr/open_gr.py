@@ -6,7 +6,7 @@ import xlwings as xw
 import xlwings.constants as win32c
 import traceback
 import re
-from Common.common import num_to_col_letters,conditional_formatting,knockOffAmtDiff,row_range_calc
+from Common.common import num_to_col_letters,conditional_formatting,knockOffAmtDiff,row_range_calc, range_divider
 
 
 
@@ -664,16 +664,27 @@ def openGr(input_date, start_date):
         eth_acr_sht.activate()
         row_range, sp_lst_row, sp_address = row_range_calc("B", eth_acr_sht, wb)
         duplicate_remover.sort(reverse=True)
-        for row_num in duplicate_remover:
+        if len(duplicate_remover):
+            select_range = range_divider(sp_address,duplicate_remover,start_col="A",end_col=eth_last_col_letter)
+            select_range_str = (", ").join(select_range)
+            eth_acr_sht.api.Range(select_range_str).EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+        else:
+            eth_acr_sht.api.Range(f"A{row_range[0]}:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+
+        wb.app.selection.delete(shift='up')
+        # for row_num in duplicate_remover:
             
-            if row_num != sp_lst_row:
-                eth_acr_sht.api.Range(f"A{row_num+1}:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
-                wb.app.selection.delete(shift='up')
-                sp_lst_row = eth_acr_sht.range(f'A'+ str(eth_acr_sht.cells.last_cell.row)).end('up').row
-            elif row_num == sp_lst_row:
-                sp_lst_row-=1
-            else:
-                raise f"New case found in ethanol acr not to be deleted row num is {row_num}"
+        #     if row_num != sp_lst_row:
+        #         if row_num==duplicate_remover[0]:
+        #             eth_acr_sht.api.Range(f"A{row_range[0]}:{eth_last_col_letter}{row_num-1}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+        #         else:
+        #             eth_acr_sht.api.Range(f"A{row_num+1}:{eth_last_col_letter}{sp_lst_row}").EntireRow.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()#Delete(win32c.DeleteShiftDirection.xlShiftUp)
+        #         wb.app.selection.delete(shift='up')
+        #         sp_lst_row = eth_acr_sht.range(f'A'+ str(eth_acr_sht.cells.last_cell.row)).end('up').row
+        #     elif row_num == sp_lst_row:
+        #         sp_lst_row-=1
+        #     else:
+        #         raise f"New case found in ethanol acr not to be deleted row num is {row_num}"
 
         eth_acr_sht.api.AutoFilterMode=False
         eth_acr_sht.range("A1").select()
@@ -876,7 +887,12 @@ def openGr(input_date, start_date):
                 except Exception as e:
                     raise e
 
-
+    	##############Logic for Code diff calculation#####################
+        spcl_sht.range("N1").formula = "=SUM(K:L)"
+        reco_sht.range("A19").value = "Code _Diff"
+        reco_sht.range("A19").api.Font.Bold = True
+        spcl_sht.range("B19").formula = "=Special_Sheet!N1+Reco!B15"
+        ###############################################################
         wb.save(output_location+f"\\Open GR {month}{day}.xlsx")
         end_time = datetime.now()
         total_time = end_time - start_time

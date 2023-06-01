@@ -82,7 +82,7 @@ def rackbacktrack(input_date, output_date):
                         except Exception as e:
                             retry+=1
                             input_day_month = datetime.strftime(input_datetime-timedelta(days=retry), "%b%d")
-                            other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
+                            other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month}.xlsx"
                             
                             if retry ==4:
                                 return(f"{other_loc} Excel file not present for date {input_day_month}")
@@ -248,13 +248,13 @@ def rackbacktrack(input_date, output_date):
 
              #Sheet 3 total column logic
             sht3_total_col = num_to_col_letters(sht3_last_col_num+1)
-            # sht3.range(f"{sht3_total_col}1").value = "Total"
-            # sht3.range(f"{sht3_total_col}2").formula = f"=SUM(C2:{sht3_last_col}2)"
+            sht3.range(f"C1").value = "Total"
+            sht3.range(f"C2").formula = f"=SUM(D2:{sht3_total_col}2)"
             wb.activate()
             sht3.activate()
             sht3.autofit()
-            # sht3.range(f"{sht3_total_col}2:{sht3_total_col}{sht3_a_last_row}").select()
-            # wb.app.selection.api.FillDown()
+            sht3.range(f"C2:C{sht3_a_last_row}").select()
+            wb.app.selection.api.FillDown()
 
             #Making dataframe
             sht3_df = sht3.range(f"B1:{sht3_total_col}{sht3_a_last_row}").options(pd.DataFrame, 
@@ -359,10 +359,15 @@ def rackbacktrack(input_date, output_date):
 
         wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
         #Removing Gasoline from filter
-        try:
-            wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems("Gasoline").Visible = False
-        except:
-            pass
+        for product in wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems():
+            if product.Name == "Ethanol":
+                product.Visible = True
+            else:
+                product.Visible = False
+        # try:
+        #     wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems("Gasoline").Visible = False
+        # except:
+        #     pass
         #creating Sheet2 from Pivot Table
         try:
             wb.sheets("Sheet2").delete()
@@ -516,7 +521,7 @@ def rackbacktrack(input_date, output_date):
                         i=new_i
 
                         print("Selected")
-                    if pivot2_sht.range(f"H{i}").value >0: #Subtracting from existing BOLs
+                    if pivot2_sht.range(f"H{i}").value > 0: #Subtracting from existing BOLs
                         prev_row = i+1
                         #Ignoring row with zero value
                         while pivot2_sht.range(f"I{start_row}").value == 0:
@@ -535,7 +540,11 @@ def rackbacktrack(input_date, output_date):
                                 pivot2_sht.range(f"I{start_row}").value = -pivot2_sht.range(f"H{i}").value
                             elif start_value < pivot2_sht.range(f"H{i}").value:
                                 pivot2_sht.range(f"I{start_row}").value = -start_value
-
+                    elif pivot2_sht.range(f"H{i}").value < 0:
+                        while pivot2_sht.range(f"I{start_row}").value == 0:
+                            start_row+=1
+                        pivot2_sht.range(f"I{start_row}").formula = pivot2_sht.range(f"I{start_row}").formula+f'+{str(pivot2_sht.range(f"H{i}").value).replace("-","")}'
+                        prev_row = i+1
                     else:
                         prev_row = i+1
 
@@ -659,6 +668,10 @@ def rackbacktrack(input_date, output_date):
 
                 data_st_row = lr_filter_dict[key]+2
                 data_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                if lr_costing_sht.range(f"A{data_row}").value =="South":
+                    data_row = data_st_row
+                elif data_st_row == lr_costing_last_row:
+                    data_row = data_st_row
                 lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').api.EntireRow.Copy()
                 row_count = lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').size
                 new_i = data_row + row_count
@@ -1214,10 +1227,26 @@ def rackbacktrack(input_date, output_date):
         if input_date==last_date:#Montlhy True up condition
             #Create dataframe from both of this files and update trueup rate based on them rack_po_loc 
             
-            rack_po_dict = pd.read_excel(rack_po_loc).set_index("Vendor Name").to_dict()['PO#']
+            # rack_po_dict = pd.read_excel(rack_po_loc).set_index("Vendor Name").to_dict()['PO#']
+            TRUE_UP_DF = pd.read_excel(rack_po_loc)
+            rack_po_dict = {}
+
+            for i,x in TRUE_UP_DF.iterrows():
+
+                rack_po_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
+
+
+
+
             for key in rack_po_dict.keys():
                 ap_t_df = pd.read_excel(truefile_loc, sheet_name = key,usecols="B:Q")
-                ap_price_dict = ap_t_df.loc[ap_t_df["Voucher"]==f"PO# {rack_po_dict['CHS']}"][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
+                
+                if type(rack_po_dict[key]) is list:
+                    value_list = [f"PO# {s}" for s in rack_po_dict[key]]
+                    ap_price_dict = {}
+                    ap_price_dict = ap_t_df[ap_t_df['Voucher'].isin(value_list)][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
+                else:
+                    ap_price_dict = ap_t_df.loc[ap_t_df["Voucher"]==f"PO# {rack_po_dict[key]}"][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
                 wb.activate()
                 pivot2_sht.activate()
                 
