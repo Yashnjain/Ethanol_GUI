@@ -891,7 +891,7 @@ def openGr(input_date, start_date):
         spcl_sht.range("N1").formula = "=SUM(K:L)"
         reco_sht.range("A19").value = "Code _Diff"
         reco_sht.range("A19").api.Font.Bold = True
-        spcl_sht.range("B19").formula = "=Special_Sheet!N1+Reco!B15"
+        reco_sht.range("B19").formula = "=Special_Sheet!N1+Reco!B15"
         ###############################################################
         wb.save(output_location+f"\\Open GR {month}{day}.xlsx")
         end_time = datetime.now()
