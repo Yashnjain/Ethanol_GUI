@@ -108,7 +108,7 @@ def openGr(input_date, start_date):
         input_sht = wb.sheets["Input_Main2"]
 
         voucher_col = curr_col_list.index("Voucher No")
-        voucher_col_col_letter = num_to_col_letters(voucher_col+1)
+        voucher_col_letter = num_to_col_letters(voucher_col+1)
         
         mrn_col = curr_col_list.index("MRN No:")
         mrn_col_letter = num_to_col_letters(mrn_col+1)
@@ -187,13 +187,15 @@ def openGr(input_date, start_date):
         while i <=last_row:
             if not ignore_check:
                 #Checking Mrn with next pjv row
-                if input_sht.range(f"{voucher_col_col_letter}{i}").value.split(":")[1] == input_sht.range(f"{mrn_col_letter}{i+1}").value:
+                if input_sht.range(f"{voucher_col_letter}{i}").value.split(":")[1] == input_sht.range(f"{mrn_col_letter}{i+1}").value:
                     #Condition for knock off and amount diff tab
                     
                     if input_sht.range(f"{date_col_letter}{i}").value.month == curr_month_num:
                         #knock Off
                         if input_sht.range(f"{credit_col_letter}{i}").value is not None and input_sht.range(f"{debit_col_letter}{i+1}").value is not None:
                             i, row_dict = knockOffAmtDiff(i, i+1, wb, input_sht, input_sht, credit_col_letter,debit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter, row_dict)
+                        elif input_sht.range(f"{debit_col_letter}{i+1}").value is None and input_sht.range(f"{voucher_col_letter}{i+1}").value.lower().startswith("pjv"):
+                            pass
                         else:#interchange debit and credit col
                             i, row_dict = knockOffAmtDiff(i, i+1, wb, input_sht, input_sht, debit_col_letter, credit_col_letter, knock_off_sht, amt_diff_sht, mrn_col_letter, row_dict)
 
@@ -379,7 +381,7 @@ def openGr(input_date, start_date):
         #Now pjv logic
 
         
-        input_sht.api.Range(f"{voucher_col_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="Pjv*", Operator:=7)
+        input_sht.api.Range(f"{voucher_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="Pjv*", Operator:=7)
         sp_lst_row = input_sht.range(f'A'+ str(input_sht.cells.last_cell.row)).end('up').row
         try:
             pjv_sht = wb.sheets.add("PJV",after=input_sht)
@@ -529,7 +531,7 @@ def openGr(input_date, start_date):
         while i <=pjv_last_row:
             if not ignore_check:
                 #Checking Mrn with next pjv row
-                if pjv_sht.range(f"{voucher_col_col_letter}{i}").value.split(":")[1] == pjv_sht.range(f"{mrn_col_letter}{i+1}").value:
+                if pjv_sht.range(f"{voucher_col_letter}{i}").value.split(":")[1] == pjv_sht.range(f"{mrn_col_letter}{i+1}").value:
                     #Condition for knock off and amount diff tab
                     
                     if pjv_sht.range(f"{date_col_letter}{i}").value.month == curr_month_num:
@@ -737,7 +739,7 @@ def openGr(input_date, start_date):
 
         #Removing MRR Logic
         input_sht.api.AutoFilterMode=False
-        input_sht.api.Range(f"{voucher_col_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="MRR*", Operator:=2, Criteria2:="Prj*")
+        input_sht.api.Range(f"{voucher_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="MRR*", Operator:=2, Criteria2:="Prj*")
 
         #searching all bol numbers in ethanol accrual sheet for each mrr found in inpurt sheet
         row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
@@ -781,7 +783,7 @@ def openGr(input_date, start_date):
         ##################################################################################################
         ######################Moving Exc and Jrn entries to special sheet#################################
         input_sht.api.AutoFilterMode=False
-        input_sht.api.Range(f"{voucher_col_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="Exc*", Operator:=2, Criteria1:="Jrn*")
+        input_sht.api.Range(f"{voucher_col_letter}1").AutoFilter(Field:=f"{voucher_col+1}", Criteria1:="Exc*", Operator:=2, Criteria1:="Jrn*")
         row_range, sp_lst_row, sp_address = row_range_calc('A', input_sht, wb)
         wb.activate()
         input_sht.activate()
