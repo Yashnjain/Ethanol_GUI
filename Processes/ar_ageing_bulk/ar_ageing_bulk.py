@@ -67,24 +67,24 @@ def ar_ageing_bulk(input_date, output_date):
             return(f"{input_sheet3} Excel file not present")    
         if not os.path.exists(input_sheet4):
             return(f"{input_sheet4} Excel file not present")                       
-        raw_df = pd.read_excel(input_sheet)    
-        raw_df = raw_df[(raw_df[raw_df.columns[0]] == 'Demurrage')]
-        if raw_df.size>0:
-            raw_df = raw_df.iloc[:,[0,1,5,-6,-5,-4,-3,-2,-1]]
-            raw_df.columns = ['dem_check',"Customer","Due Date","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
-            raw_df = raw_df.reset_index()
-            for i,x in raw_df.iterrows():
-                diff = (datetime.strptime(input_date,'%m.%d.%Y') - raw_df['Due Date'][i]).days
-                if diff <=10:
-                    raw_df['< 10'][i] = raw_df['Balance'][i]
-                elif diff >=11 and diff <31:
-                    raw_df['11 - 30'][i] = raw_df['Balance'][i]
-                elif diff >=31 and diff <61:
-                    raw_df['31 - 60'][i] = raw_df['Balance'][i]
-                elif diff >=61 and diff <91:
-                    raw_df['61 - 90'][i] = raw_df['Balance'][i]
-                else:
-                    raw_df['> 90'][i] = raw_df['Balance'][i]
+        # raw_df = pd.read_excel(input_sheet)    
+        # raw_df = raw_df[(raw_df[raw_df.columns[0]] == 'Demurrage')]
+        # if raw_df.size>0:
+        #     raw_df = raw_df.iloc[:,[0,1,5,-6,-5,-4,-3,-2,-1]]
+        #     raw_df.columns = ['dem_check',"Customer","Due Date","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
+        #     raw_df = raw_df.reset_index()
+        #     for i,x in raw_df.iterrows():
+        #         diff = (datetime.strptime(input_date,'%m.%d.%Y') - raw_df['Due Date'][i]).days
+        #         if diff <=10:
+        #             raw_df['< 10'][i] = raw_df['Balance'][i]
+        #         elif diff >=11 and diff <31:
+        #             raw_df['11 - 30'][i] = raw_df['Balance'][i]
+        #         elif diff >=31 and diff <61:
+        #             raw_df['31 - 60'][i] = raw_df['Balance'][i]
+        #         elif diff >=61 and diff <91:
+        #             raw_df['61 - 90'][i] = raw_df['Balance'][i]
+        #         else:
+        #             raw_df['> 90'][i] = raw_df['Balance'][i]
         retry=0
         while retry < 10:
             try:
@@ -350,10 +350,42 @@ def ar_ageing_bulk(input_date, output_date):
         input_tab.autofit()
         input_tab.api.AutoFilterMode=False 
         
+
+        new_column_letter =num_to_col_letters(input_tab.range('A1').end('right').last_cell.column+1)
+        column_no = input_tab.range('A1').end('right').last_cell.column+1
+        input_tab.range(f'{new_column_letter}1').value = "Demmurage Items"
+        input_tab.range(f'{new_column_letter}2').value = f"=+XLOOKUP(B2,{initial_tab.name}!C:C,{initial_tab.name}!A:A,0)"
+        st2_rw = input_tab.range(f'B'+ str(input_tab.cells.last_cell.row)).end('up').row
+
+        input_tab.api.Range(f"{new_column_letter}2:{new_column_letter}{st2_rw}").Select()
+        wb.app.api.Selection.FillDown()        
+
         if messagebox.showinfo("Prompt box",'Press ok after shifting is done'):
             print("promt clicked")   
         else:
-            return "Process aborted by user"                    
+            return "Process aborted by user" 
+
+        input_tabe = input_tab.used_range.value
+        raw_df = pd.DataFrame(input_tabe) 
+        raw_df = raw_df[(raw_df[raw_df.columns[column_no-1]] == 'Demurrage')]
+        if raw_df.size>0:
+            raw_df = raw_df.iloc[:,[-1,0,4,10,-7,-6,-5,-4,-3]]
+            raw_df.columns = ['dem_check',"Customer","Due Date","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
+            raw_df = raw_df.reset_index(drop=True)
+            for i,x in raw_df.iterrows():
+                diff = (datetime.strptime(input_date,'%m.%d.%Y') - raw_df['Due Date'][i]).days
+                if diff <=10:
+                    raw_df['< 10'][i] = raw_df['Balance'][i]
+                elif diff >=11 and diff <31:
+                    raw_df['11 - 30'][i] = raw_df['Balance'][i]
+                elif diff >=31 and diff <61:
+                    raw_df['31 - 60'][i] = raw_df['Balance'][i]
+                elif diff >=61 and diff <91:
+                    raw_df['61 - 90'][i] = raw_df['Balance'][i]
+                else:
+                    raw_df['> 90'][i] = raw_df['Balance'][i]
+
+        input_tab.api.Range(f"{new_column_letter}:{new_column_letter}").EntireColumn.Delete()  
         # for index,value in enumerate(row_range):
         #     if index==0:
         #         inital_value = value
