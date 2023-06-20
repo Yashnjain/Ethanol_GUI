@@ -570,7 +570,8 @@ def ar_ageing_rack(input_date, output_date):
       
         rack_tab_it.range(f'B{int(ini)}').expand('table').api.Sort(Key1=rack_tab_it.range(f'B{int(ini)+1}').expand('down').api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         tell_row = rack_tab_it.range(f'B{int(brow_value)}').end('down').row 
-
+        grp_df = grp_df.sort_values('COMPANY')
+        line_check = False
         for i in range(len(grp_df['COMPANY'])):
             conditional_formatting(range=f'B8:B{tell_row}',working_sheet=rack_tab_it,working_workbook=wb)
             rack_tab_it.api.Range(f"B7").AutoFilter(Field:=1, Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
@@ -594,6 +595,11 @@ def ar_ageing_rack(input_date, output_date):
                 rack_tab_it.api.Cells.FormatConditions.Delete()
                 # count+=1
             else:
+                if not line_check:
+                    rack_tab_it.api.Range(f"{int(lst_row)}:{int(lst_row)}").EntireRow.Insert() 
+                    rack_tab_it.api.Range(f"B{int(lst_row)}").Value = "INELIGIBLE ACCOUNTS RECEIVABLE"
+                    rack_tab_it.range(f"B{int(lst_row)}").api.Font.Bold = True
+                    line_check = True
                 print("second case")
                 rack_tab_it.api.AutoFilterMode=False
                 rack_tab_it.api.Cells.FormatConditions.Delete()
