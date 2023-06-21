@@ -55,19 +55,23 @@ def ar_ageing_rack(input_date, output_date):
         t_df = t_df.reset_index(drop=True)
         t_df['Date'] = [datetime.strptime(t_df['Date'][x],'%m-%d-%Y') for x in range(len(t_df['Date']))]
         for i,x in t_df.iterrows():
-            days = (datetime.strptime(input_date,'%m.%d.%Y')-t_df['Due Date'][i]).days
-            if days<=10:
-                t_df['< 10'][i] = t_df['Balance'][i]
-            elif days>10 and days<=30:
-                t_df['11 - 30'][i] = t_df['Balance'][i]  
-            elif days>30 and days<=60:
-                t_df['31 - 60'][i] = t_df['Balance'][i]
-            elif days>60 and days<=90:
-                t_df['61 - 90'][i] = t_df['Balance'][i]  
-            elif days>90:
-                t_df['> 90'][i] = t_df['Balance'][i]                 
+            a=t_df.iloc[i,5:].dropna()
+            if len(a):
+                continue
             else:
-                print(f"found new case in demurrange due date:{days} for due date {t_df['Due Date'][i]}")                                                                 
+                days = (datetime.strptime(input_date,'%m.%d.%Y')-t_df['Due Date'][i]).days
+                if days<=10:
+                    t_df['< 10'][i] = t_df['Balance'][i]
+                elif days>10 and days<=30:
+                    t_df['11 - 30'][i] = t_df['Balance'][i]  
+                elif days>30 and days<=60:
+                    t_df['31 - 60'][i] = t_df['Balance'][i]
+                elif days>60 and days<=90:
+                    t_df['61 - 90'][i] = t_df['Balance'][i]  
+                elif days>90:
+                    t_df['> 90'][i] = t_df['Balance'][i]                 
+                else:
+                    print(f"found new case in demurrange due date:{days} for due date {t_df['Due Date'][i]}")                                                                 
         # t_df = t_df.iloc[:,[0,1,-6,-5,-4,-3,-2,-1]]
         # t_df.columns = ['dem_check',"Customer","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
         retry=0
