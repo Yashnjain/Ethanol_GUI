@@ -386,6 +386,7 @@ def rackbacktrack(input_date, output_date):
         sht_4 = wb.sheets("Sheet4")
         #Updating price formula
         mrn_df['price'] = mrn_df['Credit Amount']/mrn_df['Billed Qty']
+        sht_4.api.AutoFilterMode=False
         sht_4.range("A2").expand("table").clear()
         sht_4.range("A2").options(pd.DataFrame, 
                                 header=False,
