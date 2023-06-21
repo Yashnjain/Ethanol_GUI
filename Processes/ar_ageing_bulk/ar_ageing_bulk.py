@@ -372,18 +372,18 @@ def ar_ageing_bulk(input_date, output_date):
             raw_df = raw_df.iloc[:,[-1,0,4,10,-7,-6,-5,-4,-3]]
             raw_df.columns = ['dem_check',"Customer","Due Date","Balance","< 10","11 - 30","31 - 60","61 - 90","> 90"]
             raw_df = raw_df.reset_index(drop=True)
-            for i,x in raw_df.iterrows():
-                diff = (datetime.strptime(input_date,'%m.%d.%Y') - raw_df['Due Date'][i]).days
-                if diff <=10:
-                    raw_df['< 10'][i] = raw_df['Balance'][i]
-                elif diff >=11 and diff <31:
-                    raw_df['11 - 30'][i] = raw_df['Balance'][i]
-                elif diff >=31 and diff <61:
-                    raw_df['31 - 60'][i] = raw_df['Balance'][i]
-                elif diff >=61 and diff <91:
-                    raw_df['61 - 90'][i] = raw_df['Balance'][i]
-                else:
-                    raw_df['> 90'][i] = raw_df['Balance'][i]
+            # for i,x in raw_df.iterrows():
+            #     diff = (datetime.strptime(input_date,'%m.%d.%Y') - raw_df['Due Date'][i]).days
+            #     if diff <=10:
+            #         raw_df['< 10'][i] = raw_df['Balance'][i]
+            #     elif diff >=11 and diff <31:
+            #         raw_df['11 - 30'][i] = raw_df['Balance'][i]
+            #     elif diff >=31 and diff <61:
+            #         raw_df['31 - 60'][i] = raw_df['Balance'][i]
+            #     elif diff >=61 and diff <91:
+            #         raw_df['61 - 90'][i] = raw_df['Balance'][i]
+            #     else:
+            #         raw_df['> 90'][i] = raw_df['Balance'][i]
 
         input_tab.api.Range(f"{new_column_letter}:{new_column_letter}").EntireColumn.Delete()  
         # for index,value in enumerate(row_range):
