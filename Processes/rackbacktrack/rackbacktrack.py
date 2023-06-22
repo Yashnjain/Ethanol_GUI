@@ -506,9 +506,11 @@ def rackbacktrack(input_date, output_date):
                         
                         #Updating total formulas
                         pivot2_sht.range(f"I{new_i}").formula = f"=+SUBTOTAL(9,I{start_row}:I{new_i-1})"
+                        pivot2_sht.range(f"L{new_i}").formula = f"=+SUBTOTAL(9,L{start_row}:L{new_i-1})"
                         
                         pivot2_sht.range(f"M{new_i}").formula = f"=+SUBTOTAL(9,M{start_row}:M{new_i-1})"
                         pivot2_sht.range(f"N{new_i}").formula = f"=+SUBTOTAL(9,N{start_row}:N{new_i-1})"
+                        pivot2_sht.range(f"Q{new_i}").formula = f"=+SUBTOTAL(9,Q{start_row}:Q{new_i-1})"
 
                         #Updating otther columns
                         # pivot2_sht.range(f"M{i}:P{new_i}").formula = f"=+SUBTOTAL(9,N{start_row}:N{new_i-1})"
