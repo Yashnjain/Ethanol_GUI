@@ -58,10 +58,16 @@ def rackbacktrack(input_date, output_date):
         last_date = datetime.strftime(last_day_of_month(input_datetime.date()), "%m.%d.%Y")
         if input_date==last_date:#Montlhy True up condition
             if not os.path.exists(truefile_loc):
-                return(f"{truefile_loc} Excel file not present for date {input_date}")
+                if messagebox.askyesno(f"{truefile_loc} Excel file not present for date {input_date}",f'{truefile_loc} Excel file not present for date {input_date}\nDo you want to continue rest process?'):
+                    pass
+                else:
+                    return(f"{truefile_loc} Excel file not present for date {input_date}")
             if not os.path.exists(truefile_loc):
-                return(f"{rack_po_loc} Excel file not present for date {input_date}")
-
+                if messagebox.askyesno(f"{rack_po_loc} Excel file not present for date {input_date}",f'{rack_po_loc} Excel file not present for date {input_date}\nDo you want to continue rest process?'):
+                    pass
+                else:
+                    return(f"{rack_po_loc} Excel file not present for date {input_date}")
+        spcl_loc_df_check = True
         retry=0
         while retry < 4:
             try:
@@ -85,7 +91,10 @@ def rackbacktrack(input_date, output_date):
                             other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month}.xlsx"
                             
                             if retry ==4:
-                                return(f"{other_loc} Excel file not present for date {input_day_month}")
+                                if messagebox.askyesno(f"{other_loc} Excel file not present for date {input_day_month}",f'{other_loc} Excel file not present for date {input_day_month}\nDo you want to continue rest process?'):
+                                    spcl_loc_df_check = False
+                                else:
+                                    return(f"{other_loc} Excel file not present for date {input_day_month}")
 
         if not os.path.exists(input_sheet):
             return(f"{input_sheet} Excel file not present for date {input_date}")
@@ -105,7 +114,7 @@ def rackbacktrack(input_date, output_date):
         try:
             df, pdf_date = rack_pdf_data_extractor(rack_pdf)
         except Exception as e:
-            if messagebox.askyesno("Error in Reading Rack pdf",f'Do you want to continue rest process?'):
+            if messagebox.askyesno("Error in Reading Rack pdf",f'Error is: {e}\nDo you want to continue rest process?'):
                 pass
             else:
                 raise e
@@ -157,9 +166,10 @@ def rackbacktrack(input_date, output_date):
                 index_list=mtm_df.loc[mtm_df['Unnamed: 0']==loc_dict[loc_list[location]].split(',')[0]].index.values
             elif loc_list[location] in spcl_dict.keys():
                 index_list = []
-                column_1 = spcl_loc_df.columns._values[0]
-                ethrin_value = spcl_loc_df.iloc[spcl_loc_df.loc[spcl_loc_df[column_1]==spcl_dict[loc_list[location]]].index.values[0]+1]['Unnamed: 3']
-                inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
+                if spcl_loc_df_check:
+                    column_1 = spcl_loc_df.columns._values[0]
+                    ethrin_value = spcl_loc_df.iloc[spcl_loc_df.loc[spcl_loc_df[column_1]==spcl_dict[loc_list[location]]].index.values[0]+1]['Unnamed: 3']
+                    inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
 
             else:
                 index_list=mtm_df.loc[mtm_df['Unnamed: 0']==loc_list[location].split(',')[0]].index.values
@@ -197,7 +207,7 @@ def rackbacktrack(input_date, output_date):
                         #extract data from pdf
                         date_list, mrn_dict = mrn_pdf_extractor(pdf_file, mrn_dict, date_list)
             except Exception as e:
-                if messagebox.askyesno("Error in Reading MRN pdf",f'Do you want to continue rest process?'):
+                if messagebox.askyesno("Error in Reading MRN pdf",f'Error is {e}\nDo you want to continue rest process?'):
                     pass
                 else:
                     raise e
@@ -272,7 +282,7 @@ def rackbacktrack(input_date, output_date):
             try:
                 date_list, mrn_dict = mrn_pdf_extractor(monthly_mrn_loc, mrn_dict, date_list, rack=True)
             except Exception as e:
-                if messagebox.askyesno("Error in Reading Rack MRN pdf",f'Do you want to continue rest process?'):
+                if messagebox.askyesno("Error in Reading Rack MRN pdf",f'Eror is {e}\nDo you want to continue rest process?'):
                     pass
                 else:
                     raise e
@@ -332,6 +342,8 @@ def rackbacktrack(input_date, output_date):
         gr_head_row = open_gr_sht.range("B1").end('down').end('down').row
         gr_wb.close()
         # #Unmerging Top 3 cells
+        wb.activate()
+        open_gr_sht.activate()
         open_gr_sht.range(f"1:{gr_head_row-1}").unmerge()
         open_gr_sht.range(f"8:8").unmerge()
         gr_col_list = open_gr_sht.range(f"B{gr_head_row}").expand("right").value
@@ -1231,41 +1243,47 @@ def rackbacktrack(input_date, output_date):
             #Create dataframe from both of this files and update trueup rate based on them rack_po_loc 
             
             # rack_po_dict = pd.read_excel(rack_po_loc).set_index("Vendor Name").to_dict()['PO#']
-            TRUE_UP_DF = pd.read_excel(rack_po_loc)
-            rack_po_dict = {}
+            try:
+                TRUE_UP_DF = pd.read_excel(rack_po_loc)
+                rack_po_dict = {}
 
-            for i,x in TRUE_UP_DF.iterrows():
+                for i,x in TRUE_UP_DF.iterrows():
 
-                rack_po_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
-
-
+                    rack_po_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
 
 
-            for key in rack_po_dict.keys():
-                ap_t_df = pd.read_excel(truefile_loc, sheet_name = key,usecols="B:Q")
-                
-                if type(rack_po_dict[key]) is list:
-                    value_list = [f"PO# {s}" for s in rack_po_dict[key]]
-                    ap_price_dict = {}
-                    ap_price_dict = ap_t_df[ap_t_df['Voucher'].isin(value_list)][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
-                else:
-                    ap_price_dict = ap_t_df.loc[ap_t_df["Voucher"]==f"PO# {rack_po_dict[key]}"][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
-                wb.activate()
-                pivot2_sht.activate()
-                
-                #Filtering po number for truep price update
-                for po_key in ap_price_dict.keys():
-                    pivot2_sht.api.AutoFilterMode=False
-                    filt_key = po_key.replace("PO# ","POR:")
-                    pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_po_col_num, Criteria1:=filt_key, Operator:=7) #Links column containing po feild is B
-                    #Updating final price for trueup calculation
-                    flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_fprice_col, pivot2_sht,wb)
+
+
+                for key in rack_po_dict.keys():
+                    ap_t_df = pd.read_excel(truefile_loc, sheet_name = key,usecols="B:Q")
                     
-                    for address in sp_address:
-                        address = pivot2_fprice_col + (f":{pivot2_fprice_col}").join(address.split(":"))
+                    if type(rack_po_dict[key]) is list:
+                        value_list = [f"PO# {s}" for s in rack_po_dict[key]]
+                        ap_price_dict = {}
+                        ap_price_dict = ap_t_df[ap_t_df['Voucher'].isin(value_list)][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
+                    else:
+                        ap_price_dict = ap_t_df.loc[ap_t_df["Voucher"]==f"PO# {rack_po_dict[key]}"][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
+                    wb.activate()
+                    pivot2_sht.activate()
+                    
+                    #Filtering po number for truep price update
+                    for po_key in ap_price_dict.keys():
+                        pivot2_sht.api.AutoFilterMode=False
+                        filt_key = po_key.replace("PO# ","POR:")
+                        pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_po_col_num, Criteria1:=filt_key, Operator:=7) #Links column containing po feild is B
+                        #Updating final price for trueup calculation
+                        flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_fprice_col, pivot2_sht,wb)
+                        
+                        for address in sp_address:
+                            address = pivot2_fprice_col + (f":{pivot2_fprice_col}").join(address.split(":"))
 
-                        pivot2_sht.range(f"{address}").value = ap_price_dict[po_key]
-            print("Done, updateed trueup prices")
+                            pivot2_sht.range(f"{address}").value = ap_price_dict[po_key]
+                print("Done, updateed trueup prices")
+            except Exception as e:
+                if messagebox.askyesno("Error in Reading Trueup",f'Error is {e}\nDo you want to continue rest process?'):
+                    pass
+                else:
+                    raise e
 
 
         ###############################Freight update part check########################################################
