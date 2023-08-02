@@ -37,6 +37,7 @@ def rackbacktrack(input_date, output_date):
 
         mrn_pdf_loc = f"J:\\AP - RACK\\AP Rack {input_year}\\Rack Purchase Daily\\{input_month}-{input_year}"
         monthly_mrn_loc = f"{j_loc_bbr}\\Rack Inventory.pdf"
+        monthly_mrn_loc_check = True
 
         input_day_month = datetime.strftime(input_datetime-timedelta(days=0), "%b%d")
         input_month_year = datetime.strftime(input_datetime-timedelta(days=0), "%b %Y")
@@ -58,16 +59,17 @@ def rackbacktrack(input_date, output_date):
         last_date = datetime.strftime(last_day_of_month(input_datetime.date()), "%m.%d.%Y")
         if input_date==last_date:#Montlhy True up condition
             if not os.path.exists(truefile_loc):
-                if messagebox.askyesno(f"{truefile_loc} Excel file not present for date {input_date}",f'{truefile_loc} Excel file not present for date {input_date}\nDo you want to continue rest process?'):
+                if messagebox.askyesno(f"File not Found",f'{truefile_loc} Excel file not present for date {input_date}\nDo you want to continue rest process?'):
                     pass
                 else:
                     return(f"{truefile_loc} Excel file not present for date {input_date}")
             if not os.path.exists(truefile_loc):
-                if messagebox.askyesno(f"{rack_po_loc} Excel file not present for date {input_date}",f'{rack_po_loc} Excel file not present for date {input_date}\nDo you want to continue rest process?'):
+                if messagebox.askyesno(f"File not Found",f'{rack_po_loc} Excel file not present for date {input_date}\nDo you want to continue rest process?'):
                     pass
                 else:
                     return(f"{rack_po_loc} Excel file not present for date {input_date}")
         spcl_loc_df_check = True
+        lri_check = True
         retry=0
         while retry < 4:
             try:
@@ -91,7 +93,7 @@ def rackbacktrack(input_date, output_date):
                             other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month}.xlsx"
                             
                             if retry ==4:
-                                if messagebox.askyesno(f"{other_loc} Excel file not present for date {input_day_month}",f'{other_loc} Excel file not present for date {input_day_month}\nDo you want to continue rest process?'):
+                                if messagebox.askyesno(f"File not Found",f'{other_loc} Excel file not present for date {input_day_month}\nDo you want to continue rest process?'):
                                     spcl_loc_df_check = False
                                 else:
                                     return(f"{other_loc} Excel file not present for date {input_day_month}")
@@ -108,6 +110,8 @@ def rackbacktrack(input_date, output_date):
         if not os.path.exists(input_lrti_xl):
             input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank.xlsx'
             if not os.path.exists(input_lrti_xl):
+                if messagebox.askyesno(f"File not Found",f"{input_lrti_xl} Excel file not present, Do you want to continue"):
+                        lri_check = False
                 return(f"{input_lrti_xl} Excel file not present")
 
         mtm_df = pd.read_excel(input_cta,sheet_name="BioUrjaNet", header=2)
@@ -275,45 +279,49 @@ def rackbacktrack(input_date, output_date):
             sht3_dict = sht3_df.set_index("No").to_dict()['Total']
         else:#Update Pivot sheet for month end case
             if not os.path.exists(monthly_mrn_loc):
-                return(f"{monthly_mrn_loc} Pdf file not present for date {input_date}")
+                if messagebox.askyesno(f"File not Found",f"{monthly_mrn_loc} Pdf file not present for date {input_date}"):
+                    monthly_mrn_loc_check = False
+                else:                   
+                    return(f"{monthly_mrn_loc} Pdf file not present for date {input_date}")
 
             mrn_dict = {}
             date_list = []
-            try:
-                date_list, mrn_dict = mrn_pdf_extractor(monthly_mrn_loc, mrn_dict, date_list, rack=True)
-            except Exception as e:
-                if messagebox.askyesno("Error in Reading Rack MRN pdf",f'Eror is {e}\nDo you want to continue rest process?'):
-                    pass
-                else:
-                    raise e
-
-            wb.activate()
-            pivot_sht.activate()
-            pivot_last_row = pivot_sht.range(f"A{pivot_sht.cells.last_cell.row}").end("up").row
-            p_loc_r1 = pivot_sht.range(f"A{pivot_last_row}").end('up').row
-            # p_loc_list = pivot_sht.range(f"A{p_loc_r1}").expand('down').value
-            p_loc_list = pivot_sht.range(f"B{p_loc_r1}").expand('down').value
-
-            init_row = p_loc_r1
-            # for location in range(len(p_loc_list)):
-            for location in p_loc_list:
-                location = int(location)
+            if monthly_mrn_loc:
                 try:
-                    # pivot_sht.range(f"C{location+p_loc_r1}").value = mrn_dict[p_loc_list[location].split(",")[0]]
-                    pivot_sht.range(f"C{init_row}").value = mrn_dict[str(location)]
-                except:
-                    pivot_sht.range(f"C{init_row}").value = 0
-                    # print(f"NO data found for {p_loc_list[location]}")
-                init_row += 1
+                    date_list, mrn_dict = mrn_pdf_extractor(monthly_mrn_loc, mrn_dict, date_list, rack=True)
+                except Exception as e:
+                    if messagebox.askyesno("Error in Reading Rack MRN pdf",f'Eror is {e}\nDo you want to continue rest process?'):
+                        pass
+                    else:
+                        raise e
 
-            #Making dataframe
-            pivot_df = pivot_sht.range(f"A{p_loc_r1}:C{pivot_last_row}").options(pd.DataFrame, 
-                                    header=False,
-                                    index=False 
-                                    ).value
+                wb.activate()
+                pivot_sht.activate()
+                pivot_last_row = pivot_sht.range(f"A{pivot_sht.cells.last_cell.row}").end("up").row
+                p_loc_r1 = pivot_sht.range(f"A{pivot_last_row}").end('up').row
+                # p_loc_list = pivot_sht.range(f"A{p_loc_r1}").expand('down').value
+                p_loc_list = pivot_sht.range(f"B{p_loc_r1}").expand('down').value
 
-            # pivot_dict = pivot_df.set_index(0).to_dict()[1]
-            pivot_dict = pivot_df.set_index(0).to_dict()[2]
+                init_row = p_loc_r1
+                # for location in range(len(p_loc_list)):
+                for location in p_loc_list:
+                    location = int(location)
+                    try:
+                        # pivot_sht.range(f"C{location+p_loc_r1}").value = mrn_dict[p_loc_list[location].split(",")[0]]
+                        pivot_sht.range(f"C{init_row}").value = mrn_dict[str(location)]
+                    except:
+                        pivot_sht.range(f"C{init_row}").value = 0
+                        # print(f"NO data found for {p_loc_list[location]}")
+                    init_row += 1
+
+                #Making dataframe
+                pivot_df = pivot_sht.range(f"A{p_loc_r1}:C{pivot_last_row}").options(pd.DataFrame, 
+                                        header=False,
+                                        index=False 
+                                        ).value
+
+                # pivot_dict = pivot_df.set_index(0).to_dict()[1]
+                pivot_dict = pivot_df.set_index(0).to_dict()[2]
 
 
 
@@ -431,7 +439,8 @@ def rackbacktrack(input_date, output_date):
             if input_day <=15:
                 pivot_sht.range(f"{p_total_col}{location+5}").value = sht3_dict[location_list[location]]
             else:
-                pivot_sht.range(f"{p_total_col}{location+5}").value = f"={pivot_dict[location_list[location]]}*42"
+                if monthly_mrn_loc:
+                    pivot_sht.range(f"{p_total_col}{location+5}").value = f"={pivot_dict[location_list[location]]}*42"
             #Updating Diff Column
             pivot_sht.range(f"{p_diff_col}5:{p_diff_col}{len(location_list)+3}").select()#for selecting till last location row
             wb.app.selection.api.FillDown()
@@ -572,102 +581,92 @@ def rackbacktrack(input_date, output_date):
 
 
         #Updating Litle Rock Tank Inventory(Little Rock Costing Tab)
-        retry=0
-        while retry < 10:
-            try:
-                lrti_wb = xw.Book(input_lrti_xl, update_links=False) 
-                break
-            except Exception as e:
-                time.sleep(5)
-                retry+=1
-                if retry ==10:
-                    raise e
-        rack_costing_sht = lrti_wb.sheets["Rack Costing Working"]
-        lr_costing_sht = wb.sheets["Little Rock Costing"]
+        if lri_check:
+            retry=0
+            while retry < 10:
+                try:
+                    lrti_wb = xw.Book(input_lrti_xl, update_links=False) 
+                    break
+                except Exception as e:
+                    time.sleep(5)
+                    retry+=1
+                    if retry ==10:
+                        raise e
+            rack_costing_sht = lrti_wb.sheets["Rack Costing Working"]
+            lr_costing_sht = wb.sheets["Little Rock Costing"]
 
 
 
 
-        rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
-        lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
-
-        lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
-        lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
-        lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
-
-
-        li_col_list = lr_costing_sht.range(f"A2").expand("right").value
-        li_atlas_date_col = li_col_list.index("Atlas Date")+1
-        li_atlas_date_col_letter = num_to_col_letters(li_atlas_date_col)
-
-        li_bol_col = li_col_list.index("BOL")+1
-        li_bol_col_letter = num_to_col_letters(li_bol_col)
-
-        li_qtgal_col = li_col_list.index("Qty.Gal")+1
-        li_qtgal_col_letter = num_to_col_letters(li_qtgal_col)
-
-        li_atqty_col = li_col_list.index("Atlas qty ")+1
-        li_atqty_col_letter = num_to_col_letters(li_atqty_col)
-
-        li_location_col = li_col_list.index("location")+1
-        li_location_col_letter = num_to_col_letters(li_location_col)
-
-        li_mrn_col = li_col_list.index("MRN#")+1
-        li_mrn_col_letter = num_to_col_letters(li_mrn_col)
-
-        li_deal_col = li_col_list.index("Deal#")+1
-        li_deal_col_letter = num_to_col_letters(li_deal_col)
-
-        li_date_col = li_col_list.index("Date")+1
-        li_date_col_letter = num_to_col_letters(li_date_col)
-
-        li_invdate_col = li_col_list.index("Inv Trf Date")+1
-        li_invdate_col_letter = num_to_col_letters(li_invdate_col)
-
-        li_vendor_col = li_col_list.index("Vendor")+1
-        li_vendor_col_letter = num_to_col_letters(li_vendor_col)
-
-        li_rate_col = li_col_list.index("Rate")+1
-        li_rate_col_letter = num_to_col_letters(li_rate_col)
-
-        li_fprice_col = li_col_list.index("Final Price")+1
-        li_fprice_col_letter = num_to_col_letters(li_fprice_col)
-
-        li_famount_col = li_col_list.index("Final Amount")+1
-        li_famount_col_letter = num_to_col_letters(li_famount_col)
-
-        # li_last_col_col = len(li_col_list)
-        # li_last_col_letter = num_to_col_letters(li_last_col_col)
-        li_last_col_letter = "AB" #Hard coded due to many gaps in column
-
-
-
-
-        lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
-
-        for key in lr_filter_dict.keys():
             rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
             lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
 
             lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
             lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
             lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
+
+
+            li_col_list = lr_costing_sht.range(f"A2").expand("right").value
+            li_atlas_date_col = li_col_list.index("Atlas Date")+1
+            li_atlas_date_col_letter = num_to_col_letters(li_atlas_date_col)
+
+            li_bol_col = li_col_list.index("BOL")+1
+            li_bol_col_letter = num_to_col_letters(li_bol_col)
+
+            li_qtgal_col = li_col_list.index("Qty.Gal")+1
+            li_qtgal_col_letter = num_to_col_letters(li_qtgal_col)
+
+            li_atqty_col = li_col_list.index("Atlas qty ")+1
+            li_atqty_col_letter = num_to_col_letters(li_atqty_col)
+
+            li_location_col = li_col_list.index("location")+1
+            li_location_col_letter = num_to_col_letters(li_location_col)
+
+            li_mrn_col = li_col_list.index("MRN#")+1
+            li_mrn_col_letter = num_to_col_letters(li_mrn_col)
+
+            li_deal_col = li_col_list.index("Deal#")+1
+            li_deal_col_letter = num_to_col_letters(li_deal_col)
+
+            li_date_col = li_col_list.index("Date")+1
+            li_date_col_letter = num_to_col_letters(li_date_col)
+
+            li_invdate_col = li_col_list.index("Inv Trf Date")+1
+            li_invdate_col_letter = num_to_col_letters(li_invdate_col)
+
+            li_vendor_col = li_col_list.index("Vendor")+1
+            li_vendor_col_letter = num_to_col_letters(li_vendor_col)
+
+            li_rate_col = li_col_list.index("Rate")+1
+            li_rate_col_letter = num_to_col_letters(li_rate_col)
+
+            li_fprice_col = li_col_list.index("Final Price")+1
+            li_fprice_col_letter = num_to_col_letters(li_fprice_col)
+
+            li_famount_col = li_col_list.index("Final Amount")+1
+            li_famount_col_letter = num_to_col_letters(li_famount_col)
+
+            # li_last_col_col = len(li_col_list)
+            # li_last_col_letter = num_to_col_letters(li_last_col_col)
+            li_last_col_letter = "AB" #Hard coded due to many gaps in column
+
+
+
+
             lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
-            lrti_wb.activate()
-            rack_costing_sht.activate()
-            rack_costing_sht.api.AutoFilterMode=False
-            rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
-            if input_day <=15:
-                st_dt=input_datetime.replace(day=1)
-            else:
-                st_dt=input_datetime.replace(day=16)
-            rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'>={st_dt}'],
-                                                                        Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
-            # rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
-            rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key)
-            
-            if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row == 1:
+
+            for key in lr_filter_dict.keys():
+                rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
+                lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
+
+                lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
+                lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
+                lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
+                lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
+                lrti_wb.activate()
+                rack_costing_sht.activate()
                 rack_costing_sht.api.AutoFilterMode=False
+                rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
                 if input_day <=15:
                     st_dt=input_datetime.replace(day=1)
                 else:
@@ -675,171 +674,182 @@ def rackbacktrack(input_date, output_date):
                 rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'>={st_dt}'],
                                                                             Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
                 # rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
-                rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key.replace(" ", ""))
-            rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
-            if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row != 1:
-                rack_costing_sht.range(f"2:{rack_costing_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
-
-
-                data_st_row = lr_filter_dict[key]+2
-                data_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
-                if lr_costing_sht.range(f"A{data_row}").value =="South":
-                    data_row = data_st_row
-                elif data_st_row == lr_costing_last_row:
-                    data_row = data_st_row
-                lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').api.EntireRow.Copy()
-                row_count = lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').size
-                new_i = data_row + row_count
-                wb.activate()
-                lr_costing_sht.activate()
-                lr_costing_sht.range(f"A{data_row+1}").api.EntireRow.Select()
-                wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-                lr_costing_sht.range(f"A{lr_costing_last_row+20+row_count}").expand('down').api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
-                wb.app.api.CutCopyMode=False
-                lr_costing_sht.range(f"O{data_row}:AB{data_row}").copy(lr_costing_sht.range(f"O{data_row+1}:AB{new_i}"))
-                lr_costing_sht.range(f"O{data_row+1}:O{new_i}").value = None
-                lr_costing_sht.range(f"R{data_row+1}:R{new_i}").value = None
+                rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key)
                 
-                
-                lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
-                lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
-                lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
-                lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
-                lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
+                if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row == 1:
+                    rack_costing_sht.api.AutoFilterMode=False
+                    if input_day <=15:
+                        st_dt=input_datetime.replace(day=1)
+                    else:
+                        st_dt=input_datetime.replace(day=16)
+                    rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'>={st_dt}'],
+                                                                                Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
+                    # rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
+                    rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key.replace(" ", ""))
+                rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
+                if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row != 1:
+                    rack_costing_sht.range(f"2:{rack_costing_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
 
-                #Sheet 4 logic for gettinglittlerocknorth terminal data
-                wb.activate()
-                sht_4.activate()
-                sht_4.api.AutoFilterMode = False
-                #Zeroing out Atals Quantity based on B1
-                qty_match = "B1"
-                # if key == "BioUrja/North Magel":
-                qty_match = f"B{data_st_row-4}"
-                if input_day <=15:
-                    st_dt=input_datetime.replace(day=1)
-                else:
-                    st_dt=input_datetime.replace(day=16)
-                sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_date_col}", Criteria1:=[f'>={st_dt}'],
-                                                                        Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
-                if qty_match == "B0":
-                    qty_match = "B1"
+
+                    data_st_row = lr_filter_dict[key]+2
+                    data_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                    if lr_costing_sht.range(f"A{data_row}").value =="South":
+                        data_row = data_st_row
+                    elif data_st_row == lr_costing_last_row:
+                        data_row = data_st_row
+                    lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').api.EntireRow.Copy()
+                    row_count = lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand('down').size
+                    new_i = data_row + row_count
+                    wb.activate()
+                    lr_costing_sht.activate()
+                    lr_costing_sht.range(f"A{data_row+1}").api.EntireRow.Select()
+                    wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+                    lr_costing_sht.range(f"A{lr_costing_last_row+20+row_count}").expand('down').api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
+                    wb.app.api.CutCopyMode=False
+                    lr_costing_sht.range(f"O{data_row}:AB{data_row}").copy(lr_costing_sht.range(f"O{data_row+1}:AB{new_i}"))
+                    lr_costing_sht.range(f"O{data_row+1}:O{new_i}").value = None
+                    lr_costing_sht.range(f"R{data_row+1}:R{new_i}").value = None
                     
-                    #Applying filter in terminal
-                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:="NLITTLEROCKNORTH, AR")
-                    sht4_last_row = sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row
-                else:
-                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:="NLITTLEROCKSOUTH, AR")
-                    sht4_last_row = sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row
                     
-                if sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row != 1:
-                    sht_4.range(f"1:{sht4_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
+                    lr_costing_last_row = lr_costing_sht.range(f"A{lr_costing_sht.cells.last_cell.row}").end("up").row
+                    lr_cost_values = lr_costing_sht.range(f"A1:A{lr_costing_last_row}").value
+                    lr_atlas_1 = lr_cost_values.index('Atlas Date')+1#+1 for ignoring zero index
+                    lr_atlas_2 = lr_cost_values.index('Atlas Date', lr_atlas_1)+1#+1 for ignoring zero index
+                    lr_filter_dict = {"BioUrja/North Magel":lr_atlas_1, "BioUrja/South Magel":lr_atlas_2}
+
+                    #Sheet 4 logic for gettinglittlerocknorth terminal data
                     wb.activate()
-                    lr_costing_sht.activate()
-                    li_df = lr_costing_sht.range(f"A{lr_costing_last_row+20}:K{lr_costing_last_row+20}").expand("down").options(pd.DataFrame, 
-                            header=1,
-                            index=False 
-                            ).value
-                    lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand("table").api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
-                    row_count = len(li_df)
-                    for i in range(row_count):
-                        lr_costing_sht.range(f"A{new_i+1}").api.EntireRow.Select()
-                        wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-
-
-
-
-
-                    #After row insertion add data
-                    lr_costing_sht.range(f"{li_atlas_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
-                    lr_costing_sht.range(f"{li_bol_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["BOLNumber"])
-                    lr_costing_sht.range(f"{li_atqty_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Billed Qty"])
-                    lr_costing_sht.range(f"{li_location_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Terminal "])
-                    lr_costing_sht.range(f"{li_mrn_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Voucher"])
-                    lr_costing_sht.range(f"{li_deal_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Links"])
-                    lr_costing_sht.range(f"{li_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
-                    lr_costing_sht.range(f"{li_invdate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
-                    lr_costing_sht.range(f"{li_vendor_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Vend"])
-                    lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
-                    lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
-
-
-                    #Updating formula
-                    lr_costing_sht.range(f"{li_famount_col_letter}{new_i}:{li_last_col_letter}{new_i+row_count}").select()
-                    wb.app.api.Selection.FillDown()
-
-                    new_i += row_count
-
-
-                try:
-                    (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0
-                except:
-                    new_i += 1
-                    while lr_costing_sht.range(f"E{new_i+2}").value is None:
-                        new_i += 1
-                if (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
-                    wb.activate()
-                    lr_costing_sht.activate()
-                # if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
-                # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
-                # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
-                    #Logic for sorting data date wise
-                    data_lst_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
-                    lr_costing_sht.range(f"A{data_st_row}:AB{data_lst_row}").api.Sort(Key1=lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api,
-                        Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
-                    #Ignoring row with zero value
-                    while lr_costing_sht.range(f"E{data_st_row}").value == 0:
-                        data_st_row+=1
-                    # while lr_costing_sht.range(f"E{data_st_row}").value <=   (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
-                    while lr_costing_sht.range(f"E{data_st_row}").value <=   lr_costing_sht.range(f"E{new_i+3}").value:
-                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{data_st_row}").value
-                        lr_costing_sht.range(f"E{data_st_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
-                        lr_costing_sht.range(f"D{data_st_row}").api.NumberFormat = 'General'
-                        data_st_row += 1
-                    if  lr_costing_sht.range(f"E{data_st_row}").value >  lr_costing_sht.range(f"E{new_i+3}").value:
-                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{new_i+3}").value
-                        data_st_row +=1
-
-                    print("Done")
-            else:
-                # continue
-                data_st_row = lr_filter_dict[key]+2
-                data_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
-                new_i = data_row
-                qty_match = f"B{data_st_row-4}"
-                if qty_match == "B0":
+                    sht_4.activate()
+                    sht_4.api.AutoFilterMode = False
+                    #Zeroing out Atals Quantity based on B1
                     qty_match = "B1"
-                try:
-                    (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0
-                except:
-                    new_i += 1
-                    while lr_costing_sht.range(f"E{new_i+2}").value is None:
+                    # if key == "BioUrja/North Magel":
+                    qty_match = f"B{data_st_row-4}"
+                    if input_day <=15:
+                        st_dt=input_datetime.replace(day=1)
+                    else:
+                        st_dt=input_datetime.replace(day=16)
+                    sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_date_col}", Criteria1:=[f'>={st_dt}'],
+                                                                            Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:=[f'<={input_datetime}'])
+                    if qty_match == "B0":
+                        qty_match = "B1"
+                        
+                        #Applying filter in terminal
+                        sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:="NLITTLEROCKNORTH, AR")
+                        sht4_last_row = sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row
+                    else:
+                        sht_4.range(f"A1:K{sht4_last_row}").api.AutoFilter(Field:=f"{sht4_term_col}", Criteria1:="NLITTLEROCKSOUTH, AR")
+                        sht4_last_row = sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row
+                        
+                    if sht_4.range(f'A'+ str(sht_4.cells.last_cell.row)).end('up').row != 1:
+                        sht_4.range(f"1:{sht4_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
+                        wb.activate()
+                        lr_costing_sht.activate()
+                        li_df = lr_costing_sht.range(f"A{lr_costing_last_row+20}:K{lr_costing_last_row+20}").expand("down").options(pd.DataFrame, 
+                                header=1,
+                                index=False 
+                                ).value
+                        lr_costing_sht.range(f"A{lr_costing_last_row+20}").expand("table").api.EntireRow.Delete(Shift:=win32c.DeleteShiftDirection.xlShiftUp)
+                        row_count = len(li_df)
+                        for i in range(row_count):
+                            lr_costing_sht.range(f"A{new_i+1}").api.EntireRow.Select()
+                            wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+
+
+
+
+
+                        #After row insertion add data
+                        lr_costing_sht.range(f"{li_atlas_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
+                        lr_costing_sht.range(f"{li_bol_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["BOLNumber"])
+                        lr_costing_sht.range(f"{li_atqty_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Billed Qty"])
+                        lr_costing_sht.range(f"{li_location_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Terminal "])
+                        lr_costing_sht.range(f"{li_mrn_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Voucher"])
+                        lr_costing_sht.range(f"{li_deal_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Links"])
+                        lr_costing_sht.range(f"{li_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
+                        lr_costing_sht.range(f"{li_invdate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
+                        lr_costing_sht.range(f"{li_vendor_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Vend"])
+                        lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
+                        lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
+
+
+                        #Updating formula
+                        lr_costing_sht.range(f"{li_famount_col_letter}{new_i}:{li_last_col_letter}{new_i+row_count}").select()
+                        wb.app.api.Selection.FillDown()
+
+                        new_i += row_count
+
+
+                    try:
+                        (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0
+                    except:
                         new_i += 1
-                if (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
-                    wb.activate()
-                    lr_costing_sht.activate()
-                # if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
-                # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
-                # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
-                    #Logic for sorting data date wise
-                    data_lst_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
-                    lr_costing_sht.range(f"A{data_st_row}:AB{data_lst_row}").api.Sort(Key1=lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api,
-                        Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
-                    #Ignoring row with zero value
-                    while lr_costing_sht.range(f"E{data_st_row}").value == 0:
-                        data_st_row+=1
-                    # while lr_costing_sht.range(f"E{data_st_row}").value <=   (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
-                    while lr_costing_sht.range(f"E{data_st_row}").value <=   lr_costing_sht.range(f"E{new_i+3}").value:
-                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{data_st_row}").value
-                        lr_costing_sht.range(f"E{data_st_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
-                        lr_costing_sht.range(f"D{data_st_row}").api.NumberFormat = 'General'
-                        data_st_row += 1
-                    if  lr_costing_sht.range(f"E{data_st_row}").value >  lr_costing_sht.range(f"E{new_i+3}").value:
-                        lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{new_i+3}").value
-                        data_st_row +=1
+                        while lr_costing_sht.range(f"E{new_i+2}").value is None:
+                            new_i += 1
+                    if (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                        wb.activate()
+                        lr_costing_sht.activate()
+                    # if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                    # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
+                    # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
+                        #Logic for sorting data date wise
+                        data_lst_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                        lr_costing_sht.range(f"A{data_st_row}:AB{data_lst_row}").api.Sort(Key1=lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api,
+                            Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
+                        #Ignoring row with zero value
+                        while lr_costing_sht.range(f"E{data_st_row}").value == 0:
+                            data_st_row+=1
+                        # while lr_costing_sht.range(f"E{data_st_row}").value <=   (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
+                        while lr_costing_sht.range(f"E{data_st_row}").value <=   lr_costing_sht.range(f"E{new_i+3}").value:
+                            lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{data_st_row}").value
+                            lr_costing_sht.range(f"E{data_st_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+                            lr_costing_sht.range(f"D{data_st_row}").api.NumberFormat = 'General'
+                            data_st_row += 1
+                        if  lr_costing_sht.range(f"E{data_st_row}").value >  lr_costing_sht.range(f"E{new_i+3}").value:
+                            lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{new_i+3}").value
+                            data_st_row +=1
 
-                    print("Done")
+                        print("Done")
+                else:
+                    # continue
+                    data_st_row = lr_filter_dict[key]+2
+                    data_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                    new_i = data_row
+                    qty_match = f"B{data_st_row-4}"
+                    if qty_match == "B0":
+                        qty_match = "B1"
+                    try:
+                        (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0
+                    except:
+                        new_i += 1
+                        while lr_costing_sht.range(f"E{new_i+2}").value is None:
+                            new_i += 1
+                    if (lr_costing_sht.range(f"E{new_i+2}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                        wb.activate()
+                        lr_costing_sht.activate()
+                    # if (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value) >0: #Subtracting from existing BOLs
+                    # if (lr_costing_sht.range(qty_match).value - lr_costing_sht.range(f"E{new_i+3}").value) >0: #Subtracting from existing BOLs
+                    # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
+                        #Logic for sorting data date wise
+                        data_lst_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                        lr_costing_sht.range(f"A{data_st_row}:AB{data_lst_row}").api.Sort(Key1=lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api,
+                            Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
+                        #Ignoring row with zero value
+                        while lr_costing_sht.range(f"E{data_st_row}").value == 0:
+                            data_st_row+=1
+                        # while lr_costing_sht.range(f"E{data_st_row}").value <=   (lr_costing_sht.range(f"E{new_i+3}").value - lr_costing_sht.range(qty_match).value):
+                        while lr_costing_sht.range(f"E{data_st_row}").value <=   lr_costing_sht.range(f"E{new_i+3}").value:
+                            lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{data_st_row}").value
+                            lr_costing_sht.range(f"E{data_st_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+                            lr_costing_sht.range(f"D{data_st_row}").api.NumberFormat = 'General'
+                            data_st_row += 1
+                        if  lr_costing_sht.range(f"E{data_st_row}").value >  lr_costing_sht.range(f"E{new_i+3}").value:
+                            lr_costing_sht.range(f"E{data_st_row}").value = lr_costing_sht.range(f"E{data_st_row}").value - lr_costing_sht.range(f"E{new_i+3}").value
+                            data_st_row +=1
 
-        lrti_wb.close()
+                        print("Done")
+
+            lrti_wb.close()
         ##############Reconcilliation Part#################################################################################################
         wb.activate()
         open_gr_sht.activate()
