@@ -6,7 +6,7 @@ import xlwings as xw
 import xlwings.constants as win32c
 from datetime import datetime, timedelta
 from Common.common import freezepanes_for_tab,conditional_formatting2,num_to_col_letters,conditional_formatting
-
+from tkinter import messagebox
 
 
 def ar_ageing_rack(input_date, output_date):
@@ -221,46 +221,50 @@ def ar_ageing_rack(input_date, output_date):
                 inital_value = value
 
         row_range.pop(-1)                      
-        for index,value in enumerate(row_range):
-            if index==0:
-                inital_value = value
-            else: 
-                if input_tab.range(f"H{value}").value>0:
-                    print(f"Accounts payables found:{value}")
-                    inital_value = value
-                else:
-                    print(f"Accounts receivables found:{value}")
-                    print("starting shifting")
-                    shifting_columns = ["M","L","K","J","I"]
-                    for index2,columns in enumerate(shifting_columns):
-                        # if index>0 and index!=len(row_range)-1:
-                        #     inital_value = inital_value+1     
-                        if columns=="I":
-                            print("reached optimum condition")
-                            break
-                        if columns=="M":
-                            input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
-                            input_tab.api.Range(f"{columns}{inital_value+2}")._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
-                            wb.app.api.CutCopyMode=False
-                        if input_tab.range(f"{columns}{value}").value>0:   
-                            new_column = shifting_columns[shifting_columns.index(columns)-1]
-                            while new_column !="M":
-                                if input_tab.range(f"{new_column}{value}").value<0:
-                                    input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").Copy() 
-                                    input_tab.api.Range(f"{shifting_columns[index2]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
-                                    input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").ClearContents()
-                                    #move those
-                                new_column = shifting_columns[shifting_columns.index(new_column)-1]
-                            if input_tab.range(f"{columns}{value}").value>0:
-                                input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
-                                input_tab.api.Range(f"{shifting_columns[index2+1]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
-                                input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").ClearContents()
+        # for index,value in enumerate(row_range):
+        #     if index==0:
+        #         inital_value = value
+        #     else: 
+        #         if input_tab.range(f"H{value}").value>0:
+        #             print(f"Accounts payables found:{value}")
+        #             inital_value = value
+        #         else:
+        #             print(f"Accounts receivables found:{value}")
+        #             print("starting shifting")
+        #             shifting_columns = ["M","L","K","J","I"]
+        #             for index2,columns in enumerate(shifting_columns):
+        #                 # if index>0 and index!=len(row_range)-1:
+        #                 #     inital_value = inital_value+1     
+        #                 if columns=="I":
+        #                     print("reached optimum condition")
+        #                     break
+        #                 if columns=="M":
+        #                     input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
+        #                     input_tab.api.Range(f"{columns}{inital_value+2}")._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
+        #                     wb.app.api.CutCopyMode=False
+        #                 if input_tab.range(f"{columns}{value}").value>0:   
+        #                     new_column = shifting_columns[shifting_columns.index(columns)-1]
+        #                     while new_column !="M":
+        #                         if input_tab.range(f"{new_column}{value}").value<0:
+        #                             input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").Copy() 
+        #                             input_tab.api.Range(f"{shifting_columns[index2]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
+        #                             input_tab.api.Range(f"{new_column}{inital_value+2}:{new_column}{value-1}").ClearContents()
+        #                             #move those
+        #                         new_column = shifting_columns[shifting_columns.index(new_column)-1]
+        #                     if input_tab.range(f"{columns}{value}").value>0:
+        #                         input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").Copy() 
+        #                         input_tab.api.Range(f"{shifting_columns[index2+1]}{inital_value+2}")._PasteSpecial(Paste=win32c.PasteType.xlPasteAll,Operation=win32c.Constants.xlNone,SkipBlanks=True)
+        #                         input_tab.api.Range(f"{columns}{inital_value+2}:{columns}{value-1}").ClearContents()
 
 
-                    inital_value = value
+        #             inital_value = value
 
         input_tab.autofit()
         input_tab.api.AutoFilterMode=False  
+        if messagebox.showinfo("Prompt box",'Press ok after shifting is done'):
+            print("promt clicked")   
+        else:
+            return "Process aborted by user"  
 
         lstr_rw = input_tab.range(f'H'+ str(input_tab.cells.last_cell.row)).end('up').row
         rack_tab= temp_wb.sheets["AR Rack"]
@@ -550,7 +554,7 @@ def ar_ageing_rack(input_date, output_date):
 
         t_df.fillna(0,inplace= True)
         t_df = t_df[t_df.COMPANY.isin(company_names) == False]
-        grp_df = t_df.groupby(['COMPANY'], sort=False)['Balance','< 10','11 - 30','31 - 60','61 - 90','> 90'].sum().reset_index()
+        grp_df = t_df.groupby(['COMPANY'], sort=False)[['Balance','< 10','11 - 30','31 - 60','61 - 90','> 90']].sum().reset_index()
         grp_df.insert(2,"> 10",grp_df[['11 - 30','31 - 60','61 - 90','> 90']].sum(axis=1))
         grp_df['As Per BS'] = grp_df['Balance'] - grp_df['< 10'] - grp_df['> 10']
         for i in range(len(grp_df['COMPANY'])):
