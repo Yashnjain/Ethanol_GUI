@@ -944,9 +944,9 @@ def rackbacktrack(input_date, output_date):
 
         ###########################Getting open mrn as per date from pvi#####################################
 
-        accrual_col_list = accrual_sht.range(f"A1").expand("right")
-        accr_deliv_to_num = len(accrual_col_list)
-        accr_deliv_to = num_to_col_letters(accr_deliv_to_num)
+        accrual_col_list = accrual_sht.range(f"A1").expand("right").value
+        accr_deliv_to_num = accrual_col_list.index('Delivery To')
+        accr_deliv_to = num_to_col_letters(accr_deliv_to_num+1)
 
         accr_pvi_row = accr_last_mrn+2
         accr_pvi_date = accrual_sht.range(f"{accr_deliv_to}{accr_pvi_row}").value
