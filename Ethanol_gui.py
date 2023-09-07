@@ -21,7 +21,7 @@ from Processes.purchased_ar.purchased_ar import purchased_ar
 from Processes.rackbacktrack.rackbacktrack import rackbacktrack
 from Processes.ar_ageing_bulk.ar_ageing_bulk import ar_ageing_bulk
 from Processes.ar_ageing_rack.ar_ageing_rack import ar_ageing_rack
-
+from Processes.ar_ageing_merger.ar_ageing_merger import ar_ageing_master
 
 
 path = r'J:\India\BBR\IT_BBR\Reports\Ethanol_gui'
@@ -180,7 +180,7 @@ def main():
     # output_date = None
     frame_options.grid(row=1,column=0, pady=30, padx=35, columnspan=2, rowspan=3)
     wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Open Gr':open_gr ,
-                    'Ar Ageing Report(Rack)':ar_ageing_rack,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures,
+                    'Ar Ageing Report(Rack)':ar_ageing_rack,'Ar Ageing Master':ar_ageing_master,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures,
                     'Rack Back Track':call_rackbacktrack,'BBR FOB':bbr_fob,'Delivered Cars':del_car}
     # wp_job_ids = {'ABS':1,'BBR':bbr,'CPR Report':cpr, 'Freight analysis':freight_analysis, 'CTM combined':ctm,'MTM Report':mtm_report,
     #                 'MOC Interest Allocation':moc_interest_alloc,'Open AR':open_ar,'Open AP':open_ap, 'Unsettled Payable Report':unsetteled_payables,'Unsettled Receivable Report':unsetteled_receivables,
