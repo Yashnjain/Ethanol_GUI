@@ -396,7 +396,14 @@ def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
                             pdf_date = datetime.strptime(df[2][row], "%m/%d/%Y")
                         else:
                             continue
-                    galon_value =  int(df[9][row].replace(',',''))
+                    try:
+                        galon_value =  int(df[9][row].replace(',',''))
+                    except:
+                        try:
+                            if "-" in df[9][row]:
+                               galon_value = int(df[9][row].replace('-',''))*(-1)
+                        except Exception as e:
+                            raise e
                     try:
                         # if pdf_date !=  prev_date and df[0][row] == prev_loc:
                             

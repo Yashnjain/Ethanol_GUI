@@ -1337,7 +1337,10 @@ def rackbacktrack(input_date, output_date):
                                                                                                     header=1,
                                                                                                     index=False 
                                                                                                     ).value
-        frt_df[['Bol No', 'Details']] = frt_df['Details'].str.split(';',expand=True)
+        try:
+            frt_df[['Bol No', 'Details']] = frt_df['Details'].str.split(';',expand=True)
+        except Exception as e:
+            raise "Multiple ; found in Freight Sheet Details Column"
         frt_df["Rate"] = frt_df["Debit Amount"] / frt_df["Billed Qty"]
 
         #Entering new columns
