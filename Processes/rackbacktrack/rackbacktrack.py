@@ -208,6 +208,7 @@ def rackbacktrack(input_date, output_date):
                     pdf_file_date = filename.replace("MRN.", "").replace(" done.pdf","").replace(".pdf", "")
                     pdf_file_date = datetime.strptime(pdf_file_date, "%m.%d.%Y").day
                     if pdf_file_date <=17:
+                        print(pdf_file_date)
                         #extract data from pdf
                         date_list, mrn_dict = mrn_pdf_extractor(pdf_file, mrn_dict, date_list)
             except Exception as e:
@@ -407,6 +408,7 @@ def rackbacktrack(input_date, output_date):
         #Updating price formula
         mrn_df['price'] = mrn_df['Credit Amount']/mrn_df['Billed Qty']
         sht_4.api.AutoFilterMode=False
+        # sht_4_last_row = sht_4.range(f"A{sht_4.cells.last_cell.row}").end("up").row
         sht_4.range("A2").expand("table").clear()
         sht_4.range("A2").options(pd.DataFrame, 
                                 header=False,

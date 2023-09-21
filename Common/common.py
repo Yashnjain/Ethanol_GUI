@@ -401,7 +401,7 @@ def mrn_pdf_extractor(pdf_file, mrn_dict, date_list, rack=False):
                     except:
                         try:
                             if "-" in df[9][row]:
-                               galon_value = int(df[9][row].replace('-',''))*(-1)
+                               galon_value = int(df[9][row].replace(',','').replace('-',''))*(-1)
                         except Exception as e:
                             raise e
                     try:
