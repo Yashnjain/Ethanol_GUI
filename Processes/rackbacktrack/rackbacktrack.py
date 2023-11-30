@@ -73,6 +73,7 @@ def rackbacktrack(input_date, output_date):
         retry=0
         while retry < 4:
             try:
+                #Opening Daily Pricing Template File
                 spcl_loc_df = pd.read_excel(other_loc)
                 break
             except Exception as e:
