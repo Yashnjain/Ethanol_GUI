@@ -68,36 +68,39 @@ def rackbacktrack(input_date, output_date):
                     pass
                 else:
                     return(f"{rack_po_loc} Excel file not present for date {input_date}")
-        spcl_loc_df_check = True
+        
         lri_check = True
-        retry=0
-        while retry < 4:
-            try:
-                #Opening Daily Pricing Template File
-                spcl_loc_df = pd.read_excel(other_loc)
-                break
-            except Exception as e:
-                retry+=1
-                input_day_month = datetime.strftime(input_datetime-timedelta(days=retry), "%b%d")
-                other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
+        ############################################Will be updated Later#################################################
+        # spcl_loc_df_check = True
+        # retry=0
+        # while retry < 4:
+        #     try:
+        #         #Opening Daily Pricing Template File
+        #         spcl_loc_df = pd.read_excel(other_loc)
+        #         break
+        #     except Exception as e:
+        #         retry+=1
+        #         input_day_month = datetime.strftime(input_datetime-timedelta(days=retry), "%b%d")
+        #         other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\Daily Pricing Template -{input_day_month}.xlsx"
                 
-                if retry ==3:
-                    other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month_other}.xlsx"
-                    retry=0
-                    while retry < 4:
-                        try:
-                            spcl_loc_df = pd.read_excel(other_loc)
-                            break
-                        except Exception as e:
-                            retry+=1
-                            input_day_month = datetime.strftime(input_datetime-timedelta(days=retry), "%b%d")
-                            other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month}.xlsx"
+        #         if retry ==3:
+        #             other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month_other}.xlsx"
+        #             retry=0
+        #             while retry < 4:
+        #                 try:
+        #                     spcl_loc_df = pd.read_excel(other_loc)
+        #                     break
+        #                 except Exception as e:
+        #                     retry+=1
+        #                     input_day_month = datetime.strftime(input_datetime-timedelta(days=retry), "%b%d")
+        #                     other_loc = r'S:\Magellan Setup\Pricing\_Price Changes'+f"\\{input_year}\\Daily Pricing Template -{input_day_month}.xlsx"
                             
-                            if retry ==4:
-                                if messagebox.askyesno(f"File not Found",f'{other_loc} Excel file not present for date {input_day_month}\nDo you want to continue rest process?'):
-                                    spcl_loc_df_check = False
-                                else:
-                                    return(f"{other_loc} Excel file not present for date {input_day_month}")
+        #                     if retry ==4:
+        #                         if messagebox.askyesno(f"File not Found",f'{other_loc} Excel file not present for date {input_day_month}\nDo you want to continue rest process?'):
+        #                             spcl_loc_df_check = False
+        #                         else:
+        #                             return(f"{other_loc} Excel file not present for date {input_day_month}")
+        #################################################################################################################
 
         if not os.path.exists(input_sheet):
             return(f"{input_sheet} Excel file not present for date {input_date}")
@@ -111,9 +114,13 @@ def rackbacktrack(input_date, output_date):
         if not os.path.exists(input_lrti_xl):
             input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank.xlsx'
             if not os.path.exists(input_lrti_xl):
-                if messagebox.askyesno(f"File not Found",f"{input_lrti_xl} Excel file not present, Do you want to continue"):
-                        lri_check = False
-                return(f"{input_lrti_xl} Excel file not present")
+                input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank reco.xlsx'
+                if not os.path.exists(input_lrti_xl):
+                    input_lrti_xl = f'\\\\BIO-INDIA-FS\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Transfered\\Little Rock Tank reco.xlsx'
+                    if not os.path.exists(input_lrti_xl):
+                        if messagebox.askyesno(f"File not Found",f"{input_lrti_xl} Excel file not present, Do you want to continue"):
+                                lri_check = False
+                        return(f"{input_lrti_xl} Excel file not present")
 
         mtm_df = pd.read_excel(input_cta,sheet_name="BioUrjaNet", header=2)
         try:
@@ -169,12 +176,14 @@ def rackbacktrack(input_date, output_date):
         for location in range(len(loc_list)-1):#Ifgnoring grand total
             if loc_list[location] in loc_dict.keys():
                 index_list=mtm_df.loc[mtm_df['Unnamed: 0']==loc_dict[loc_list[location]].split(',')[0]].index.values
-            elif loc_list[location] in spcl_dict.keys():
-                index_list = []
-                if spcl_loc_df_check:
-                    column_1 = spcl_loc_df.columns._values[0]
-                    ethrin_value = spcl_loc_df.iloc[spcl_loc_df.loc[spcl_loc_df[column_1]==spcl_dict[loc_list[location]]].index.values[0]+1]['Unnamed: 3']
-                    inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
+            ####################Will be done Later###########################################
+            # elif loc_list[location] in spcl_dict.keys():
+            #     index_list = []
+            #     if spcl_loc_df_check:
+            #         column_1 = spcl_loc_df.columns._values[0]
+            #         ethrin_value = spcl_loc_df.iloc[spcl_loc_df.loc[spcl_loc_df[column_1]==spcl_dict[loc_list[location]]].index.values[0]+1]['Unnamed: 3']
+            #         inv_mtm_sht.range(f"F{inv_mtm_st_row+location}").value = ethrin_value
+            ################################################################################
 
             else:
                 index_list=mtm_df.loc[mtm_df['Unnamed: 0']==loc_list[location].split(',')[0]].index.values
@@ -345,47 +354,59 @@ def rackbacktrack(input_date, output_date):
             wb.sheets["Sheet1"].delete()
         except:
             pass
+        try:
+            wb.sheets["GRPO"].delete()
+        except:
+            pass
 
         # #Copy Sheet1 from open gr sheet1
-        gr_wb.sheets("Sheet1").copy(name="Sheet1", after=wb.sheets["Little Rock Costing"])
-        open_gr_sht = wb.sheets["Sheet1"]
+        gr_wb.sheets("Sheet1").copy(name="GRPO", after=wb.sheets["Little Rock Costing"])#Updated sheet name from Sheet1 to GRPO
+        open_gr_sht = wb.sheets["GRPO"]#Updated sheet name from Sheet1 to GRPO
         gr_head_row = open_gr_sht.range("B1").end('down').end('down').row
+        gr_head_row = 1
         gr_wb.close()
+
         # #Unmerging Top 3 cells
+        ####################Comment old file clening stuff################################
         wb.activate()
         open_gr_sht.activate()
-        open_gr_sht.range(f"1:{gr_head_row-1}").unmerge()
-        open_gr_sht.range(f"8:8").unmerge()
+        # open_gr_sht.range(f"1:{gr_head_row-1}").unmerge()
+        # open_gr_sht.range(f"8:8").unmerge()
+        ##################################################################################
         gr_col_list = open_gr_sht.range(f"B{gr_head_row}").expand("right").value
         gr_last_col = len(gr_col_list)
         gr_last_col_letter = num_to_col_letters(gr_last_col+1)
         gr_last_row = open_gr_sht.range(f'B'+ str(open_gr_sht.cells.last_cell.row)).end('up').row
-        gr_date_col = gr_col_list.index("Date")+1
+        gr_date_col = gr_col_list.index("Posting Date")+1
         gr_date_col_letter = num_to_col_letters(gr_date_col+1)
         
         open_gr_sht.api.AutoFilterMode=False
         # open_gr_sht.range(f"B{gr_head_row}:{gr_last_col_letter}{gr_last_row}").api.Sort(Key1=open_gr_sht.range(f"B{gr_head_row}:B{gr_last_row}").api,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
         open_gr_sht.range(f"B{gr_head_row}:{gr_last_col_letter}{gr_last_row}").api.Sort(Key1=open_gr_sht.range(f"B{gr_head_row}:B{gr_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
-        #Deleting Jrn Entries
-        while not open_gr_sht.range(f"B{gr_head_row+1}").value.upper().startswith("MRN"):
-            open_gr_sht.range(f"{gr_head_row+1}:{gr_head_row+1}").delete()
-
+        ####################Comment old file cleaning stuff################################    
+        # #Deleting Jrn Entries
+        # while not open_gr_sht.range(f"B{gr_head_row+1}").value.upper().startswith("MRN"):
+        #     open_gr_sht.range(f"{gr_head_row+1}:{gr_head_row+1}").delete()
+        ###################################################################################
         mrn_last_row = open_gr_sht.range(f"{gr_date_col_letter}{gr_head_row}").end("down").row
+        #####Renaming sheet1 name to GRPO
         
         #Refreshing Source and data in Pivot
         
         wb.activate()
-        pivot_sht.activate()
-        wb.api.ActiveSheet.PivotTables(1).PivotCache().SourceData = f"Sheet1!R{gr_head_row}C2:R{ mrn_last_row}C{gr_last_col}"#as list starts from B for for selecting  -1
+        pivot_sht.activate()#Updated sheet name from Sheet1 to GRPO
+        wb.api.ActiveSheet.PivotTables(1).PivotCache().SourceData = f"GRPO!R{gr_head_row}C2:R{ mrn_last_row}C{gr_last_col}"#as list starts from B for for selecting  -1
 
         wb.api.ActiveSheet.PivotTables(1).PivotCache().Refresh()
-        #Removing Gasoline from filter
-        for product in wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems():
-            if product.Name == "Ethanol":
-                product.Visible = True
-            else:
-                product.Visible = False
+        ###################Removing Filter##################################
+        # #Removing Gasoline from filter
+        # for product in wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems():
+        #     if product.Name == "Ethanol":
+        #         product.Visible = True
+        #     else:
+        #         product.Visible = False
+        ####################################################################
         # try:
         #     wb.api.ActiveSheet.PivotTables(1).PivotFields("Product Name").PivotItems("Gasoline").Visible = False
         # except:
@@ -404,17 +425,66 @@ def rackbacktrack(input_date, output_date):
                                 ).value
         #Copy pasting data in Sheet 4
         #getting required columns only 
-        mrn_df = mrn_df[["Vendor Ref.", "Links", "Voucher", "Product Name", "Date", "BOLNumber", "Terminal ", "Account", "Billed Qty", "Credit Amount"]]
+        # mrn_df = mrn_df[["Vendor Ref.", "Links", "Voucher", "Product Name", "Date", "BOLNumber", "Terminal ", "Account", "Billed Qty", "Credit Amount"]]
+        #################Updating Column names as SAP GRPO Report and add Blank column with data as Inventory Ethanol-Active############################
+        mapping_dict = {"Agreement No.":"Links",
+                        "Document No.":"Voucher",
+                        "Item No.":"Pdt Name",
+                        "Posting Date":"Date",
+                        "BOL No.":"BOL#",
+                        "To warehouse":"Terminal",
+                        "Quantity":"Billed Qty",
+                        "Amount":"Credit Amount",
+                        "Freight Bill Amt":"Freight Amount",
+                        "Landed Cost No":"LC number",
+                        "landedCost Date":"LC Post date"}
+        mrn_df = mrn_df[["Vendor Name", "Agreement No.", "Document No.", "Item No.", "Posting Date", "BOL No.", "To warehouse","Quantity", "Amount",\
+                        "Final Price", "Freight Bill Amt", "Landed Cost No", "landedCost Date"]]
+        
+
+        #Final Pivot2 Column list "Vendor Name"	"Links"	"Voucher"	"Pdt Name"	"Date"	"BOL#"	"Terminal"	"Account"	 "Billed Qty" 	 "Credit Amount" 	 "Rate" 	 "Amount" 	 "Final Amount" 	 "Final Price" 	 "True-Up" 	 "Freight Rate" 	 "Freight Amount" 	"Freight Bill No."	"Freight Bill Booking Date"
+        #Freight Rate = Freight Amount/Billed Qty
+        ################################################################################################################################################
         sht_4 = wb.sheets("Sheet4")
-        #Updating price formula
-        mrn_df['price'] = mrn_df['Credit Amount']/mrn_df['Billed Qty']
-        sht_4.api.AutoFilterMode=False
+        #################Updating Column names as SAP GRPO Report and add Blank column with data as Inventory Ethanol-Active#############################
+        #Updating priceor Rate formula and put it after Credit Amount
+        mrn_df['Rate'] = mrn_df['Amount']/mrn_df['Quantity']
+        mrn_df["Freight Rate"] = mrn_df['Freight Bill Amt']/mrn_df['Quantity']
+        mrn_df["Account"] = "Inventory Ethanol - Active"
+        mrn_df["Final Amount"] = None
+        mrn_df["True-Up"] = None
+        #Renameing column
+        mrn_df.rename(columns={"Agreement No.":mapping_dict["Agreement No."], "Document No.":mapping_dict["Document No."],"Item No.":mapping_dict["Item No."],\
+                               "Posting Date":mapping_dict["Posting Date"], "BOL No.":mapping_dict["BOL No."], "To warehouse":mapping_dict["To warehouse"],\
+                                "Quantity":mapping_dict["Quantity"], "Amount":mapping_dict["Amount"], "Freight Bill Amt":mapping_dict["Freight Bill Amt"],\
+                                "Landed Cost No":mapping_dict["Landed Cost No"], "landedCost Date":mapping_dict["landedCost Date"]}, inplace=True)
+        #Rearranging Columns
+        mrn_df = mrn_df[["Vendor Name", mapping_dict["Agreement No."], mapping_dict["Document No."], mapping_dict["Item No."], mapping_dict["Posting Date"], \
+                          mapping_dict["BOL No."], mapping_dict["To warehouse"], "Account",mapping_dict["Quantity"], mapping_dict["Amount"], "Rate","Final Amount",\
+                        "Final Price", "True-Up", "Freight Rate", mapping_dict["Freight Bill Amt"], mapping_dict["Landed Cost No"], mapping_dict["landedCost Date"]]]
+        #Inserting Blank Amount column after Rate Column
+        rate_col_index = list(mrn_df.columns).index("Rate")
+        mrn_df.insert(loc=rate_col_index+1, column='Amount', value=None)
+        ################################Old Logic################################################################################################################
+        # #Updating price formula
+        # mrn_df['price'] = mrn_df['Credit Amount']/mrn_df['Billed Qty']
+        
+        # sht_4.api.AutoFilterMode=False
         # sht_4_last_row = sht_4.range(f"A{sht_4.cells.last_cell.row}").end("up").row
-        sht_4.range("A2").expand("table").clear()
-        sht_4.range("A2").options(pd.DataFrame, 
-                                header=False,
-                                index=False 
-                                ).value = mrn_df 
+        # sht_4.range("A2").expand("table").clear()
+        # sht_4.range("A2").options(pd.DataFrame,
+        #                         header=False,
+        #                         index=False
+        #                         ).value = mrn_df
+        #############################New logic after SAP############################################
+        sht_4.clear()
+        sht_4.range("A1").options(pd.DataFrame,
+                                    header=True,
+                                    index=False
+                                    ).value = mrn_df
+        sht_4.autofit()
+        sht_4_last_row = sht_4.range(f"A{sht_4.cells.last_cell.row}").end("up").row
+
         ##################Updating PIVOT Sheet Total Column#########################################
         wb.activate()
         pivot_sht.activate()
@@ -423,8 +493,6 @@ def rackbacktrack(input_date, output_date):
         p_total_col = num_to_col_letters(p_total_col_num)
         pivote_date_col_num = p_total_col_num - 1
         pivote_date_col = num_to_col_letters(pivote_date_col_num)
-        p_row_label_num = pivot_sht_cols.index("Row Labels")+1
-        p_row_label = num_to_col_letters(p_row_label_num)
         p_diff_num = pivot_sht_cols.index("Diff")+1
         p_diff_col = num_to_col_letters(p_diff_num)
         
@@ -451,9 +519,10 @@ def rackbacktrack(input_date, output_date):
         sht4_last_row = len(mrn_df)+2#{len(mrn_df)+2 +2 for zero index and excluding heading
         sht4_date_col = mrn_df.columns.get_loc("Date")+1
         sht4_date_letter = num_to_col_letters(sht4_date_col)
-        sht4_term_col = mrn_df.columns.get_loc("Terminal ")+1
+        sht4_term_col = mrn_df.columns.get_loc("Terminal")+1
         sht4_term_letter = num_to_col_letters(sht4_term_col)
-        sht_4.range(f"{p_row_label}1:K{sht4_last_row}").api.Sort(Key1=sht_4.range(f"{sht4_date_letter}1:{sht4_date_letter}{sht4_last_row}").api,
+        sht4_last_col = num_to_col_letters(len(mrn_df.columns))
+        sht_4.range(f"A1:{sht4_last_col}{sht4_last_row}").api.Sort(Key1=sht_4.range(f"{sht4_date_letter}1:{sht4_date_letter}{sht4_last_row}").api,
             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
 
 
@@ -472,7 +541,7 @@ def rackbacktrack(input_date, output_date):
                 
                 if pivot2_sht.range(f"H{i}").value != 0:
                     #Filter terminal for inserting rows
-                    sht4_term_col = mrn_df.columns.get_loc("Terminal ")+1
+                    sht4_term_col = mrn_df.columns.get_loc("Terminal")+1
                     sht4_term_letter = num_to_col_letters(sht4_term_col)
                     
                     wb.activate()
@@ -764,16 +833,22 @@ def rackbacktrack(input_date, output_date):
 
                         #After row insertion add data
                         lr_costing_sht.range(f"{li_atlas_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
-                        lr_costing_sht.range(f"{li_bol_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["BOLNumber"])
+                        try:
+                            lr_costing_sht.range(f"{li_bol_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["BOLNumber"])
+                        except:
+                            lr_costing_sht.range(f"{li_bol_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["BOL#"])
                         lr_costing_sht.range(f"{li_atqty_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Billed Qty"])
-                        lr_costing_sht.range(f"{li_location_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Terminal "])
+                        try:
+                            lr_costing_sht.range(f"{li_location_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Terminal "])
+                        except:
+                            lr_costing_sht.range(f"{li_location_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Terminal"])
                         lr_costing_sht.range(f"{li_mrn_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Voucher"])
                         lr_costing_sht.range(f"{li_deal_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Links"])
                         lr_costing_sht.range(f"{li_date_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
                         lr_costing_sht.range(f"{li_invdate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Date"])
-                        lr_costing_sht.range(f"{li_vendor_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Vend"])
-                        lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
-                        lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["price"])
+                        lr_costing_sht.range(f"{li_vendor_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Vendor Name"])
+                        lr_costing_sht.range(f"{li_rate_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Rate"])
+                        lr_costing_sht.range(f"{li_fprice_col_letter}{new_i+1}").options(transpose=True).value = list(li_df["Rate"])
 
 
                         #Updating formula
@@ -854,56 +929,71 @@ def rackbacktrack(input_date, output_date):
 
             lrti_wb.close()
         ##############Reconcilliation Part#################################################################################################
+        ################Updated new GRPO Sheet Column Names####################################
         wb.activate()
         open_gr_sht.activate()
-        open_gr_cols = open_gr_sht.range(f"B6").expand("right").value
+        # open_gr_cols = open_gr_sht.range(f"B6").expand("right").value
+        #New column header after SAP Update
+        open_gr_cols = open_gr_sht.range(f"A1").expand("right").value
         open_gr_last_col_num = len(open_gr_cols)
-        open_gr_voucher_col_num =  open_gr_cols.index("Voucher")
-        open_gr_bol_col_num =  open_gr_cols.index("BOLNumber")
-        open_gr_debit_col_num =  open_gr_cols.index("Debit Amount")
-        open_gr_credit_col_num =  open_gr_cols.index("Credit Amount")
-        open_gr_last_col = num_to_col_letters(open_gr_last_col_num+2)
-        open_gr_voucher_col = num_to_col_letters(open_gr_voucher_col_num+2)
-        open_gr_bol_col = num_to_col_letters(open_gr_bol_col_num+2)
-        open_gr_debit_col = num_to_col_letters(open_gr_debit_col_num+2)
-        open_gr_credit_col = num_to_col_letters(open_gr_credit_col_num+2)
+        # open_gr_voucher_col_num =  open_gr_cols.index("Voucher")
+        open_gr_voucher_col_num =  open_gr_cols.index("Document No.")
+        # open_gr_bol_col_num =  open_gr_cols.index("BOLNumber")
+        open_gr_bol_col_num =  open_gr_cols.index("BOL No.")
+
+        open_gr_vend_post_date_col_num = open_gr_cols.index("AP Posting Date")
+        
+        open_gr_last_col = num_to_col_letters(open_gr_last_col_num)#+2 changed to +1 as col B change A in new SAP sheet
+        open_gr_voucher_col = num_to_col_letters(open_gr_voucher_col_num+1)#+2 changed to +1 as col B change A in new SAP sheet
+        open_gr_bol_col = num_to_col_letters(open_gr_bol_col_num+1)#+2 changed to +1 as col B change A in new SAP sheet
+        open_gr_vend_post_date_col = num_to_col_letters(open_gr_vend_post_date_col_num+1)#+2 changed to +1 as col B change A in new SAP sheet
+        #############In SAP Update format Debit Credit Column not present################
+        # open_gr_debit_col_num =  open_gr_cols.index("Debit Amount")
+        # open_gr_credit_col_num =  open_gr_cols.index("Credit Amount")
+        # open_gr_debit_col = num_to_col_letters(open_gr_debit_col_num+2)
+        # open_gr_credit_col = num_to_col_letters(open_gr_credit_col_num+2)
+        ##################################################################################
 
         open_gr_last_row = open_gr_sht.range(f"{open_gr_voucher_col}{open_gr_sht.cells.last_cell.row}").end("up").row
+
         #Apply Duplicate filter on BOLNumber Column
         font_colour,Interior_colour = conditional_formatting_uniq(f"{open_gr_bol_col}:{open_gr_bol_col}",open_gr_sht,wb)
         open_gr_sht.api.AutoFilterMode=False
         open_gr_sht.api.Range(f"{open_gr_bol_col}6").AutoFilter(Field:=f"{open_gr_bol_col_num+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
 
-        credit_range = open_gr_sht.range(f"{open_gr_credit_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
-        debit_range = open_gr_sht.range(f"{open_gr_debit_col}7").end("down").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+        #############In SAP Update format Debit Credit Column not present################
+        # credit_range = open_gr_sht.range(f"{open_gr_credit_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+        # debit_range = open_gr_sht.range(f"{open_gr_debit_col}7").end("down").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+        
 
 
-        credit_count = credit_range.Count
+        # credit_count = credit_range.Count
 
-        debit_count = debit_range.Count
+        # debit_count = debit_range.Count
 
-        if debit_count != credit_count:
-            open_gr_sht.api.AutoFilterMode=False
-            #Filtering PVI for finding duplicate PVI
-            open_gr_sht.range('G:G').api.FormatConditions.Delete()
-            open_gr_sht.api.Range(f"{open_gr_voucher_col}6").AutoFilter(Field:=f"{open_gr_voucher_col_num+1}", Criteria1:="PVI*", Operator:=win32c.AutoFilterOperator.xlFilterValues)
+        # if debit_count != credit_count:
+        #     open_gr_sht.api.AutoFilterMode=False
+        #     #Filtering PVI for finding duplicate PVI
+        #     open_gr_sht.range('G:G').api.FormatConditions.Delete()
+        #     open_gr_sht.api.Range(f"{open_gr_voucher_col}6").AutoFilter(Field:=f"{open_gr_voucher_col_num+1}", Criteria1:="PVI*", Operator:=win32c.AutoFilterOperator.xlFilterValues)
 
-            data_list = row_range_calc(open_gr_bol_col, open_gr_sht, wb)
-            pvi_row = data_list[2][1].split(":")[0]
+        #     data_list = row_range_calc(open_gr_bol_col, open_gr_sht, wb)
+        #     pvi_row = data_list[2][1].split(":")[0]
 
-            # pvi_row= open_gr_sht.api.Range(f"{open_gr_voucher_col}7:{open_gr_voucher_col}{open_gr_last_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address.split(':')[0].replace("$", "")
-            font_colour,Interior_colour = conditional_formatting_uniq(f"{open_gr_bol_col}{pvi_row}:{open_gr_bol_col}{open_gr_last_row}", open_gr_sht, wb)
-            open_gr_sht.api.Range(f"{open_gr_bol_col}6").AutoFilter(Field:=f"{open_gr_bol_col_num+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+        #     # pvi_row= open_gr_sht.api.Range(f"{open_gr_voucher_col}7:{open_gr_voucher_col}{open_gr_last_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Address.split(':')[0].replace("$", "")
+        #     font_colour,Interior_colour = conditional_formatting_uniq(f"{open_gr_bol_col}{pvi_row}:{open_gr_bol_col}{open_gr_last_row}", open_gr_sht, wb)
+        #     open_gr_sht.api.Range(f"{open_gr_bol_col}6").AutoFilter(Field:=f"{open_gr_bol_col_num+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
 
-        #Updating Difference in Accrual tab
+        # #Updating Difference in Accrual tab
 
 
-        credit_range = open_gr_sht.range(f"{open_gr_credit_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
-        debit_range = open_gr_sht.range(f"{open_gr_debit_col}7").end("down").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+        # credit_range = open_gr_sht.range(f"{open_gr_credit_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+        # debit_range = open_gr_sht.range(f"{open_gr_debit_col}7").end("down").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
 
-        credit_sum = wb.api.Application.WorksheetFunction.Sum(credit_range)
-        debit_sum = wb.api.Application.WorksheetFunction.Sum(debit_range)
-        diff_amount = credit_sum - debit_sum
+        # credit_sum = wb.api.Application.WorksheetFunction.Sum(credit_range)
+        # debit_sum = wb.api.Application.WorksheetFunction.Sum(debit_range)
+        # diff_amount = credit_sum - debit_sum
+        ##################################################################################
 
         open_gr_sht.api.AutoFilterMode=False
 
@@ -915,218 +1005,276 @@ def rackbacktrack(input_date, output_date):
         accrual_last_row = accrual_sht.range(f"A{accrual_sht.cells.last_cell.row}").end("up").row
         accrual_last_row_2 = accrual_sht.range(f"X{accrual_sht.cells.last_cell.row}").end("up").row
 
-        #updaint diffreence in accrual b column
-        accrual_sht.range(f"B{accrual_last_row}").value = diff_amount
+        #############In SAP Update format Debit Credit Column not present################
+        # #updaint diffreence in accrual b column
+        # accrual_sht.range(f"B{accrual_last_row}").value = diff_amount
 
-        #Deleting data in accrual sheet
-        accrual_sht.range(f"A2:X{accrual_last_row_2}").delete()
+        # #Deleting data in accrual sheet
+        # accrual_sht.range(f"A2:X{accrual_last_row_2}").delete()
+        
 
-        #Filtering out no fill values in open gr sheet and inserting them in accrual sheet
+        # #Filtering out no fill values in open gr sheet and inserting them in accrual sheet
+        # wb.activate()
+        # open_gr_sht.activate()
+        # open_gr_sht.api.AutoFilterMode=False
+        # open_gr_sht.api.Range(f"{open_gr_bol_col}6").AutoFilter(Field:=f"{open_gr_bol_col_num+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterNoFill)
+        # # open_gr_last_row = open_gr_sht.range(f"{open_gr_voucher_col}{open_gr_sht.cells.last_cell.row}").end("up").row
+
+        # #Copy pasting filtered data in same sheet for insertion in accrual sheet
+        # open_gr_sht.range(f"{open_gr_voucher_col}7:{open_gr_last_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(open_gr_sht.range(f"A{open_gr_last_row+20}").api)
+
+        # #Copy pasting data in accrual sheet
+        # open_gr_sht.range(f"A{open_gr_last_row+20}:W{open_gr_last_row+20}").expand("down").api.EntireRow.Copy()
+        # wb.activate()
+        # accrual_sht.activate()
+        # accrual_sht.range(f"A2").api.EntireRow.Select()
+        # wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
+
+        # accr_last_mrn = accrual_sht.range(f"B2").end("down").row
+
+
+        # wb.api.ActiveSheet.PivotTables("PivotTable1").SourceData = f'Accrual!R1C1:R{accr_last_mrn}C23'
+        # wb.api.ActiveSheet.PivotTables("PivotTable1").PivotCache().Refresh()
+
+
+        # ###########################Getting open mrn as per date from pvi#####################################
+
+        # accrual_col_list = accrual_sht.range(f"A1").expand("right").value
+        # accr_deliv_to_num = accrual_col_list.index('Delivery To')
+        # accr_deliv_to = num_to_col_letters(accr_deliv_to_num+1)
+
+        # accr_pvi_row = accr_last_mrn+2
+        # accr_pvi_date = accrual_sht.range(f"{accr_deliv_to}{accr_pvi_row}").value
+        # accr_pvi_year = accr_pvi_date.year
+        # accr_pvi_month_year = datetime.strftime(accr_pvi_date, "%m-%y")
+        
+        # rack_date = datetime.strftime(last_day_of_month(accr_pvi_date.date()), "%Y%m%d")
+        ########################################################################################################
+
+        #############################Stopping Sheet5 Logic######################
+        # input_open_mrn = f"\\\\BIO-INDIA-FS\\India Sync$\\India\\{accr_pvi_year}\\{accr_pvi_month_year}\\Rack\\Open MRN Rack_{rack_date}.xlsx"#f'\\\\BIO-INDIA-FS\\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank Inv Reco.xlsx'
+        # # input_open_mrn = curr_loc+r'\RackBackTrack\Raw Files'+f'\\OpenMRNRack{prev_mrn_date}.xlsx' #Open MRN Rack_20221130.xlsx
+        # if not os.path.exists(input_open_mrn):
+        #     wb.save(output_location+f"\\RacbTrack_{input_date}.xlsx")
+        #     return(f"{input_cta} Excel file not present, saving file till now with name RacbTrack_{input_date}.xlsx in putput folder")
+
+        # retry=0
+        # while retry < 10:
+        #     try:
+        #         open_mrn_wb = xw.Book(input_open_mrn, update_links=False) 
+        #         break
+        #     except Exception as e:
+        #         time.sleep(5)
+        #         retry+=1
+        #         if retry ==10:
+        #             raise e
+
+        # open_mrn_sht = open_mrn_wb.sheets["Bills not received"]
+        # open_mrn_cols = open_mrn_sht.range(f"A1").expand("right").value
+        # open_mrn_del_to_num = open_mrn_cols.index("Delivery To")
+        # open_mrn_del_to = num_to_col_letters(open_mrn_del_to_num+1)
+        
+        
+        # sht_5 = wb.sheets["Sheet5"]
+        # sht_5.clear_contents()
+        # sht_5.clear_contents()
+        # open_mrn_sht.range(f"A1:{open_mrn_del_to}1").expand("down").copy(sht_5.range("A1"))
+        # open_mrn_wb.close()
+        # sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
+        # # open_mrn_sht.copy(name="Sheet5", after=wb.sheets["Gasoline Costing"])
+        # #Copy paste pvi rows from accrual sheet
+        # accrual_sht.range(f"A{accr_pvi_row}:{accr_deliv_to}{accr_pvi_row}").expand("down").copy(sht_5.range(f"A{sht_5_last_row+1}"))
+
+        # sht_5_cols = sht_5.range(f"A1").expand("right").value
+        # sht_5_del_to_num = sht_5_cols.index("Delivery To")+1
+        # sht_5_del_to = num_to_col_letters(sht_5_del_to_num)
+        # sht_5_bol_col_num = sht_5_cols.index("BOLNumber")+1
+        # sht_5_bol_col = num_to_col_letters(sht_5_bol_col_num)
+        # sht_5_credit_col_num =  sht_5_cols.index("Credit Amount")+1
+        # sht_5_credit_col = num_to_col_letters(sht_5_credit_col_num)
+        # sht_5_debit_col_num =  sht_5_cols.index("Debit Amount")+1
+        # sht_5_debit_col = num_to_col_letters(sht_5_debit_col_num)
+
+
+        # #####ADD CONDTION FOR DUPLICATE PVI BOL$+###########################
+        # #Filtering duplicate bols
+        # sht_5.api.AutoFilterMode=False
+        # sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
+        # font_colour,Interior_colour = conditional_formatting_uniq(f"{sht_5_bol_col}1:{sht_5_bol_col}{sht_5_last_row}", sht_5, wb)
+        # sht_5.api.Range(f"{sht_5_bol_col}1").AutoFilter(Field:=f"{sht_5_bol_col_num}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+
+        # wb.activate()
+        # sht_5.activate()
+
+        # sht5_credit_range = sht_5.range(f"{sht_5_credit_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+        # sht5_debit_range = sht_5.range(f"{sht_5_debit_col}7").end("down").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+
+        # sht5_credit_sum = wb.api.Application.WorksheetFunction.Sum(sht5_credit_range)
+        # sht5_debit_sum = wb.api.Application.WorksheetFunction.Sum(sht5_debit_range)
+
+        # sht_5_diff_amount = sht5_credit_sum - sht5_debit_sum
+
+
+
+
+
+        # print("PVi data pasted")
+
+
+        # ######################Amking pivot of remaning mrn in sheet 5####################
+        # sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
+        # sht_5.api.AutoFilterMode=False
+        # sht_5.api.Range(f"{sht_5_bol_col}1").AutoFilter(Field:=f"{sht_5_bol_col_num}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterNoFill)
+
+        # #Copy pasting filtered data in same sheet for Pivot creation
+        # sht5_pivot_start = sht_5_last_row+10
+        # sht_5.range(f"A1:{sht_5_del_to}1").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(sht_5.range(f"A{sht5_pivot_start}").api)
+        # sht5_pivot_end = sht_5.range(f"A{sht5_pivot_start}").end("down").row
+
+        # #Special case if pvi left and bol not matched then 
+        # pvi_amount_diff = 0 
+        # while sht_5.range(f"A{sht5_pivot_end}").value.startswith("PVI"):
+        #     print("To be Handled")
+        #     mrn_value = sht_5.range(f"U{sht5_pivot_end}").value
+        #     pvi_debit = sht_5.range(f"{sht_5_debit_col}{sht5_pivot_end}").value
+        #     sht_5.api.AutoFilterMode=False
+        #     sht_5.api.Range(f"A{sht5_pivot_start}").AutoFilter(Field:=1, Criteria1:=mrn_value, Operator:=7)
+
+        #     sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
+
+        #     mrn_credit = sht_5.range(f"{sht_5_credit_col}{sht_5_last_row}").value
+
+        #     pvi_amount_diff += mrn_credit - pvi_debit
+
+        #     #deleting mrn and pvi row from 2nd table
+        #     sht_5.range(f"{sht_5_last_row}:{sht_5_last_row}").delete()
+        #     sht_5.api.AutoFilterMode=False
+        #     #Recalculating it as one row deleted
+        #     sht5_pivot_end = sht_5.range(f"A{sht5_pivot_start}").end("down").row
+        #     sht_5.range(f"{sht5_pivot_end}:{sht5_pivot_end}").delete()
+
+        #     #reassigning sht5_pivot_end
+        #     sht5_pivot_end = sht_5.range(f"A{sht5_pivot_start}").end("down").row
+
+
+
+
+
+
+
+        # #Updating diff in accrual sheet
+        # accrual_last_row = accrual_sht.range(f"A{accrual_sht.cells.last_cell.row}").end("up").row
+        # accrual_sht.range(f"B{accrual_last_row}").value = f"={diff_amount} + {sht_5_diff_amount} + {pvi_amount_diff}"
+        
+
+
+        # #Creating Pivot for column Vendor Ref and Credit Amount
+        # PivotCache=wb.api.PivotCaches().Create(SourceType=win32c.PivotTableSourceType.xlDatabase, SourceData=f"\'Sheet5\'!R{sht5_pivot_start}C1:R{sht5_pivot_end}C{sht_5_del_to_num}", Version=win32c.PivotTableVersionList.xlPivotTableVersion14)
+        # PivotTable = PivotCache.CreatePivotTable(TableDestination=f"'Sheet5'!R{sht5_pivot_end+5}C1", TableName="mrn_credit", DefaultVersion=win32c.PivotTableVersionList.xlPivotTableVersion14)
+        # #logger.info("Adding particular Row Data in Pivot Table")
+        # PivotTable.PivotFields('Vendor Ref.').Orientation = win32c.PivotFieldOrientation.xlRowField
+        # # PivotTable.PivotFields('Vendor Ref.').Position = 1
+
+        # #logger.info("Adding particular Data Field in Pivot Table")
+        # PivotTable.PivotFields('Credit Amount').Orientation = win32c.PivotFieldOrientation.xlDataField
+        # PivotTable.PivotFields('Sum of Credit Amount').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+
+        # #Deleting Pivot from Accrual sheet Last month open MRN\
+        # accr_open_mrn_pivot_row = accrual_sht.range(f"A1").end("down").end("down").row+1
+        # accrual_sht.range(f"E{accr_open_mrn_pivot_row}").expand("table").clear_contents()
+
+
+        # sht_5.range(f"A{sht5_pivot_end+5}").expand('table').copy(accrual_sht.range(f"E{accr_open_mrn_pivot_row}"))
+
+       
+
+        
+
+        ################################################################################################
+
+        ###################NEW SAP Accrual Sheet Logic##################################################
         wb.activate()
         open_gr_sht.activate()
-        open_gr_sht.api.AutoFilterMode=False
-        open_gr_sht.api.Range(f"{open_gr_bol_col}6").AutoFilter(Field:=f"{open_gr_bol_col_num+1}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterNoFill)
-        # open_gr_last_row = open_gr_sht.range(f"{open_gr_voucher_col}{open_gr_sht.cells.last_cell.row}").end("up").row
 
-        #Copy pasting filtered data in same sheet for insertion in accrual sheet
-        open_gr_sht.range(f"{open_gr_voucher_col}7:{open_gr_last_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(open_gr_sht.range(f"A{open_gr_last_row+20}").api)
-
-        #Copy pasting data in accrual sheet
-        open_gr_sht.range(f"A{open_gr_last_row+20}:W{open_gr_last_row+20}").expand("down").api.EntireRow.Copy()
-        wb.activate()
-        accrual_sht.activate()
-        accrual_sht.range(f"A2").api.EntireRow.Select()
-        wb.app.api.Selection.Insert(Shift:=win32c.InsertShiftDirection.xlShiftDown)
-
-        accr_last_mrn = accrual_sht.range(f"B2").end("down").row
-
-
-        wb.api.ActiveSheet.PivotTables("PivotTable1").SourceData = f'Accrual!R1C1:R{accr_last_mrn}C23'
-        wb.api.ActiveSheet.PivotTables("PivotTable1").PivotCache().Refresh()
-
-
-        ###########################Getting open mrn as per date from pvi#####################################
-
-        accrual_col_list = accrual_sht.range(f"A1").expand("right").value
-        accr_deliv_to_num = accrual_col_list.index('Delivery To')
-        accr_deliv_to = num_to_col_letters(accr_deliv_to_num+1)
-
-        accr_pvi_row = accr_last_mrn+2
-        accr_pvi_date = accrual_sht.range(f"{accr_deliv_to}{accr_pvi_row}").value
-        accr_pvi_year = accr_pvi_date.year
-        accr_pvi_month_year = datetime.strftime(accr_pvi_date, "%m-%y")
+        open_gr_sht.api.AutoFilterMode = False
+        #Filter For current monthdate grater than 15 in case of mid month
+        if input_day <=15:
+            open_gr_sht.range(f"A1:{open_gr_last_col}{pivot2_last_row}").api.AutoFilter(Field:=open_gr_vend_post_date_col_num+1,
+                                                                                        Criteria1:=f">{input_datetime.replace(day=15).date()}", Operator:=win32c.AutoFilterOperator.xlOr,
+                                                                                        Criteria2:="=")
+        else:
+            #Filter for Days greater than last day of month and blank
+            open_gr_sht.range(f"A1:{open_gr_last_col}{pivot2_last_row}").api.AutoFilter(Field:=open_gr_vend_post_date_col_num+1,
+                                                                                        Criteria1:=f">{last_day_of_month(input_datetime.date())}", Operator:=win32c.AutoFilterOperator.xlOr,
+                                                                                        Criteria2:="=")
+            
         
-        rack_date = datetime.strftime(last_day_of_month(accr_pvi_date.date()), "%Y%m%d")
+        fil_open_gr_last_row = open_gr_sht.range(f"A{open_gr_sht.cells.last_cell.row}").end("up").row
 
+        #If data present after filter copy it and replace with acrrual sheet data
+        if fil_open_gr_last_row != 1:
+            accrual_sht.range("A1").expand("table").delete()
+            
+            
+            copy_row_count = open_gr_sht.range(f"A1:A{fil_open_gr_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Count
+            accrual_sht.range(f"1:{copy_row_count}").insert(shift='down')
+            wb.activate()
+            open_gr_sht.activate()
+            open_gr_sht.range(f"A1:{open_gr_last_col}{fil_open_gr_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+            wb.app.selection.copy(accrual_sht.range("A1"))
 
-        input_open_mrn = f"\\\\BIO-INDIA-FS\\India Sync$\\India\\{accr_pvi_year}\\{accr_pvi_month_year}\\Rack\\Open MRN Rack_{rack_date}.xlsx"#f'\\\\BIO-INDIA-FS\\India Sync$\\India\\{input_year}\\{input_month}-{input_year2}\\Little Rock Tank Inv Reco.xlsx'
-        # input_open_mrn = curr_loc+r'\RackBackTrack\Raw Files'+f'\\OpenMRNRack{prev_mrn_date}.xlsx' #Open MRN Rack_20221130.xlsx
-        if not os.path.exists(input_open_mrn):
-            wb.save(output_location+f"\\RacbTrack_{input_date}.xlsx")
-            return(f"{input_cta} Excel file not present, saving file till now with name RacbTrack_{input_date}.xlsx in putput folder")
+            accrual_col_list = accrual_sht.range("A1").expand("right").value
+            accrual_last_col_num = len(accrual_col_list)
 
-        retry=0
-        while retry < 10:
-            try:
-                open_mrn_wb = xw.Book(input_open_mrn, update_links=False) 
-                break
-            except Exception as e:
-                time.sleep(5)
-                retry+=1
-                if retry ==10:
-                    raise e
+            #Now Refreshin 1st top left pivot: PivotTable1
+            wb.activate()
+            accrual_sht.activate()
+            wb.api.ActiveSheet.PivotTables("PivotTable1").PivotCache().SourceData = f"{accrual_sht.name}!R1C1:R{copy_row_count}C{accrual_last_col_num}"#as list starts from B for for selecting  -1
+            wb.api.ActiveSheet.PivotTables("PivotTable1").PivotCache().Refresh()
 
-        open_mrn_sht = open_mrn_wb.sheets["Bills not received"]
-        open_mrn_cols = open_mrn_sht.range(f"A1").expand("right").value
-        open_mrn_del_to_num = open_mrn_cols.index("Delivery To")
-        open_mrn_del_to = num_to_col_letters(open_mrn_del_to_num+1)
-        
-        sht_5 = wb.sheets["Sheet5"]
-        sht_5.clear_contents()
-        sht_5.clear_contents()
-        open_mrn_sht.range(f"A1:{open_mrn_del_to}1").expand("down").copy(sht_5.range("A1"))
-        open_mrn_wb.close()
-        sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
-        # open_mrn_sht.copy(name="Sheet5", after=wb.sheets["Gasoline Costing"])
-        #Copy paste pvi rows from accrual sheet
-        accrual_sht.range(f"A{accr_pvi_row}:{accr_deliv_to}{accr_pvi_row}").expand("down").copy(sht_5.range(f"A{sht_5_last_row+1}"))
+            
+            #Updating Combined of Last &Current months Table
+            accr_open_mrn_pivot_row = accrual_sht.range(f"A1").end("down").end("down").row+1
+            # accrual_sht.range(f"E{accr_open_mrn_pivot_row}").expand("table").clear_contents()
+            
 
-        sht_5_cols = sht_5.range(f"A1").expand("right").value
-        sht_5_del_to_num = sht_5_cols.index("Delivery To")+1
-        sht_5_del_to = num_to_col_letters(sht_5_del_to_num)
-        sht_5_bol_col_num = sht_5_cols.index("BOLNumber")+1
-        sht_5_bol_col = num_to_col_letters(sht_5_bol_col_num)
-        sht_5_credit_col_num =  sht_5_cols.index("Credit Amount")+1
-        sht_5_credit_col = num_to_col_letters(sht_5_credit_col_num)
-        sht_5_debit_col_num =  sht_5_cols.index("Debit Amount")+1
-        sht_5_debit_col = num_to_col_letters(sht_5_debit_col_num)
+            pivot1_df = accrual_sht.range(f"A{accr_open_mrn_pivot_row}").expand("table").options(pd.DataFrame, 
+                                    header=1,
+                                    index=False 
+                                    ).value
 
+            pivot2_df = accrual_sht.range(f"E{accr_open_mrn_pivot_row}").expand("table").options(pd.DataFrame, 
+                                    header=1,
+                                    index=False 
+                                    ).value
+            #Remove last line containing Grand or Grnad Total
+            pivot1_df = pivot1_df[:-1]
+            pivot2_df = pivot2_df[:-1]
 
-        #####ADD CONDTION FOR DUPLICATE PVI BOL$+###########################
-        #Filtering duplicate bols
-        sht_5.api.AutoFilterMode=False
-        sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
-        font_colour,Interior_colour = conditional_formatting_uniq(f"{sht_5_bol_col}1:{sht_5_bol_col}{sht_5_last_row}", sht_5, wb)
-        sht_5.api.Range(f"{sht_5_bol_col}1").AutoFilter(Field:=f"{sht_5_bol_col_num}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterCellColor)
+            # mrn_df = pd.merge(pivot1_df,pivot2_df, on="Row Labels", how="outer")
 
-        wb.activate()
-        sht_5.activate()
+            df = pivot1_df.set_index('Row Labels').add(pivot2_df.set_index('Row Labels'), fill_value=0).reset_index()
+            df.sort_values('Row Labels', inplace=True)
 
-        sht5_credit_range = sht_5.range(f"{sht_5_credit_col}7").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
-        sht5_debit_range = sht_5.range(f"{sht_5_debit_col}7").end("down").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible)
+            combined_pivot_row = accrual_sht.range(f"E{accr_open_mrn_pivot_row}").end("down").end("down").row + 2
 
-        sht5_credit_sum = wb.api.Application.WorksheetFunction.Sum(sht5_credit_range)
-        sht5_debit_sum = wb.api.Application.WorksheetFunction.Sum(sht5_debit_range)
+            pivot_color = accrual_sht.range(f"E{combined_pivot_row-1}").api.Interior.Color
 
-        sht_5_diff_amount = sht5_credit_sum - sht5_debit_sum
+            accrual_sht.range(f"E{combined_pivot_row}").expand("table").delete()
+            accrual_sht.range(f"E{combined_pivot_row}").options(pd.DataFrame, 
+                                    header=None,
+                                    index=False 
+                                    ).value = df
 
+            pivot_last_row = accrual_sht.range(f"E{accrual_sht.cells.last_cell.row}").end("up").row
 
+            #Adding Total and it formula
+            accrual_sht.range(f"E{pivot_last_row+1}").value = "TOTAL"
+            accrual_sht.range(f"E{pivot_last_row+1}").api.Font.Bold = True
+            accrual_sht.range(f"F{pivot_last_row+1}").formula = f"=SUM(F{combined_pivot_row}:F{pivot_last_row})"
 
-
-
-        print("PVi data pasted")
-
-
-        ######################Amking pivot of remaning mrn in sheet 5####################
-        sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
-        sht_5.api.AutoFilterMode=False
-        sht_5.api.Range(f"{sht_5_bol_col}1").AutoFilter(Field:=f"{sht_5_bol_col_num}", Criteria1:=Interior_colour, Operator:=win32c.AutoFilterOperator.xlFilterNoFill)
-
-        #Copy pasting filtered data in same sheet for Pivot creation
-        sht5_pivot_start = sht_5_last_row+10
-        sht_5.range(f"A1:{sht_5_del_to}1").expand("down").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(sht_5.range(f"A{sht5_pivot_start}").api)
-        sht5_pivot_end = sht_5.range(f"A{sht5_pivot_start}").end("down").row
-
-        #Special case if pvi left and bol not matched then 
-        pvi_amount_diff = 0 
-        while sht_5.range(f"A{sht5_pivot_end}").value.startswith("PVI"):
-            print("To be Handled")
-            mrn_value = sht_5.range(f"U{sht5_pivot_end}").value
-            pvi_debit = sht_5.range(f"{sht_5_debit_col}{sht5_pivot_end}").value
-            sht_5.api.AutoFilterMode=False
-            sht_5.api.Range(f"A{sht5_pivot_start}").AutoFilter(Field:=1, Criteria1:=mrn_value, Operator:=7)
-
-            sht_5_last_row = sht_5.range(f"A{sht_5.cells.last_cell.row}").end("up").row
-
-            mrn_credit = sht_5.range(f"{sht_5_credit_col}{sht_5_last_row}").value
-
-            pvi_amount_diff += mrn_credit - pvi_debit
-
-            #deleting mrn and pvi row from 2nd table
-            sht_5.range(f"{sht_5_last_row}:{sht_5_last_row}").delete()
-            sht_5.api.AutoFilterMode=False
-            #Recalculating it as one row deleted
-            sht5_pivot_end = sht_5.range(f"A{sht5_pivot_start}").end("down").row
-            sht_5.range(f"{sht5_pivot_end}:{sht5_pivot_end}").delete()
-
-            #reassigning sht5_pivot_end
-            sht5_pivot_end = sht_5.range(f"A{sht5_pivot_start}").end("down").row
-
-
-
-
-
-
-
-        #Updating diff in accrual sheet
-        accrual_last_row = accrual_sht.range(f"A{accrual_sht.cells.last_cell.row}").end("up").row
-        accrual_sht.range(f"B{accrual_last_row}").value = f"={diff_amount} + {sht_5_diff_amount} + {pvi_amount_diff}"
-
-
-        #Creating Pivot for column Vendor Ref and Credit Amount
-        PivotCache=wb.api.PivotCaches().Create(SourceType=win32c.PivotTableSourceType.xlDatabase, SourceData=f"\'Sheet5\'!R{sht5_pivot_start}C1:R{sht5_pivot_end}C{sht_5_del_to_num}", Version=win32c.PivotTableVersionList.xlPivotTableVersion14)
-        PivotTable = PivotCache.CreatePivotTable(TableDestination=f"'Sheet5'!R{sht5_pivot_end+5}C1", TableName="mrn_credit", DefaultVersion=win32c.PivotTableVersionList.xlPivotTableVersion14)
-        #logger.info("Adding particular Row Data in Pivot Table")
-        PivotTable.PivotFields('Vendor Ref.').Orientation = win32c.PivotFieldOrientation.xlRowField
-        # PivotTable.PivotFields('Vendor Ref.').Position = 1
-
-        #logger.info("Adding particular Data Field in Pivot Table")
-        PivotTable.PivotFields('Credit Amount').Orientation = win32c.PivotFieldOrientation.xlDataField
-        PivotTable.PivotFields('Sum of Credit Amount').NumberFormat= '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
-
-        #Deleting Pivot from Accrual sheet Last month open MRN\
-        accr_open_mrn_pivot_row = accrual_sht.range(f"A1").end("down").end("down").row+1
-        accrual_sht.range(f"E{accr_open_mrn_pivot_row}").expand("table").clear_contents()
-
-
-        sht_5.range(f"A{sht5_pivot_end+5}").expand('table').copy(accrual_sht.range(f"E{accr_open_mrn_pivot_row}"))
-
-        pivot1_df = accrual_sht.range(f"A{accr_open_mrn_pivot_row}").expand("table").options(pd.DataFrame, 
-                                header=1,
-                                index=False 
-                                ).value
-
-        pivot2_df = accrual_sht.range(f"E{accr_open_mrn_pivot_row}").expand("table").options(pd.DataFrame, 
-                                header=1,
-                                index=False 
-                                ).value
-        #Remove last line containing Grand or Grnad Total
-        pivot1_df = pivot1_df[:-1]
-        pivot2_df = pivot2_df[:-1]
-
-        # mrn_df = pd.merge(pivot1_df,pivot2_df, on="Row Labels", how="outer")
-
-        df = pivot1_df.set_index('Row Labels').add(pivot2_df.set_index('Row Labels'), fill_value=0).reset_index()
-        df.sort_values('Row Labels', inplace=True)
-
-        combined_pivot_row = accrual_sht.range(f"E{accr_open_mrn_pivot_row}").end("down").end("down").row + 2
-
-        pivot_color = accrual_sht.range(f"E{combined_pivot_row-1}").api.Interior.Color
-
-        accrual_sht.range(f"E{combined_pivot_row}").expand("table").delete()
-        accrual_sht.range(f"E{combined_pivot_row}").options(pd.DataFrame, 
-                                header=None,
-                                index=False 
-                                ).value = df
-
-        pivot_last_row = accrual_sht.range(f"E{accrual_sht.cells.last_cell.row}").end("up").row
-
-        #Adding Total and it formula
-        accrual_sht.range(f"E{pivot_last_row+1}").value = "TOTAL"
-        accrual_sht.range(f"E{pivot_last_row+1}").api.Font.Bold = True
-        accrual_sht.range(f"F{pivot_last_row+1}").formula = f"=SUM(F{combined_pivot_row}:F{pivot_last_row})"
-
-        accrual_sht.range(f"E{pivot_last_row+1}:F{pivot_last_row+1}").api.Interior.Color = pivot_color
+            accrual_sht.range(f"E{pivot_last_row+1}:F{pivot_last_row+1}").api.Interior.Color = pivot_color
+        ################################################################################################
 
 
 
@@ -1135,9 +1283,11 @@ def rackbacktrack(input_date, output_date):
         if not os.path.exists(bs_rack_inp):
             return(f"{bs_rack_inp} Excel file not present in raw files")
 
-        bs_rack_df = pd.read_excel(bs_rack_inp, header=5, usecols=[1,2,3])
+        bs_rack_df = pd.read_excel(bs_rack_inp, header=0, usecols=[0,1,2])
 
-        bs_value = bs_rack_df.loc[bs_rack_df["Account Details"]=='    Open Goods Receipt']["Details - Curr. Period"].values[0]
+        # bs_value = bs_rack_df.loc[bs_rack_df["Account Details"]=='    Open Goods Receipt']["Details - Curr. Period"].values[0]
+        #New Updated SAP Name
+        bs_value = bs_rack_df.loc[bs_rack_df["Account Name"]=='204029 - Open Goods Receipts-Ethanol']["Balance"].values[0]
         accrual_last_row = accrual_sht.range(f"A{accrual_sht.cells.last_cell.row}").end("up").row
         accrual_sht.range(f"B{accrual_last_row-2}").value = bs_value * -1
 
@@ -1196,7 +1346,7 @@ def rackbacktrack(input_date, output_date):
         pivot2_fbdate_col_num = pivot2_cols.index("Freight Bill Booking Date")+1
         pivot2_fbdate_col = num_to_col_letters(pivot2_fbdate_col_num)
 
-        pivot2_bol_col_num = pivot2_cols.index("BOLNumber")+1
+        pivot2_bol_col_num = pivot2_cols.index("BOL#")+1
         pivot2_bol_col = num_to_col_letters(pivot2_bol_col_num)
 
 
@@ -1235,12 +1385,12 @@ def rackbacktrack(input_date, output_date):
         #Updating Amount, Final Amount and Final Price and trueup
         pivot2_sht.range(f"{pivot2_amt_col}{first_row}").value = f"=+{pivot2_rate_col}{first_row}*{pivot2_bqty_col}{first_row}"
         pivot2_sht.range(f"{pivot2_famt_col}{first_row}").value = f"=+{pivot2_bqty_col}{first_row}*{pivot2_fprice_col}{first_row}"
-        pivot2_sht.range(f"{pivot2_fprice_col}{first_row}").value = f"=+{pivot2_rate_col}{first_row}"
+        # pivot2_sht.range(f"{pivot2_fprice_col}{first_row}").value = f"=+{pivot2_rate_col}{first_row}"
         pivot2_sht.range(f"{pivot2_trueup_col}{first_row}").value = f"=+{pivot2_famt_col}{first_row}-{pivot2_amt_col}{first_row}"
 
 
         #Filling dormulas in all filtered cells
-        pivot2_sht.api.Range(f"{pivot2_amt_col}2:{pivot2_trueup_col}{pivot2_last_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
+        pivot2_sht.api.Range(f"{pivot2_amt_col}2:{pivot2_famt_col}{pivot2_last_row},{pivot2_trueup_col}2:{pivot2_trueup_col}{pivot2_last_row}").SpecialCells(win32c.CellType.xlCellTypeVisible).Select()
         wb.app.api.Selection.FillDown()
 
         print("Done")
@@ -1250,149 +1400,149 @@ def rackbacktrack(input_date, output_date):
         #Applying month filter for current
 
         pivot2_sht.api.AutoFilterMode=False
-        
-        ##########################Monthly Tureup part Check########################################################
-        if input_date==last_date:#Montlhy True up condition
-            #Create dataframe from both of this files and update trueup rate based on them rack_po_loc 
+        ##################################Stopping Trueup and Freight part as it is already present in SAP Input GRPO################################
+        # ##########################Monthly Tureup part Check########################################################
+        # if input_date==last_date:#Montlhy True up condition
+        #     #Create dataframe from both of this files and update trueup rate based on them rack_po_loc 
             
-            # rack_po_dict = pd.read_excel(rack_po_loc).set_index("Vendor Name").to_dict()['PO#']
-            try:
-                TRUE_UP_DF = pd.read_excel(rack_po_loc)
-                rack_po_dict = {}
+        #     # rack_po_dict = pd.read_excel(rack_po_loc).set_index("Vendor Name").to_dict()['PO#']
+        #     try:
+        #         TRUE_UP_DF = pd.read_excel(rack_po_loc)
+        #         rack_po_dict = {}
 
-                for i,x in TRUE_UP_DF.iterrows():
+        #         for i,x in TRUE_UP_DF.iterrows():
 
-                    rack_po_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
-
-
+        #             rack_po_dict.setdefault(TRUE_UP_DF[TRUE_UP_DF.columns[0]][i], []).append(TRUE_UP_DF[TRUE_UP_DF.columns[1]][i])
 
 
-                for key in rack_po_dict.keys():
-                    ap_t_df = pd.read_excel(truefile_loc, sheet_name = key,usecols="B:Q")
+
+
+        #         for key in rack_po_dict.keys():
+        #             ap_t_df = pd.read_excel(truefile_loc, sheet_name = key,usecols="B:Q")
                     
-                    if type(rack_po_dict[key]) is list:
-                        value_list = [f"PO# {s}" for s in rack_po_dict[key]]
-                        ap_price_dict = {}
-                        ap_price_dict = ap_t_df[ap_t_df['Voucher'].isin(value_list)][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
-                    else:
-                        ap_price_dict = ap_t_df.loc[ap_t_df["Voucher"]==f"PO# {rack_po_dict[key]}"][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
-                    wb.activate()
-                    pivot2_sht.activate()
+        #             if type(rack_po_dict[key]) is list:
+        #                 value_list = [f"PO# {s}" for s in rack_po_dict[key]]
+        #                 ap_price_dict = {}
+        #                 ap_price_dict = ap_t_df[ap_t_df['Voucher'].isin(value_list)][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
+        #             else:
+        #                 ap_price_dict = ap_t_df.loc[ap_t_df["Voucher"]==f"PO# {rack_po_dict[key]}"][['Voucher','Final Price']].set_index('Voucher').to_dict()['Final Price']
+        #             wb.activate()
+        #             pivot2_sht.activate()
                     
-                    #Filtering po number for truep price update
-                    for po_key in ap_price_dict.keys():
-                        pivot2_sht.api.AutoFilterMode=False
-                        filt_key = po_key.replace("PO# ","POR:")
-                        pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_po_col_num, Criteria1:=filt_key, Operator:=7) #Links column containing po feild is B
-                        #Updating final price for trueup calculation
-                        flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_fprice_col, pivot2_sht,wb)
+        #             #Filtering po number for truep price update
+        #             for po_key in ap_price_dict.keys():
+        #                 pivot2_sht.api.AutoFilterMode=False
+        #                 filt_key = po_key.replace("PO# ","POR:")
+        #                 pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_po_col_num, Criteria1:=filt_key, Operator:=7) #Links column containing po feild is B
+        #                 #Updating final price for trueup calculation
+        #                 flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_fprice_col, pivot2_sht,wb)
                         
-                        for address in sp_address:
-                            address = pivot2_fprice_col + (f":{pivot2_fprice_col}").join(address.split(":"))
+        #                 for address in sp_address:
+        #                     address = pivot2_fprice_col + (f":{pivot2_fprice_col}").join(address.split(":"))
 
-                            pivot2_sht.range(f"{address}").value = ap_price_dict[po_key]
-                print("Done, updateed trueup prices")
-            except Exception as e:
-                if messagebox.askyesno("Error in Reading Trueup",f'Error is {e}\nDo you want to continue rest process?'):
-                    pass
-                else:
-                    raise e
+        #                     pivot2_sht.range(f"{address}").value = ap_price_dict[po_key]
+        #         print("Done, updateed trueup prices")
+        #     except Exception as e:
+        #         if messagebox.askyesno("Error in Reading Trueup",f'Error is {e}\nDo you want to continue rest process?'):
+        #             pass
+        #         else:
+        #             raise e
 
 
-        ###############################Freight update part check########################################################
+        # ###############################Freight update part check########################################################
 
-        pivot2_sht.api.AutoFilterMode=False
-        pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_date_col_num, 
-        Criteria1:=f">={input_datetime.replace(day=1)}", Operator:=7)
-        # pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_fbill_col_num,
-        # Criteria1:=f"<>", Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:="<>No Freight")
-        flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_amt_col, pivot2_sht,wb)
-        # sp_lst_row = pivot2_sht.range(f"{pivot2_amt_col}{pivot2_sht.cells.last_cell.row}").end("up").row
-        # print("for loop for billed reading")
-        # for i in flat_list:
-        #     f_bill = pivot2_sht.range(f"{pivot2_fbill_col}{i}").value
+        # pivot2_sht.api.AutoFilterMode=False
+        # pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_date_col_num, 
+        # Criteria1:=f">={input_datetime.replace(day=1)}", Operator:=7)
+        # # pivot2_sht.range(f"A1:{pivot2_last_col}{pivot2_last_row}").api.AutoFilter(Field:=pivot2_fbill_col_num,
+        # # Criteria1:=f"<>", Operator:=win32c.AutoFilterOperator.xlAnd, Criteria2:="<>No Freight")
+        # flat_list, sp_lst_row,sp_address = row_range_calc(pivot2_amt_col, pivot2_sht,wb)
+        # # sp_lst_row = pivot2_sht.range(f"{pivot2_amt_col}{pivot2_sht.cells.last_cell.row}").end("up").row
+        # # print("for loop for billed reading")
+        # # for i in flat_list:
+        # #     f_bill = pivot2_sht.range(f"{pivot2_fbill_col}{i}").value
 
-        ####################
+        # ####################
 
-        frt_sht = wb.sheets("Frt GL")
-        wb.activate()
-        frt_sht.activate()
-        frt_st_row = frt_sht.range("B1").end("down").end("down").row
-        frt_lst_row = frt_sht.range(f"B{frt_sht.cells.last_cell.row}").end("up").row
-        frt_col_list = frt_sht.range(f"B{frt_st_row}").expand('right').value
-        frt_lst_col_num = len(frt_col_list)+1
-        frt_lst_col = num_to_col_letters(frt_lst_col_num)
-        frt_details_col_num = frt_col_list.index("Details")+2
-        frt_details_col = num_to_col_letters(frt_details_col_num)
-        frt_billno_col_num = frt_col_list.index("Bill No")+2
-        frt_billno_col = num_to_col_letters(frt_billno_col_num)
-        frt_qty_col_num = frt_col_list.index("Billed Qty")+2
-        frt_qty_col = num_to_col_letters(frt_qty_col_num)
-        frt_date_col_num = frt_col_list.index("Date")+2
-        frt_date_col = num_to_col_letters(frt_date_col_num)
-        frt_d_amount_col_num = frt_col_list.index("Debit Amount")+2
-        frt_d_amount_col = num_to_col_letters(frt_d_amount_col_num)
+        # frt_sht = wb.sheets("Frt GL")
+        # wb.activate()
+        # frt_sht.activate()
+        # frt_st_row = frt_sht.range("B1").end("down").end("down").row
+        # frt_lst_row = frt_sht.range(f"B{frt_sht.cells.last_cell.row}").end("up").row
+        # frt_col_list = frt_sht.range(f"B{frt_st_row}").expand('right').value
+        # frt_lst_col_num = len(frt_col_list)+1
+        # frt_lst_col = num_to_col_letters(frt_lst_col_num)
+        # frt_details_col_num = frt_col_list.index("Details")+2
+        # frt_details_col = num_to_col_letters(frt_details_col_num)
+        # frt_billno_col_num = frt_col_list.index("Bill No")+2
+        # frt_billno_col = num_to_col_letters(frt_billno_col_num)
+        # frt_qty_col_num = frt_col_list.index("Billed Qty")+2
+        # frt_qty_col = num_to_col_letters(frt_qty_col_num)
+        # frt_date_col_num = frt_col_list.index("Date")+2
+        # frt_date_col = num_to_col_letters(frt_date_col_num)
+        # frt_d_amount_col_num = frt_col_list.index("Debit Amount")+2
+        # frt_d_amount_col = num_to_col_letters(frt_d_amount_col_num)
 
-        frt_new_col_num = len(frt_col_list)+2
-        frt_new_col = num_to_col_letters(frt_new_col_num)
+        # frt_new_col_num = len(frt_col_list)+2
+        # frt_new_col = num_to_col_letters(frt_new_col_num)
 
-        frt_df = frt_sht.range(f"{frt_details_col}{frt_st_row}:{frt_d_amount_col}{frt_lst_row}").options(pd.DataFrame,
-                                                                                                    header=1,
-                                                                                                    index=False 
-                                                                                                    ).value
-        try:
-            frt_df[['Bol No', 'Details']] = frt_df['Details'].str.split(';',expand=True)
-        except Exception as e:
-            raise "Multiple ; found in Freight Sheet Details Column"
-        frt_df["Rate"] = frt_df["Debit Amount"] / frt_df["Billed Qty"]
+        # frt_df = frt_sht.range(f"{frt_details_col}{frt_st_row}:{frt_d_amount_col}{frt_lst_row}").options(pd.DataFrame,
+        #                                                                                             header=1,
+        #                                                                                             index=False 
+        #                                                                                             ).value
+        # try:
+        #     frt_df[['Bol No', 'Details']] = frt_df['Details'].str.split(';',expand=True)
+        # except Exception as e:
+        #     raise "Multiple ; found in Freight Sheet Details Column"
+        # frt_df["Rate"] = frt_df["Debit Amount"] / frt_df["Billed Qty"]
 
-        #Entering new columns
-        frt_sht.range(f"{frt_new_col}{frt_st_row}").options(pd.DataFrame, 
-                                header=1,
-                                index=False 
-                                ).value = frt_df[["Rate"]]
+        # #Entering new columns
+        # frt_sht.range(f"{frt_new_col}{frt_st_row}").options(pd.DataFrame, 
+        #                         header=1,
+        #                         index=False 
+        #                         ).value = frt_df[["Rate"]]
 
-        frt_sht.range(f"A{frt_st_row}").options(pd.DataFrame, 
-                                header=1,
-                                index=False 
-                                ).value = frt_df[["Bol No"]]
+        # frt_sht.range(f"A{frt_st_row}").options(pd.DataFrame, 
+        #                         header=1,
+        #                         index=False 
+        #                         ).value = frt_df[["Bol No"]]
 
-        #######Adding Vlookups ###################################
-        #Bill No =VLOOKUP(F96,'Frt GL'!A:D,4,FALSE)
-        #Date =VLOOKUP(F96, 'Frt GL'!A:E,5,FALSE)
-        #Rate  =VLOOKUP(F96, 'Frt GL'!A:Z,26,FALSE)
-        f_row = flat_list[0]
-        pivot2_sht.range(f"{pivot2_fbill_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_billno_col},{frt_billno_col_num},FALSE), "No Freight")'
-        pivot2_sht.range(f"{pivot2_frate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_new_col},{frt_new_col_num},FALSE),0)'
-        pivot2_sht.range(f"{pivot2_fbdate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_date_col},{frt_date_col_num},FALSE),"")'
+        # #######Adding Vlookups ###################################
+        # #Bill No =VLOOKUP(F96,'Frt GL'!A:D,4,FALSE)
+        # #Date =VLOOKUP(F96, 'Frt GL'!A:E,5,FALSE)
+        # #Rate  =VLOOKUP(F96, 'Frt GL'!A:Z,26,FALSE)
+        # f_row = flat_list[0]
+        # pivot2_sht.range(f"{pivot2_fbill_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_billno_col},{frt_billno_col_num},FALSE), "No Freight")'
+        # pivot2_sht.range(f"{pivot2_frate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_new_col},{frt_new_col_num},FALSE),0)'
+        # pivot2_sht.range(f"{pivot2_fbdate_col}{f_row}").formula = f'=IFERROR(VLOOKUP({pivot2_bol_col}{f_row},\'Frt GL\'!A:{frt_date_col},{frt_date_col_num},FALSE),"")'
 
-        #Copy pasting formula
-        wb.activate()
-        pivot2_sht.activate()
-        pivot2_sht.range(f"{pivot2_fbill_col}{f_row}:{pivot2_fbdate_col}{sp_lst_row}").select()
-        wb.app.selection.api.FillDown()
-        pivot2_sht.range(f"{pivot2_fbdate_col}{f_row}:{pivot2_fbdate_col}{sp_lst_row}").api.NumberFormat = "mm-dd-yyyy"
+        # #Copy pasting formula
+        # wb.activate()
+        # pivot2_sht.activate()
+        # pivot2_sht.range(f"{pivot2_fbill_col}{f_row}:{pivot2_fbdate_col}{sp_lst_row}").select()
+        # wb.app.selection.api.FillDown()
+        # pivot2_sht.range(f"{pivot2_fbdate_col}{f_row}:{pivot2_fbdate_col}{sp_lst_row}").api.NumberFormat = "mm-dd-yyyy"
 
-        pivot2_sht.range(f"{pivot2_frate_col}{f_row}:{pivot2_frate_col}{sp_lst_row}").select()
-        wb.app.selection.api.FillDown()
+        # pivot2_sht.range(f"{pivot2_frate_col}{f_row}:{pivot2_frate_col}{sp_lst_row}").select()
+        # wb.app.selection.api.FillDown()
 
-        #Copy pasting data to replace formulas
-        for add_range in sp_address:
-            rate_address = pivot2_frate_col + (f":{pivot2_frate_col}").join(add_range.split(":"))
-            bill_d_address = pivot2_fbill_col + (f":{pivot2_fbdate_col}").join(add_range.split(":"))
-            pivot2_sht.range(f"{rate_address}").api.Copy()
-            pivot2_sht.range(f"{rate_address}").api._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
-            pivot2_sht.range(f"{rate_address}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
+        # #Copy pasting data to replace formulas
+        # for add_range in sp_address:
+        #     rate_address = pivot2_frate_col + (f":{pivot2_frate_col}").join(add_range.split(":"))
+        #     bill_d_address = pivot2_fbill_col + (f":{pivot2_fbdate_col}").join(add_range.split(":"))
+        #     pivot2_sht.range(f"{rate_address}").api.Copy()
+        #     pivot2_sht.range(f"{rate_address}").api._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
+        #     pivot2_sht.range(f"{rate_address}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
 
-            pivot2_sht.range(f"{bill_d_address}").api.Copy()
-            pivot2_sht.range(f"{bill_d_address}").api._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
-
+        #     pivot2_sht.range(f"{bill_d_address}").api.Copy()
+        #     pivot2_sht.range(f"{bill_d_address}").api._PasteSpecial(Paste=-4163,Operation=win32c.Constants.xlNone)
+    ################################################################################################################################################
 
 
         #Removing filters from all sheets
         open_gr_sht.api.AutoFilterMode=False
         pivot2_sht.api.AutoFilterMode=False
-        sht_5.api.AutoFilterMode=False
+        # sht_5.api.AutoFilterMode=False
         accrual_sht.api.AutoFilterMode=False
         sht_4.api.AutoFilterMode=False
         sht6.api.AutoFilterMode=False
@@ -1410,5 +1560,5 @@ def rackbacktrack(input_date, output_date):
         except:
             pass
 
-# msg = rackbacktrack('01.31.2023', '01.31.2023')
+# msg = rackbacktrack('11.30.2023', '11.30.2023')
 # print(msg)
