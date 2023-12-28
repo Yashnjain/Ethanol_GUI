@@ -55,7 +55,7 @@ class MyDateEntry(DateEntry):
         self._top_cal.configure(bg='black', bd=1)
         # add label displaying today's date below
         label(self._top_cal, bg='gray90', anchor='w',
-                 text='Today: %s' % date.today().strftime('%x')).pack(fill='both', expand=1)
+                text='Today: %s' % date.today().strftime('%x')).pack(fill='both', expand=1)
 
 
 def open_gr(input_date,output_date):
