@@ -213,7 +213,7 @@ def rackbacktrack(input_date, output_date):
             mrn_dict = {}
             date_list = []
             try:
-                for pdf_file in glob.glob(mrn_pdf_loc+"\\*.pdf"):
+                for pdf_file in glob.glob(mrn_pdf_loc+"\\MRN*.pdf"):
                     filename = pdf_file.split("\\")[-1]
                     pdf_file_date = filename.replace("MRN.", "").replace(" done.pdf","").replace(".pdf", "")
                     pdf_file_date = datetime.strptime(pdf_file_date, "%m.%d.%Y").day
@@ -610,7 +610,8 @@ def rackbacktrack(input_date, output_date):
 
                         #Updating  Amount 	 Final Amount 	 Final Price 	 True-Up 	 Freight Rate 	 Freight Amount 
                         # pivot2_sht.range(f"M{start_row+1}:P{start_row+1}").copy(pivot2_sht.range(f"M{start_row+2}:P{new_i-1}"))
-                        pivot2_sht.range(f"M{start_row+1}:P{start_row+1}").copy(pivot2_sht.range(f"M{new_i-pv_2_row_count}:P{new_i-1}"))
+                        pivot2_sht.range(f"M{start_row+1}:M{start_row+1}").copy(pivot2_sht.range(f"M{new_i-pv_2_row_count}:M{new_i-1}"))
+                        pivot2_sht.range(f"O{start_row+1}:P{start_row+1}").copy(pivot2_sht.range(f"O{new_i-pv_2_row_count}:P{new_i-1}"))
                         #updating O column Final Price forula
                         pivot2_sht.range(f"O{new_i-pv_2_row_count}").formula = f"=+K{new_i-pv_2_row_count}"
                         pivot2_sht.range(f"O{new_i-pv_2_row_count}").copy(pivot2_sht.range(f"O{new_i-pv_2_row_count}:O{new_i-1}"))
