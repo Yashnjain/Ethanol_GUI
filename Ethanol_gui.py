@@ -187,9 +187,12 @@ def main():
     # input_date=None
     # output_date = None
     frame_options.grid(row=1,column=0, pady=30, padx=35, columnspan=2, rowspan=3)
-    wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Open Gr':open_gr ,'Ar Ageing BBR New':bbr_new,
-                    'Ar Ageing Report(Rack)':ar_ageing_rack,'Ar Ageing Master':ar_ageing_master,'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures,
+    wp_job_ids = {'ABS':1,'Purchased AR Report':purchased_ar,'Open Gr':open_gr ,'Ar Ageing BBR New':bbr_new,
+                    'Unbilled AR Report':unbilled_ar,'Cash BBR':bbr_cash,'NLV BBR':bbr_nlv_futures,
                     'Rack Back Track':call_rackbacktrack,'BBR FOB':bbr_fob,'Delivered Cars':del_car}
+    #'Ar Ageing Report(Bulk)':ar_ageing_bulk, 'Ar Ageing Report(Rack)':ar_ageing_rack,'Ar Ageing Master':ar_ageing_master
+    
+
     # wp_job_ids = {'ABS':1,'BBR':bbr,'CPR Report':cpr, 'Freight analysis':freight_analysis, 'CTM combined':ctm,'MTM Report':mtm_report,
     #                 'MOC Interest Allocation':moc_interest_alloc,'Open AR':open_ar,'Open AP':open_ap, 'Unsettled Payable Report':unsetteled_payables,'Unsettled Receivable Report':unsetteled_receivables,
     #                 'Storage Month End Report':strg_month_end_report, "Month End BBR":bbr_monthEnd, "Bank Recons Report":bank_recons_rep}
