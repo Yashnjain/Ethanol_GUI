@@ -171,7 +171,7 @@ def rackbacktrack(input_date, output_date):
         inv_mtm_st_row = inv_mtm_sht.range(f"B1").end("down").row + 1 #+1 for excluding RowLabel Header
         # inv_mtm_last_row = inv_mtm_sht.range(f'A'+ str(inv_mtm_sht.cells.last_cell.row)).end('up').row
         loc_list = inv_mtm_sht.range(f"B{inv_mtm_st_row}").expand("down").value
-        loc_dict = {"FORT SMITH, AR":"FT. SMITH", "MPLS/ST. PAUL, MN":"MPLS/ST.PAUL", "NLITTLEROCKNORTH, AR":"LITTLE ROCK", "NLITTLEROCKSOUTH, AR":"LITTLE ROCK"}
+        loc_dict = {"FORT SMITH, AR":"FT. SMITH", "MPLS/ST. PAUL, MN":"MPLS/ST.PAUL", "NLITTLEROCKNORTH, AR":"LITTLE ROCK", "NLITTLEROCKSOUTH, AR":"LITTLE ROCK","ODESSA, TX":"MIDLAND/ODESSA"}
         spcl_dict = {'ODESSA, TX':'Odessa TX Magellan', 'East Houston, TX':'Houston TX Magellan'}
         for location in range(len(loc_list)-1):#Ifgnoring grand total
             if loc_list[location] in loc_dict.keys():
@@ -280,6 +280,9 @@ def rackbacktrack(input_date, output_date):
             sht3.autofit()
             sht3.range(f"C2:C{sht3_a_last_row}").select()
             wb.app.selection.api.FillDown()
+
+            #Updating number format
+            sht3.range(f"D2:{sht3_total_col}{sht3_a_last_row}").api.NumberFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'
 
             #Making dataframe
             sht3_df = sht3.range(f"B1:{sht3_total_col}{sht3_a_last_row}").options(pd.DataFrame, 
@@ -435,11 +438,11 @@ def rackbacktrack(input_date, output_date):
                         "To warehouse":"Terminal",
                         "Quantity":"Billed Qty",
                         "Amount":"Credit Amount",
-                        "Freight Bill Amt":"Freight Amount",
+                        "Freight Amt":"Freight Amount",
                         "Landed Cost No":"LC number",
                         "landedCost Date":"LC Post date"}
         mrn_df = mrn_df[["Vendor Name", "Agreement No.", "Document No.", "Item No.", "Posting Date", "BOL No.", "To warehouse","Quantity", "Amount",\
-                        "Final Price", "Freight Bill Amt", "Landed Cost No", "landedCost Date"]]
+                        "Final Price", "Freight Amt", "Landed Cost No", "landedCost Date"]]
         
 
         #Final Pivot2 Column list "Vendor Name"	"Links"	"Voucher"	"Pdt Name"	"Date"	"BOL#"	"Terminal"	"Account"	 "Billed Qty" 	 "Credit Amount" 	 "Rate" 	 "Amount" 	 "Final Amount" 	 "Final Price" 	 "True-Up" 	 "Freight Rate" 	 "Freight Amount" 	"Freight Bill No."	"Freight Bill Booking Date"
@@ -449,19 +452,19 @@ def rackbacktrack(input_date, output_date):
         #################Updating Column names as SAP GRPO Report and add Blank column with data as Inventory Ethanol-Active#############################
         #Updating priceor Rate formula and put it after Credit Amount
         mrn_df['Rate'] = mrn_df['Amount']/mrn_df['Quantity']
-        mrn_df["Freight Rate"] = mrn_df['Freight Bill Amt']/mrn_df['Quantity']
+        mrn_df["Freight Rate"] = mrn_df['Freight Amt']/mrn_df['Quantity']
         mrn_df["Account"] = "Inventory Ethanol - Active"
         mrn_df["Final Amount"] = None
         mrn_df["True-Up"] = None
         #Renameing column
         mrn_df.rename(columns={"Agreement No.":mapping_dict["Agreement No."], "Document No.":mapping_dict["Document No."],"Item No.":mapping_dict["Item No."],\
                                "Posting Date":mapping_dict["Posting Date"], "BOL No.":mapping_dict["BOL No."], "To warehouse":mapping_dict["To warehouse"],\
-                                "Quantity":mapping_dict["Quantity"], "Amount":mapping_dict["Amount"], "Freight Bill Amt":mapping_dict["Freight Bill Amt"],\
+                                "Quantity":mapping_dict["Quantity"], "Amount":mapping_dict["Amount"], "Freight Amt":mapping_dict["Freight Amt"],\
                                 "Landed Cost No":mapping_dict["Landed Cost No"], "landedCost Date":mapping_dict["landedCost Date"]}, inplace=True)
         #Rearranging Columns
         mrn_df = mrn_df[["Vendor Name", mapping_dict["Agreement No."], mapping_dict["Document No."], mapping_dict["Item No."], mapping_dict["Posting Date"], \
                           mapping_dict["BOL No."], mapping_dict["To warehouse"], "Account",mapping_dict["Quantity"], mapping_dict["Amount"], "Rate","Final Amount",\
-                        "Final Price", "True-Up", "Freight Rate", mapping_dict["Freight Bill Amt"], mapping_dict["Landed Cost No"], mapping_dict["landedCost Date"]]]
+                        "Final Price", "True-Up", "Freight Rate", mapping_dict["Freight Amt"], mapping_dict["Landed Cost No"], mapping_dict["landedCost Date"]]]
         #Inserting Blank Amount column after Rate Column
         rate_col_index = list(mrn_df.columns).index("Rate")
         mrn_df.insert(loc=rate_col_index+1, column='Amount', value=None)
@@ -615,6 +618,9 @@ def rackbacktrack(input_date, output_date):
                         #updating O column Final Price forula
                         pivot2_sht.range(f"O{new_i-pv_2_row_count}").formula = f"=+K{new_i-pv_2_row_count}"
                         pivot2_sht.range(f"O{new_i-pv_2_row_count}").copy(pivot2_sht.range(f"O{new_i-pv_2_row_count}:O{new_i-1}"))
+                        #Updating Freight Amount Formula
+                        pivot2_sht.range(f"Q{new_i-pv_2_row_count}").formula = f"=P{new_i-pv_2_row_count}*I{new_i-pv_2_row_count}"
+                        pivot2_sht.range(f"Q{new_i-pv_2_row_count}").copy(pivot2_sht.range(f"Q{new_i-pv_2_row_count}:Q{new_i-1}"))
                         i=new_i
 
                         print("Selected")
@@ -760,6 +766,8 @@ def rackbacktrack(input_date, output_date):
                     # rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=1, Criteria1:=[f'<={input_datetime}'])
                     rack_costing_sht.api.Range(f"A1:AD{rack_costing_last_row}").AutoFilter(Field:=7, Criteria1:=key.replace(" ", ""))
                 rack_costing_last_row = rack_costing_sht.range(f"A{rack_costing_sht.cells.last_cell.row}").end("up").row
+                #Unhidding column if any present between A and J column
+                rack_costing_sht.range(f"A:J").api.EntireColumn.Hidden=False
                 if rack_costing_sht.range(f'A'+ str(rack_costing_sht.cells.last_cell.row)).end('up').row != 1:
                     rack_costing_sht.range(f"2:{rack_costing_last_row}").api.SpecialCells(win32c.CellType.xlCellTypeVisible).Copy(lr_costing_sht.range(f"A{lr_costing_last_row+20}").api)
 
@@ -873,6 +881,7 @@ def rackbacktrack(input_date, output_date):
                     # if (lr_costing_sht.range(f"E{new_i+3}").value !=0): #Subtracting from existing BOLs
                         #Logic for sorting data date wise
                         data_lst_row = lr_costing_sht.range(f"A{data_st_row}").end("down").row
+                        lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api.NumberFormat = 'mm/dd/yyyy'
                         lr_costing_sht.range(f"A{data_st_row}:AB{data_lst_row}").api.Sort(Key1=lr_costing_sht.range(f"A{data_st_row}:A{data_lst_row}").api,
                             Header =win32c.YesNoGuess.xlYes ,Order1=win32c.SortOrder.xlAscending,DataOption1=win32c.SortDataOption.xlSortNormal,Orientation=1,SortMethod=1)
                         #Ignoring row with zero value
@@ -1338,13 +1347,13 @@ def rackbacktrack(input_date, output_date):
         pivot2_date_col_num = pivot2_cols.index("Date")+1
         pivot2_date_col = num_to_col_letters(pivot2_date_col_num)
 
-        pivot2_fbill_col_num = pivot2_cols.index("Freight Bill No.")+1
+        pivot2_fbill_col_num = pivot2_cols.index("Frt Bill No.")+1
         pivot2_fbill_col = num_to_col_letters(pivot2_fbill_col_num)
 
         pivot2_frate_col_num = pivot2_cols.index("Freight Rate")+1
         pivot2_frate_col = num_to_col_letters(pivot2_frate_col_num)
 
-        pivot2_fbdate_col_num = pivot2_cols.index("Freight Bill Booking Date")+1
+        pivot2_fbdate_col_num = pivot2_cols.index("Frt bill Dt")+1
         pivot2_fbdate_col = num_to_col_letters(pivot2_fbdate_col_num)
 
         pivot2_bol_col_num = pivot2_cols.index("BOL#")+1
